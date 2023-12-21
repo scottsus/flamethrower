@@ -66,4 +66,4 @@ class Shell:
             if self.child_process:
                 self.child_process.terminate()
             
-            print('\n\n👋 Goodbye!')
+            print('\n👋 Goodbye!')

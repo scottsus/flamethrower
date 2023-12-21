@@ -1,4 +1,5 @@
 import os
+from context.dir_walker import generate_directory_summary
 
 flamethrower_dir = os.path.join(os.getcwd(), '.flamethrower')
 
@@ -45,5 +46,7 @@ def setup_zsh_env():
     zsh_syntax_highlighting_path = f'{flamethrower_dir}/zsh-syntax-highlighting'
     if not os.path.exists(zsh_syntax_highlighting_path):
         os.system(f'git clone git@github.com:zsh-users/zsh-syntax-highlighting.git {zsh_syntax_highlighting_path}')
+    
+    generate_directory_summary(os.getcwd())
     
     print(colored_welcome_screen)
