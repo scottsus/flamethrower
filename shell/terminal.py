@@ -5,6 +5,7 @@ import tty
 import termios
 import subprocess
 from select import select
+from .setup import setup_zsh_env
 from .command_handler import CommandHandler
 
 class Shell:
@@ -17,6 +18,7 @@ class Shell:
         sys.exit(0)
 
     def run(self):
+        setup_zsh_env()
         env = os.environ.copy()
         env['ZDOTDIR'] = os.path.join(os.getcwd(), '.flamethrower')
         self.child_process = subprocess.Popen(['zsh'],

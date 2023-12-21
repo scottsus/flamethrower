@@ -21,6 +21,7 @@ class CommandHandler(BaseModel):
             tty_settings=self.tty_settings
         )
 
+    # TODO: Handle logic for backspace between natural language and regular commands
     def handle(self, key: bytes):
         if key == CTRL_C:
             sys.exit(0)
