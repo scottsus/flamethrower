@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 from .special_keys import *
 from .printer import Printer
+from models.llm import ask
 
 class CommandHandler(BaseModel):
     fd: int = -1
@@ -49,11 +50,13 @@ class CommandHandler(BaseModel):
         self.printer.print_yellow(key)
     
     def handle_return_key(self, key: bytes):
+        query = self.buffer
         self.is_natural_language_query = False
         self.pos = 0
         self.buffer = ''
-
         os.write(self.fd, key)
+
+        ask(query)
 
     def handle_backspace_key(self, key: bytes):
         if self.pos > 0:
