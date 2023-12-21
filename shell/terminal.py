@@ -30,7 +30,10 @@ class Shell:
         old_settings = termios.tcgetattr(sys.stdin)
         tty.setraw(sys.stdin)
 
-        cmdHandler = CommandHandler(fd=self.leader_fd)
+        cmdHandler = CommandHandler(
+            fd=self.leader_fd,
+            tty_settings=old_settings
+        )
 
         try:
             while True:

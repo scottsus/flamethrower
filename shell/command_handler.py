@@ -8,6 +8,7 @@ from models.llm import ask
 
 class CommandHandler(BaseModel):
     fd: int = -1
+    tty_settings: list = []
     pos: int = 0
     buffer: str = ''
     is_natural_language_query: bool = False
@@ -15,7 +16,10 @@ class CommandHandler(BaseModel):
 
     def __init__(self, **data):
         super().__init__(**data)
-        self.printer = Printer(fd=sys.stdout.fileno())
+        self.printer = Printer(
+            fd=sys.stdout.fileno(),
+            tty_settings=self.tty_settings
+        )
 
     def handle(self, key: bytes):
         if key == CTRL_C:
@@ -56,7 +60,8 @@ class CommandHandler(BaseModel):
         self.buffer = ''
         os.write(self.fd, key)
 
-        ask(query)
+        stream = ask(query)
+        self.printer.print_llm_response(stream)
 
     def handle_backspace_key(self, key: bytes):
         if self.pos > 0:
