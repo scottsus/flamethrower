@@ -34,7 +34,8 @@ class Shell:
 
         try:
             while True:
-                r, w, e = select([self.leader_fd, sys.stdin], [], [])
+                timeout = 0.5 # seconds
+                r, w, e = select([self.leader_fd, sys.stdin], [], [], timeout)
                 
                 # From leader process
                 if self.leader_fd in r:
@@ -46,7 +47,12 @@ class Shell:
                 # From user input
                 if sys.stdin in r:
                     key = os.read(sys.stdin.fileno(), self.block_size)
+                    if not key:
+                        break
                     cmdHandler.handle(key)
+                
+                if self.child_process.poll() is not None:
+                    break
                     
         finally:
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
