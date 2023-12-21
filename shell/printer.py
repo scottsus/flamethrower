@@ -18,8 +18,14 @@ STDIN_RED = b'\033[31m'
 STDIN_YELLOW = b'\033[33m'
 STDIN_GREEN = b'\033[92m'
 STDIN_BLUE = b'\033[94m'
+STDIN_CYAN = b'\033[96m'
 STDIN_GRAY = b'\033[90m'
 STDIN_WHITE = b'\033[97m'
+
+STDIN_LIGHT_GREEN = b'\033[92m'
+STDIN_LIGHT_BLUE = b'\033[94m'
+STDIN_LIGHT_CYAN = b'\033[96m'
+STDIN_LIGHT_MAGENTA = b'\033[95m'
 
 class Printer(BaseModel):
     fd: int = 0 # should be sys.stdout.fileno()
@@ -51,11 +57,26 @@ class Printer(BaseModel):
     def print_blue(self, data: bytes):
         self.print_color(data, STDIN_BLUE)
     
+    def print_cyan(self, data: bytes):
+        self.print_color(data, STDIN_CYAN)
+    
     def print_gray(self, data: bytes):
         self.print_color(data, STDIN_GRAY)
 
     def print_white(self, data: bytes):
         self.print_color(data, STDIN_WHITE)
+
+    def print_light_green(self, data: bytes):
+        self.print_color(data, STDIN_LIGHT_GREEN)
+    
+    def print_light_blue(self, data: bytes):
+        self.print_color(data, STDIN_LIGHT_BLUE)
+
+    def print_light_cyan(self, data: bytes):
+        self.print_color(data, STDIN_LIGHT_CYAN)
+    
+    def print_light_magenta(self, data: bytes):
+        self.print_color(data, STDIN_LIGHT_MAGENTA)
 
     def print_llm_response(self, stream):
         """

@@ -51,7 +51,7 @@ class CommandHandler(BaseModel):
         self.is_natural_language_query = True
         self.pos += 1
         self.buffer += key.decode('utf-8')
-        self.printer.print_yellow(key)
+        self.printer.print_light_magenta(key)
     
     def handle_return_key(self, key: bytes):
         query = self.buffer
