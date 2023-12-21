@@ -1,0 +1,13 @@
+CTRL_C = b'\x03'
+
+CLEAR_TO_END = b'\033[K'
+LEFT_ARROW_KEY = b'\033[D'
+RIGHT_ARROW_KEY = b'\033[C'
+UP_ARROW_KEY = b'\033[A'
+DOWN_ARROW_KEY = b'\033[B'
+
+SPACE_KEY = b' '
+TAB_KEY = b'\t'
+ENTER_KEY = b'\n'
+RETURN_KEY = b'\r'
+BACKSPACE_KEY = b'\177'

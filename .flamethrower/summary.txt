@@ -1,0 +1,8 @@
+├── .flamethrower
+│   └── summary.txt
+├── data # This is the folder for storing our DB-related files.
+│   ├── README.md
+│   └── chinook.db
+├── functions.py
+├── walker.py
+└── .gitignore

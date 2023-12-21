@@ -1,0 +1,13 @@
+# Flamethrower
+build.sh
+
+# Python
+venv
+__pycache__
+
+# Shell
+.zsh*
+
+# Misc
+.vscode
+.DS_Store
