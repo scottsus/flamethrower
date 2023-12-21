@@ -18,8 +18,7 @@ class Shell:
 
     def run(self):
         env = os.environ.copy()
-        # TODO: Make this configurable
-        env['ZDOTDIR'] = os.path.join('/Users', 'scottsus', 'Projects', 'flamethrower', '.flamethrower')
+        env['ZDOTDIR'] = os.path.join(os.getcwd(), '.flamethrower')
         self.child_process = subprocess.Popen(['zsh'],
                                               env=env,
                                               stdin=self.follower_fd,

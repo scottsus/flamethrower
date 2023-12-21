@@ -1,8 +1,1240 @@
+├── context
+│   └── dir_walker.py
 ├── .flamethrower
+│   ├── zsh-autosuggestions # # zsh-autosuggestions
+
+_[Fish](http://fishshell.com/)-like fast/unobtrusive autosuggestions for zsh.
+│   │   ├── spec
+│   │   │   ├── options
+│   │   │   │   ├── buffer_max_size_spec.rb
+│   │   │   │   ├── strategy_spec.rb
+│   │   │   │   ├── widget_lists_spec.rb
+│   │   │   │   ├── original_widget_prefix_spec.rb
+│   │   │   │   └── highlight_style_spec.rb
+│   │   │   ├── strategies
+│   │   │   │   ├── special_characters_helper.rb
+│   │   │   │   ├── history_spec.rb
+│   │   │   │   ├── match_prev_cmd_spec.rb
+│   │   │   │   └── completion_spec.rb
+│   │   │   ├── integrations
+│   │   │   │   ├── glob_subst_spec.rb
+│   │   │   │   ├── zle_input_stack_spec.rb
+│   │   │   │   ├── auto_cd_spec.rb
+│   │   │   │   ├── rebound_bracket_spec.rb
+│   │   │   │   ├── client_zpty_spec.rb
+│   │   │   │   ├── bracketed_paste_magic_spec.rb
+│   │   │   │   ├── vi_mode_spec.rb
+│   │   │   │   └── wrapped_widget_spec.rb
+│   │   │   ├── widgets
+│   │   │   │   ├── fetch_spec.rb
+│   │   │   │   ├── enable_spec.rb
+│   │   │   │   ├── disable_spec.rb
+│   │   │   │   └── toggle_spec.rb
+│   │   │   ├── multi_line_spec.rb
+│   │   │   ├── spec_helper.rb
+│   │   │   ├── kill_ring_spec.rb
+│   │   │   ├── line_init_spec.rb
+│   │   │   ├── terminal_session.rb
+│   │   │   └── async_spec.rb
+│   │   ├── .github
+│   │   │   └── ISSUE_TEMPLATE
+│   │   │       ├── feature_request.md
+│   │   │       └── bug-report.md
+│   │   ├── .circleci
+│   │   │   └── config.yml
+│   │   ├── src
+│   │   │   ├── strategies
+│   │   │   │   ├── history.zsh
+│   │   │   │   ├── completion.zsh
+│   │   │   │   └── match_prev_cmd.zsh
+│   │   │   ├── fetch.zsh
+│   │   │   ├── bind.zsh
+│   │   │   ├── start.zsh
+│   │   │   ├── util.zsh
+│   │   │   ├── widgets.zsh
+│   │   │   ├── highlight.zsh
+│   │   │   ├── config.zsh
+│   │   │   └── async.zsh
+│   │   ├── .rspec
+│   │   ├── LICENSE
+│   │   ├── .ruby-version
+│   │   ├── CHANGELOG.md
+│   │   ├── Dockerfile
+│   │   ├── Makefile
+│   │   ├── INSTALL.md
+│   │   ├── URL
+│   │   ├── .editorconfig
+│   │   ├── README.md
+│   │   ├── install_test_zsh.sh
+│   │   ├── zsh-autosuggestions.plugin.zsh
+│   │   ├── DESCRIPTION
+│   │   ├── .gitignore
+│   │   ├── VERSION
+│   │   ├── zsh-autosuggestions.zsh
+│   │   ├── Gemfile
+│   │   ├── .rubocop.yml
+│   │   ├── Gemfile.lock
+│   │   └── ZSH_VERSIONS
+│   ├── zsh-syntax-highlighting # zsh-syntax-highlighting [![Build Status][build-status-image]][build-status]
+=======================
+
+│   │   ├── images
+│   │   │   ├── before1.png
+│   │   │   ├── before2.png
+│   │   │   ├── preview.png
+│   │   │   ├── before3.png
+│   │   │   ├── before3-smaller.png
+│   │   │   ├── preview-smaller.png
+│   │   │   ├── after3-smaller.png
+│   │   │   ├── after3.png
+│   │   │   ├── after2.png
+│   │   │   ├── after1.png
+│   │   │   ├── before1-smaller.png
+│   │   │   ├── after1-smaller.png
+│   │   │   ├── after4-smaller.png
+│   │   │   ├── before4-smaller.png
+│   │   │   ├── after2-smaller.png
+│   │   │   └── before2-smaller.png
+│   │   ├── tests # zsh-syntax-highlighting / tests
+===============================
+
+Utility scripts for testing zsh-syn
+│   │   │   ├── test-highlighting.zsh
+│   │   │   ├── README.md
+│   │   │   ├── test-perfs.zsh
+│   │   │   ├── generate.zsh
+│   │   │   ├── tap-colorizer.zsh
+│   │   │   ├── edit-failed-tests
+│   │   │   ├── tap-filter
+│   │   │   └── test-zprof.zsh
+│   │   ├── docs
+│   │   │   ├── highlighters
+│   │   │   │   ├── regexp.md
+│   │   │   │   ├── cursor.md
+│   │   │   │   ├── root.md
+│   │   │   │   ├── main.md
+│   │   │   │   ├── pattern.md
+│   │   │   │   ├── brackets.md
+│   │   │   │   └── line.md
+│   │   │   └── highlighters.md
+│   │   ├── .github
+│   │   │   └── workflows
+│   │   │       └── test.yml
+│   │   ├── highlighters # zsh-syntax-highlighting / highlighters
+======================================
+
+Navigate into the ind
+│   │   │   ├── regexp # zsh-syntax-highlighting / highlighters / regexp
+------------------------------------------------
+
+Th
+│   │   │   │   ├── test-data
+│   │   │   │   │   ├── word-boundary.zsh
+│   │   │   │   │   ├── subexpression.zsh
+│   │   │   │   │   └── complex.zsh
+│   │   │   │   ├── regexp-highlighter.zsh
+│   │   │   │   └── README.md
+│   │   │   ├── cursor # zsh-syntax-highlighting / highlighters / cursor
+-----------------------------------------------
+
+Thi
+│   │   │   │   ├── cursor-highlighter.zsh
+│   │   │   │   └── README.md
+│   │   │   ├── line # zsh-syntax-highlighting / highlighters / line
+---------------------------------------------
+
+This is
+│   │   │   │   ├── line-highlighter.zsh
+│   │   │   │   └── README.md
+│   │   │   ├── root # zsh-syntax-highlighting / highlighters / root
+---------------------------------------------
+
+This is
+│   │   │   │   ├── root-highlighter.zsh
+│   │   │   │   └── README.md
+│   │   │   ├── pattern # zsh-syntax-highlighting / highlighters / pattern
+------------------------------------------------
+
+T
+│   │   │   │   ├── test-data
+│   │   │   │   │   └── rm-rf.zsh
+│   │   │   │   ├── pattern-highlighter.zsh
+│   │   │   │   └── README.md
+│   │   │   ├── brackets # zsh-syntax-highlighting / highlighters / brackets
+-------------------------------------------------
+
+│   │   │   │   ├── test-data
+│   │   │   │   │   ├── quoted-patentheses.zsh
+│   │   │   │   │   ├── only-error.zsh
+│   │   │   │   │   ├── loop-styles.zsh
+│   │   │   │   │   ├── nested-parentheses.zsh
+│   │   │   │   │   ├── cursor-matchingbracket.zsh
+│   │   │   │   │   ├── mismatch-patentheses.zsh
+│   │   │   │   │   ├── simple-parentheses.zsh
+│   │   │   │   │   ├── unclosed-patentheses.zsh
+│   │   │   │   │   ├── unclosed-patentheses2.zsh
+│   │   │   │   │   ├── near-quotes.zsh
+│   │   │   │   │   ├── cursor-matchingbracket-line-finish.zsh
+│   │   │   │   │   └── empty-styles.zsh
+│   │   │   │   ├── brackets-highlighter.zsh
+│   │   │   │   └── README.md
+│   │   │   ├── main # zsh-syntax-highlighting / highlighters / main
+---------------------------------------------
+
+This is
+│   │   │   │   ├── test-data
+│   │   │   │   │   ├── noglob4.zsh
+│   │   │   │   │   ├── path_prefix2.zsh
+│   │   │   │   │   ├── vanilla-newline.zsh
+│   │   │   │   │   ├── backslash.zsh
+│   │   │   │   │   ├── arithmetic-multiplication.zsh
+│   │   │   │   │   ├── assign-value-quote1.zsh
+│   │   │   │   │   ├── double-quoted.zsh
+│   │   │   │   │   ├── precommand4.zsh
+│   │   │   │   │   ├── path_prefix3.zsh
+│   │   │   │   │   ├── array-cmdsep1.zsh
+│   │   │   │   │   ├── alias-to-dir1b.zsh
+│   │   │   │   │   ├── backslash-continuation.zsh
+│   │   │   │   │   ├── alias-to-dir.zsh
+│   │   │   │   │   ├── precommand-uninstalled.zsh
+│   │   │   │   │   ├── path-tilde-home2.zsh
+│   │   │   │   │   ├── control-flow3.zsh
+│   │   │   │   │   ├── abspath-in-command-position4.zsh
+│   │   │   │   │   ├── path-dollared-word.zsh
+│   │   │   │   │   ├── array-cmdsep3.zsh
+│   │   │   │   │   ├── alias-redirect.zsh
+│   │   │   │   │   ├── command-substitution-unclosed.zsh
+│   │   │   │   │   ├── assign-value-quote2.zsh
+│   │   │   │   │   ├── function-altsyntax.zsh
+│   │   │   │   │   ├── array-cmdsep2.zsh
+│   │   │   │   │   ├── abspath-in-command-position5.zsh
+│   │   │   │   │   ├── process-substitution-redirection-isnt-globbing.zsh
+│   │   │   │   │   ├── assign-quoted-cmdsubst.zsh
+│   │   │   │   │   ├── control-flow2.zsh
+│   │   │   │   │   ├── arith-cmdsubst-mess.zsh
+│   │   │   │   │   ├── dollar-quoted.zsh
+│   │   │   │   │   ├── path-tilde-home3.zsh
+│   │   │   │   │   ├── history-double-quoted-yes.zsh
+│   │   │   │   │   ├── order-path-after-dollar.zsh
+│   │   │   │   │   ├── noglob2.zsh
+│   │   │   │   │   ├── abspath-in-command-position1.zsh
+│   │   │   │   │   ├── alias-unknown-token1.zsh
+│   │   │   │   │   ├── arith1.zsh
+│   │   │   │   │   ├── reserved-word.zsh
+│   │   │   │   │   ├── precommand-killing2.zsh
+│   │   │   │   │   ├── precommand3.zsh
+│   │   │   │   │   ├── param-precommand-option-argument1.zsh
+│   │   │   │   │   ├── precommand2.zsh
+│   │   │   │   │   ├── assign.zsh
+│   │   │   │   │   ├── simple-redirection.zsh
+│   │   │   │   │   ├── dollar-noise.zsh
+│   │   │   │   │   ├── multiline-string.zsh
+│   │   │   │   │   ├── alias-nested.zsh
+│   │   │   │   │   ├── process-substitution2.zsh
+│   │   │   │   │   ├── noglob3.zsh
+│   │   │   │   │   ├── parameter-value-contains-command-position1.zsh
+│   │   │   │   │   ├── meta-no-eval1.zsh
+│   │   │   │   │   ├── quoted-redirection-in-command-word.zsh
+│   │   │   │   │   ├── arithmetic-nested.zsh
+│   │   │   │   │   ├── double-hyphen-option.zsh
+│   │   │   │   │   ├── empty-command.zsh
+│   │   │   │   │   ├── abspath-in-command-position1b.zsh
+│   │   │   │   │   ├── noglob1.zsh
+│   │   │   │   │   ├── hashed-command.zsh
+│   │   │   │   │   ├── abspath-in-command-position2.zsh
+│   │   │   │   │   ├── commmand-parameter.zsh
+│   │   │   │   │   ├── redirection.zsh
+│   │   │   │   │   ├── arith2.zsh
+│   │   │   │   │   ├── alias-unknown-token2.zsh
+│   │   │   │   │   ├── noglob-always.zsh
+│   │   │   │   │   ├── precommand-killing1.zsh
+│   │   │   │   │   ├── global-alias1.zsh
+│   │   │   │   │   ├── assign-subshell.zsh
+│   │   │   │   │   ├── alias-self.zsh
+│   │   │   │   │   ├── param-precommand-option-argument3.zsh
+│   │   │   │   │   ├── option-with-quotes.zsh
+│   │   │   │   │   ├── abspath-in-command-position3.zsh
+│   │   │   │   │   ├── cdpath-abspath.zsh
+│   │   │   │   │   ├── alias-self2.zsh
+│   │   │   │   │   ├── path-separators2.zsh
+│   │   │   │   │   ├── parameter-value-contains-command-position2.zsh
+│   │   │   │   │   ├── meta-no-eval2.zsh
+│   │   │   │   │   ├── opt-shwordsplit1.zsh
+│   │   │   │   │   ├── parameter-to-global-alias.zsh
+│   │   │   │   │   ├── always1.zsh
+│   │   │   │   │   ├── sudo-redirection2.zsh
+│   │   │   │   │   ├── tilde-command-word.zsh
+│   │   │   │   │   ├── brackets-mismatch4.zsh
+│   │   │   │   │   ├── redirection3.zsh
+│   │   │   │   │   ├── comment-leading.zsh
+│   │   │   │   │   ├── redirection2.zsh
+│   │   │   │   │   ├── command-substitution-in-assignment.zsh
+│   │   │   │   │   ├── brackets-mismatch5.zsh
+│   │   │   │   │   ├── path-separators.zsh
+│   │   │   │   │   ├── vi-linewise-mode.zsh
+│   │   │   │   │   ├── sudo-comment.zsh
+│   │   │   │   │   ├── brackets-matching2.zsh
+│   │   │   │   │   ├── sudo-redirection3.zsh
+│   │   │   │   │   ├── bang-assign-scalar.zsh
+│   │   │   │   │   ├── dollar-paren.zsh
+│   │   │   │   │   ├── param-positional-in-array-append.zsh
+│   │   │   │   │   ├── assign-invalid-command.zsh
+│   │   │   │   │   ├── always2.zsh
+│   │   │   │   │   ├── multiple-quotes.zsh
+│   │   │   │   │   ├── alias-command-substitution.zsh
+│   │   │   │   │   ├── precommand-unknown-option.zsh
+│   │   │   │   │   ├── multiline-array-assignment1.zsh
+│   │   │   │   │   ├── alias-in-cmdsubst.zsh
+│   │   │   │   │   ├── control-flow.zsh
+│   │   │   │   │   ├── parameter-elision-command-word.zsh
+│   │   │   │   │   ├── assignment-before-resword4.zsh
+│   │   │   │   │   ├── anonymous-function.zsh
+│   │   │   │   │   ├── assign-array3.zsh
+│   │   │   │   │   ├── arithmetic-command-substitution.zsh
+│   │   │   │   │   ├── brackets-mismatch7.zsh
+│   │   │   │   │   ├── brackets-premature-termination.zsh
+│   │   │   │   │   ├── prefix-redirection.zsh
+│   │   │   │   │   ├── brackets-mismatch6.zsh
+│   │   │   │   │   ├── assign-array2.zsh
+│   │   │   │   │   ├── brackets-matching1.zsh
+│   │   │   │   │   ├── assignment-before-resword5.zsh
+│   │   │   │   │   ├── sudo-command.zsh
+│   │   │   │   │   ├── always3.zsh
+│   │   │   │   │   ├── bang-pipeline.zsh
+│   │   │   │   │   ├── assignment-before-resword1.zsh
+│   │   │   │   │   ├── process-substitution-after-redirection.zsh
+│   │   │   │   │   ├── brackets-mismatch2.zsh
+│   │   │   │   │   ├── assign-argv.zsh
+│   │   │   │   │   ├── jobsubst-isnt-glob2.zsh
+│   │   │   │   │   ├── brackets-mismatch3.zsh
+│   │   │   │   │   ├── alias-basic.zsh
+│   │   │   │   │   ├── function-named1.zsh
+│   │   │   │   │   ├── path-tilde-home.zsh
+│   │   │   │   │   ├── noglob-alias.zsh
+│   │   │   │   │   ├── sudo-longopt.zsh
+│   │   │   │   │   ├── rc-quotes.zsh
+│   │   │   │   │   ├── redirection-is-not-option.zsh
+│   │   │   │   │   ├── multios-negates-globbing2.zsh
+│   │   │   │   │   ├── assignment-before-resword2.zsh
+│   │   │   │   │   ├── brackets-mismatch1.zsh
+│   │   │   │   │   ├── alias.zsh
+│   │   │   │   │   ├── arithmetic-invalid-chars.zsh
+│   │   │   │   │   ├── assignment-before-resword3.zsh
+│   │   │   │   │   ├── function-named2.zsh
+│   │   │   │   │   ├── off-by-one.zsh
+│   │   │   │   │   ├── alias-comment1.zsh
+│   │   │   │   │   ├── pasted-quotes.zsh
+│   │   │   │   │   ├── parameter-expansion-shwordsplit.zsh
+│   │   │   │   │   ├── alias-reuse3.zsh
+│   │   │   │   │   ├── alias-reuse2.zsh
+│   │   │   │   │   ├── assign-not-array2.zsh
+│   │   │   │   │   ├── command-substitution-adjacent.zsh
+│   │   │   │   │   ├── alias-eponymous2.zsh
+│   │   │   │   │   ├── alias-brackets.zsh
+│   │   │   │   │   ├── precommand-type1.zsh
+│   │   │   │   │   ├── alias-quoted.zsh
+│   │   │   │   │   ├── path-tilde-named.zsh
+│   │   │   │   │   ├── block-assignment-no-command.zsh
+│   │   │   │   │   ├── alias-loop2.zsh
+│   │   │   │   │   ├── escaped-single-quote.zsh
+│   │   │   │   │   ├── precommand-type3.zsh
+│   │   │   │   │   ├── alias-comment2.zsh
+│   │   │   │   │   ├── path-dollared-word3.zsh
+│   │   │   │   │   ├── arithmetic-quoted.zsh
+│   │   │   │   │   ├── globs-with-quoting.zsh
+│   │   │   │   │   ├── alias-eponymous1.zsh
+│   │   │   │   │   ├── alias-reuse1.zsh
+│   │   │   │   │   ├── arithmetic-doubled-parens.zsh
+│   │   │   │   │   ├── history-double-quoted-unescaped.zsh
+│   │   │   │   │   ├── arithmetic-evaluation.zsh
+│   │   │   │   │   ├── path-dollared-word2.zsh
+│   │   │   │   │   ├── path-dollared-word3b.zsh
+│   │   │   │   │   ├── precommand-type2.zsh
+│   │   │   │   │   ├── assign-array.zsh
+│   │   │   │   │   ├── parameter-expansion-untokenized1.zsh
+│   │   │   │   │   ├── braces1.zsh
+│   │   │   │   │   ├── order-path-before-globbing.zsh
+│   │   │   │   │   ├── redirection-special-cases.zsh
+│   │   │   │   │   ├── alias-reuse5.zsh
+│   │   │   │   │   ├── inheritance.zsh
+│   │   │   │   │   ├── path-space.zsh
+│   │   │   │   │   ├── alias-reuse4.zsh
+│   │   │   │   │   ├── arithmetic-empty.zsh
+│   │   │   │   │   ├── comment-off.zsh
+│   │   │   │   │   ├── alias-nested-precommand.zsh
+│   │   │   │   │   ├── dinbrack1.zsh
+│   │   │   │   │   ├── arithmetic-hist-expn.zsh
+│   │   │   │   │   ├── path-mixed-quoting.zsh
+│   │   │   │   │   ├── dirs_blacklist.zsh
+│   │   │   │   │   ├── exec-redirection1.zsh
+│   │   │   │   │   ├── multiline-string2.zsh
+│   │   │   │   │   ├── parameter-expansion-untokenized2.zsh
+│   │   │   │   │   ├── braces2.zsh
+│   │   │   │   │   ├── brackets-mismatch8.zsh
+│   │   │   │   │   ├── history-double-quoted-followed.zsh
+│   │   │   │   │   ├── backslash-space.zsh
+│   │   │   │   │   ├── process-substitution.zsh
+│   │   │   │   │   ├── history-expansion2.zsh
+│   │   │   │   │   ├── redirection-in-cmdsubst.zsh
+│   │   │   │   │   ├── arithmetic-unfinished.zsh
+│   │   │   │   │   ├── brackets-mismatch8-if-positive.zsh
+│   │   │   │   │   ├── path-dollared-word4.zsh
+│   │   │   │   │   ├── fd-target-not-filename.zsh
+│   │   │   │   │   ├── plain-file-in-command-position.zsh
+│   │   │   │   │   ├── option-dollar-quote-isnt-filename.zsh
+│   │   │   │   │   ├── subshell.zsh
+│   │   │   │   │   ├── redirection-inhibits-elision.zsh
+│   │   │   │   │   ├── arg0-colon.zsh
+│   │   │   │   │   ├── alias-empty.zsh
+│   │   │   │   │   ├── glob.zsh
+│   │   │   │   │   ├── option-path_dirs.zsh
+│   │   │   │   │   ├── double-quoted4.zsh
+│   │   │   │   │   ├── bang-assign-array.zsh
+│   │   │   │   │   ├── path-broken-symlink.zsh
+│   │   │   │   │   ├── path.zsh
+│   │   │   │   │   ├── multios-negates-globbing.zsh
+│   │   │   │   │   ├── arithmetic-unclosed.zsh
+│   │   │   │   │   ├── number_range-glob.zsh
+│   │   │   │   │   ├── empty-line.zsh
+│   │   │   │   │   ├── alias-loop.zsh
+│   │   │   │   │   ├── redirection-from-param.zsh
+│   │   │   │   │   ├── back-quoted-argument.zsh
+│   │   │   │   │   ├── precommand-then-assignment.zsh
+│   │   │   │   │   ├── optimized-cmdsubst-input.zsh
+│   │   │   │   │   ├── multiple-redirections.zsh
+│   │   │   │   │   ├── assign-semicolon.zsh
+│   │   │   │   │   ├── dollar-quoted3.zsh
+│   │   │   │   │   ├── precommand.zsh
+│   │   │   │   │   ├── history-double-quoted-no.zsh
+│   │   │   │   │   ├── history-double-quoted-escaped.zsh
+│   │   │   │   │   ├── loop-newline.zsh
+│   │   │   │   │   ├── commandseparator.zsh
+│   │   │   │   │   ├── alias-precommand-option-argument4.zsh
+│   │   │   │   │   ├── dollar-quoted2.zsh
+│   │   │   │   │   ├── equals4.zsh
+│   │   │   │   │   ├── empty-command-newline.zsh
+│   │   │   │   │   ├── brackets-mismatch9-if-positive.zsh
+│   │   │   │   │   ├── cthulhu.zsh
+│   │   │   │   │   ├── alias-complex.zsh
+│   │   │   │   │   ├── comment-followed.zsh
+│   │   │   │   │   ├── simple-command.zsh
+│   │   │   │   │   ├── jobsubst-isnt-glob.zsh
+│   │   │   │   │   ├── redirection-comment.zsh
+│   │   │   │   │   ├── null-exec2-printenv.zsh
+│   │   │   │   │   ├── double-quoted3.zsh
+│   │   │   │   │   ├── cmdpos-elision-partial.zsh
+│   │   │   │   │   ├── assignment-quoted.zsh
+│   │   │   │   │   ├── double-quoted2.zsh
+│   │   │   │   │   ├── time-and-nocorrect2.zsh
+│   │   │   │   │   ├── alias-precommand-option-argument1.zsh
+│   │   │   │   │   ├── back-quoted-open.zsh
+│   │   │   │   │   ├── comments.zsh
+│   │   │   │   │   ├── alias-parameter.zsh
+│   │   │   │   │   ├── path_prefix.zsh
+│   │   │   │   │   ├── equals1.zsh
+│   │   │   │   │   ├── backslash-continuation2.zsh
+│   │   │   │   │   ├── parameter-star.zsh
+│   │   │   │   │   ├── sudo-redirection.zsh
+│   │   │   │   │   ├── assign-append.zsh
+│   │   │   │   │   ├── equals3.zsh
+│   │   │   │   │   ├── assign-not-array.zsh
+│   │   │   │   │   ├── unbackslash.zsh
+│   │   │   │   │   ├── history-expansion.zsh
+│   │   │   │   │   ├── empty-command2.zsh
+│   │   │   │   │   ├── quoted-command-substitution-empty.zsh
+│   │   │   │   │   ├── unknown-command.zsh
+│   │   │   │   │   ├── alias-precommand-option-argument3.zsh
+│   │   │   │   │   ├── null-exec.zsh
+│   │   │   │   │   ├── brackets-mismatch10-if-negative.zsh
+│   │   │   │   │   ├── time-and-nocorrect1.zsh
+│   │   │   │   │   ├── alias-precommand-option-argument2.zsh
+│   │   │   │   │   ├── dollar-dollar.zsh
+│   │   │   │   │   ├── alias-assignment1.zsh
+│   │   │   │   │   ├── function.zsh
+│   │   │   │   │   ├── equals2.zsh
+│   │   │   │   │   └── abspath-in-command-position3b.zsh
+│   │   │   │   ├── main-highlighter.zsh
+│   │   │   │   └── README.md
+│   │   │   └── README.md
+│   │   ├── zsh-syntax-highlighting.plugin.zsh
+│   │   ├── changelog.md
+│   │   ├── Makefile
+│   │   ├── zsh-syntax-highlighting.zsh
+│   │   ├── HACKING.md
+│   │   ├── INSTALL.md
+│   │   ├── .editorconfig
+│   │   ├── .revision-hash
+│   │   ├── README.md
+│   │   ├── release.md
+│   │   ├── .gitignore
+│   │   ├── COPYING.md
+│   │   ├── .gitattributes
+│   │   └── .version
 │   └── summary.txt
-├── data # This is the folder for storing our DB-related files.
-│   ├── README.md
-│   └── chinook.db
-├── functions.py
-├── walker.py
-└── .gitignore
+├── shell
+│   ├── command_handler.py
+│   ├── terminal.py
+│   ├── special_keys.py
+│   ├── printer.py
+│   └── languages.py
+├── models
+│   └── llm.py
+├── .git
+│   ├── objects
+│   │   ├── 61
+│   │   │   ├── ef089229a5925dbdb7fb13345b5835c8687862
+│   │   │   └── dfc2dc0d18db23beb50f9ac9bd24bba7c5c143
+│   │   ├── 0d
+│   │   │   ├── 51407c681ecf4addb5682b1450e3afcf41c9bf
+│   │   │   ├── 43aacd3ae226f430b20defe43b8f81effea5bc
+│   │   │   └── 8a63c14e7ecc35b0638ed87bdca8d61892bf57
+│   │   ├── 59
+│   │   │   └── a2cef70d9e414af0a3acc6ef6e6259770e47b5
+│   │   ├── 92
+│   │   │   └── 794d6a252d1e79fe9b500872f333c336c0cc76
+│   │   ├── 0c
+│   │   │   └── 101c8e29fa0bf021233d34be7f61b22f8e1b83
+│   │   ├── 50
+│   │   │   ├── 42e899448ab875be467a6fcd0e8b8df827d938
+│   │   │   ├── 33d2c4703939f017070e03b6d984eb050d1a92
+│   │   │   └── ed5db69063755a4db6fc7c0bcab5b836399e83
+│   │   ├── 68
+│   │   │   └── 28f88dcb0e88b8cd738ad6044ce74d7a9a13c8
+│   │   ├── 3b
+│   │   │   ├── 4fcd7621135e0a71dab92e7d7797a6c08d7d3d
+│   │   │   └── 583145a8a5f4d46789936969d95197d84e1f9d
+│   │   ├── 6f
+│   │   │   ├── 5431e719d22cf8646ae2a4d944fd0ee62fef9c
+│   │   │   └── b84d18e545b56beef047eea45d7b03f9e50c05
+│   │   ├── 03
+│   │   │   ├── 00c7e53ffe5575f164990b3120554d092ff28a
+│   │   │   ├── 81bdb029221875a006273d7eeeb2fc5e2ddfbb
+│   │   │   ├── c8a75a389eb2cd1f3e39d937de09cf72d90b97
+│   │   │   └── e55dbb2e61ac3ce7a990ac58345e61709eca84
+│   │   ├── 9b
+│   │   │   ├── 5967bc151c24485d5e5e9fcfca634080853b41
+│   │   │   ├── 1a59f1f2e65bfdb7fd3a3c5f40bb6b783e3c45
+│   │   │   └── b11bd8d7734c967af375a050de1bbb972f0a8a
+│   │   ├── 9e
+│   │   │   ├── 2ca6232a3b0bc8952c6689f2efd6115db0c8ae
+│   │   │   └── 935bf1845300b7bc84a30e0484e19d7169e934
+│   │   ├── 04
+│   │   │   ├── 62f738f6ee4a8f8c8aab9af5af787857d74c25
+│   │   │   ├── 4f2830716a6282b3485c7fb31dd3a0bd6947d5
+│   │   │   └── 4b411f6f825d81a37069a7c1a7567046937f8b
+│   │   ├── 6a
+│   │   │   ├── b5515daf8f062a5b48e3251617748c5de53873
+│   │   │   ├── 8a9f42d37fab423511a26036820e331e08e6a1
+│   │   │   └── 25971a49d84078f34bee2f8f8e4f505cd20119
+│   │   ├── 32
+│   │   │   └── 29dfcf4831c5660b38ae884ac344ccd3133dcd
+│   │   ├── 35
+│   │   │   └── 7f03c63db04f3de502dff3f20622613988a03d
+│   │   ├── 3c
+│   │   │   ├── 5f93b47d2ed726391c33a3b3fe537f83abab36
+│   │   │   └── 5b1f0f1d1344d4cd1dabf5087acd44c6f1de63
+│   │   ├── 56
+│   │   │   └── 960202b42e2e426bdd57de92e61d28b605dd2d
+│   │   ├── 51
+│   │   │   └── 930bfbe61482517ceedd36be261bb6dab00079
+│   │   ├── 3d
+│   │   │   └── 5c0b9ea8dc2e731da3a690c0201cae8fc38bcc
+│   │   ├── 58
+│   │   │   ├── f507f9911095ec601d20645eb8e6c7a7d90bbd
+│   │   │   ├── 31464d48b218181a04a44d65e4b6bdcadecafe
+│   │   │   ├── 746253cb8f26d5893779b88d48b33101da605b
+│   │   │   └── 562d0c44a5b1f71944b7e4ec7491fee2ad5e57
+│   │   ├── 67
+│   │   │   ├── 1f21e771d79b7cab983efcfb1988bf0b8cd16f
+│   │   │   └── c996c905ce2ebff919ed4db6ad421a5a30d5d4
+│   │   ├── 0b
+│   │   │   ├── f6f4c05e155aca7787a862ee75e56e8b2ccd61
+│   │   │   └── da676151bece5700af84944bd86d0c431a4713
+│   │   ├── 93
+│   │   │   ├── be9ae4943d6d3bcdb57ee31a7a1822ad6431b6
+│   │   │   └── b185cb49d69175e2276ec8bb3885a0042e06a8
+│   │   ├── 94
+│   │   │   ├── bd24b0f017409c6176e7d74ba5bb1511ac5b04
+│   │   │   ├── e0b58cbb25608f42f5d75f5bc62d584fddd465
+│   │   │   └── 1349a096d2a32192605e51325996208d25e6a5
+│   │   ├── 0e
+│   │   │   └── 65c98aca05c3394d68cf6d82f31f7699f24bcc
+│   │   ├── 34
+│   │   │   └── a22eda2cab52c7d0daaa594147efae4f01e367
+│   │   ├── 5a
+│   │   │   ├── 4982298d30a7e87103f9d2d2f797cdb0501785
+│   │   │   ├── d7c0a9cd575cec020d077c5031afa856bc7b04
+│   │   │   └── 0ebd8510105ab9bb76d3f8eaf198a610ac1398
+│   │   ├── 33
+│   │   │   ├── 5b3fdf7cd259db26d55837c61b6196db703052
+│   │   │   ├── f1ed144656a96725fc985ec36118637ba45737
+│   │   │   └── 03bfb4e97a8bc06154a0094891400b639a5166
+│   │   ├── 05
+│   │   │   ├── e20fc11c088ce9b68a83a3422cd424c73f8394
+│   │   │   ├── ea1bfae6517233c3adc01a971b8df45fc55a26
+│   │   │   └── 960f5f1da0a3935a5fb373220019652314cf16
+│   │   ├── 9d
+│   │   │   ├── 0b53c6b6e69879c15d7344b980f01983ad6936
+│   │   │   ├── 67fb1d0cadd8076328584c2403089f0e8643c2
+│   │   │   └── f8388307f90c4e3ceab9c24e58bbf32adff2f5
+│   │   ├── 9c
+│   │   │   └── 996bfe14d2268b8cbca4abf695276276e4c740
+│   │   ├── a4
+│   │   │   ├── d6685bb3e81707aa802a6c6c102525d2583f33
+│   │   │   └── b6e98368df2dbcd894eb56fc62473338c0efc4
+│   │   ├── a3
+│   │   │   ├── ea7c95a07885e24c02a633dbba955e18b8d1ba
+│   │   │   └── 3346a4a3d33c642dc49d83c6e4842803f1b563
+│   │   ├── b2
+│   │   │   ├── 9551eaf020276e65ae29976892d2e3de3e8453
+│   │   │   ├── acd31df4e56758994693a95102fe8ef3ccd991
+│   │   │   ├── 4b49674061cd4e474292cd5f93c8cba6ee4f9c
+│   │   │   └── 71d4aa653e47353031499e1e1b0e49eeae280b
+│   │   ├── d9
+│   │   │   ├── 3bc997047da38e7fbab63c120e6b3d47ef808e
+│   │   │   └── 5fa98ba1f5876f968391820c1df23ac78391de
+│   │   ├── ac
+│   │   │   ├── c3dcbefee99c293861d2a42e139e585c8451c3
+│   │   │   ├── f99e1d8364415539474cde39afe489f49ab75b
+│   │   │   └── a3796d8caf4bc25798292a08ef277c6f3e15db
+│   │   ├── ad
+│   │   │   └── a161879831f879de5f884f3d0d0cd2559f0aae
+│   │   ├── bb
+│   │   │   ├── 0407771e7cd14d8767981110a0a0c5ae67e017
+│   │   │   └── c1d439157c12a0cc4b4dfff19650d4b4a59599
+│   │   ├── d7
+│   │   │   ├── 68828f5570f7a434cfadf643d455e998102168
+│   │   │   ├── 34cd34bd988488ff3fb1515293bd235b657ebc
+│   │   │   └── d74bc4afcaecb82bbbb6337a921f228d15e60f
+│   │   ├── d0
+│   │   │   └── 8ff4b8491ae0cfb45ac7157be0742dd7f619e5
+│   │   ├── be
+│   │   │   └── 1e30646a3b83a78d0d4ecc855aad6399a1b480
+│   │   ├── b3
+│   │   │   ├── 87a59000d6dd4b764a19e4ba6fc0270028937e
+│   │   │   ├── e439936ee12d4d7e145bfe32cd29c14772d917
+│   │   │   └── cf777a974fb324c17de3fd545a517ac103c963
+│   │   ├── df
+│   │   │   └── da106e34e2f53c9c26cd737624b468b32bfcc6
+│   │   ├── da
+│   │   │   ├── f3738b164632ac39b2f10f68e34ee689acb19f
+│   │   │   └── bf70c838b3b13711b27761647e0ff8012c3034
+│   │   ├── b4
+│   │   │   ├── b3687c26a2559961d262823b83038531a7df23
+│   │   │   ├── c991059fc17407c0afbf97987c9eb4eb2720d3
+│   │   │   ├── ab70753e1eae9a76e4e4197de4622a814f8ff3
+│   │   │   └── a30a6a130452f12adea83ae42913232574f5b0
+│   │   ├── a2
+│   │   │   └── 6e2cb8c264f0baa5ffc592b17f8ac7401f4f4b
+│   │   ├── a5
+│   │   │   └── 4cf2d010c26f11b53dc2f94603d60b47facd82
+│   │   ├── bd
+│   │   │   ├── b8fe3dbdee852c92880d3067e30ff39b546aa7
+│   │   │   ├── 39e0218b4916000d3aadb466d9b931a55881b1
+│   │   │   ├── 59ff7521ad8943227d5f2fdfa4662df7a4ff1c
+│   │   │   ├── 60ad4cc37e85b0982befd7b7afdcc04a1e7215
+│   │   │   ├── 759966d880fc937c3ce2bae543ecdcf1582acf
+│   │   │   └── 616669953237969e097f743e9601bdbc212043
+│   │   ├── d1
+│   │   │   ├── 0db3f772f672eb60ebdec45a0f9c15b9772b5f
+│   │   │   ├── 82dc9160b6920f58c2310dfc278ea0f9b16f84
+│   │   │   └── 6aef2763cece95b511cc1facdd350d4fbdc950
+│   │   ├── d6
+│   │   │   ├── 838f0035dda3114a68f58e404fa625bba27084
+│   │   │   └── aaa7bdf30aea607d98d8fa23f715534cb3bea7
+│   │   ├── bc
+│   │   │   ├── 75d67e7f9c60847124648dcf15b6c9db7ffb6f
+│   │   │   ├── 8bdfe8d5eba9f3ec30226937b6713e234a34cd
+│   │   │   ├── 6614d57fed8400efb8f23e593aec442ed74014
+│   │   │   ├── 885a06c75585830b6265ee98da2a8ab93b77f3
+│   │   │   ├── 388fdbf8e41ee011c51fea42cece4aaca5a6dc
+│   │   │   └── 6fc86638fb84fd666283364ed55851ca65d87f
+│   │   ├── ae
+│   │   │   ├── dc15bb0c6e24f27eedf7684532f8039cabb92c
+│   │   │   └── 40a72f7cec87110e24b9599d2694f52234cb90
+│   │   ├── d8
+│   │   │   └── decde366c8cd520fc545e3d4324ed1b3646c6c
+│   │   ├── ab
+│   │   │   └── 9facd60a15ebcbd18689c8721ea43b9818ccb3
+│   │   ├── e5
+│   │   │   ├── 25c6d4b1478af025a32e29bed9c3883d5e9d2d
+│   │   │   ├── cfcdf03452d42c6a98282f1a20b9c8e4c747b6
+│   │   │   └── cacd37b992cb648c5296dc852a3a975a058232
+│   │   ├── e2
+│   │   │   ├── 9182cc0b4bab88d192cff32eb526097c487efe
+│   │   │   ├── 279d6b8e1b68e3c0afdcc6b0671351a1d1eff5
+│   │   │   └── d114c8a0f80e250e465101afcbd1a11a4dee45
+│   │   ├── f4
+│   │   │   └── 04d5d00d74f85cbd22f956d30086833f487b71
+│   │   ├── f3
+│   │   │   ├── dc84e7e61b4a28dcb412412edd0a1c70f814e9
+│   │   │   ├── 644fcf7b53a23771ace333aa096bfc900da0e4
+│   │   │   ├── cc57e4f6ffaee0c3ae754ae52005626b3ac4ba
+│   │   │   └── 7f21b3673fbf0c1fb6461ec16207f92acb0b74
+│   │   ├── eb
+│   │   │   ├── cf2e17e4e445f6c6fb0c8a8a70345852e25b5e
+│   │   │   ├── 8f2ba5d4d822f737258fd0963243946ff73c53
+│   │   │   └── 1f0cdd5da6f9a58a99bb7b68d2b264f1f29ddf
+│   │   ├── c0
+│   │   │   ├── 68013e084eaac160bcada65b45ae71046ff522
+│   │   │   └── ca26744f22188394b994a4e59b9d87f8aa7bd3
+│   │   ├── ee
+│   │   │   ├── feb543b810bc0f4275a7bb3024a8aed5869b51
+│   │   │   └── e8efdfb732caac5d62d0bbb11687259ca58539
+│   │   ├── c9
+│   │   │   └── 62ddbb53264fff30fee931102f859eb45e3258
+│   │   ├── fc
+│   │   │   └── 946cf038822083111f753f7bdb814ba8a22304
+│   │   ├── fd
+│   │   │   └── 6ae03f3f39f76d1eda319434aaed560625e937
+│   │   ├── f2
+│   │   │   └── 456aecd5de5856dd43b57c3b51f45772adba53
+│   │   ├── f5
+│   │   │   ├── 1dc9ad523f7b8153b6e1d3c830dca4dec434b6
+│   │   │   └── 04847c4324803af9e04f6620ac695c0180b6bc
+│   │   ├── e3
+│   │   │   ├── 3040a85c4ddd2289332e4705f669e71ba5a2b0
+│   │   │   ├── a76685cddbc513348f62e810764e67607e086e
+│   │   │   └── f387ce2cb3e85e83ec656064d8ec30958ad1ee
+│   │   ├── cf
+│   │   │   ├── e6a11dae8ce1a7c948460291600969863308c6
+│   │   │   └── c12a5f8931e7331a92d13981a27366b0b09af3
+│   │   ├── ca
+│   │   │   ├── 55ef8391585561dc1a3801db24f6d21f04e88a
+│   │   │   ├── cbcbee0cb5a43dff25bd734a27c663df6b3740
+│   │   │   └── 3e622deb9f6d70963d75f5506b68be537f509f
+│   │   ├── e4
+│   │   │   ├── 2e2f0a13d13b1de34391fb9eaf6f9789590fe7
+│   │   │   └── 28b1a0a87fb25820953eb7f6c361421784694b
+│   │   ├── fe
+│   │   │   ├── f25f1097d3c154813cb600f80017e3d4e31238
+│   │   │   ├── b68e53498944456d03689d221f909aa0e17a96
+│   │   │   └── f271520a84f8710e80b507055f57fc0a3ba7b5
+│   │   ├── c8
+│   │   │   ├── 409510bb1bb90f0a115787bfc59896ea65e1b1
+│   │   │   ├── f2968f45b0f914211b4af239b92583d5fc68a3
+│   │   │   ├── 119a8450a1f52e20fe08b0d6df46ce33518114
+│   │   │   └── dfbd4c6762b38e3967419b3c11bf75dbbabddf
+│   │   ├── fb
+│   │   │   ├── 64c3afe5884f05cfec7ac6f193f2ec9604cbfa
+│   │   │   ├── c6eec7d483031c6615d61a218ca4f20e168da4
+│   │   │   └── 398edff800378f3ae07a31b1168e446f28fbba
+│   │   ├── ed
+│   │   │   ├── 5eaef8ddccf03f2fae775dc195fd6265813e4a
+│   │   │   ├── 7428bd2d29f6c7ea0c13bc88d1defe807e4de1
+│   │   │   └── e6c9a9d97b001b682f0ab7b29ad3709d126dec
+│   │   ├── c6
+│   │   │   ├── 75d7d27ebfee7e7342bd52064303df34fd58f7
+│   │   │   ├── f12b1a857f1827fdb046f6ab36d5ca4a89c0b3
+│   │   │   └── e8532dd4f9e8b32f9c9e623560edbad69409d4
+│   │   ├── ec
+│   │   │   ├── aa6a7f17d6bd157ac55c92c4b3f3c688e55bd9
+│   │   │   ├── d95f66f46107e3c7606a358e8b13e6e8702a75
+│   │   │   ├── 5acc24945ed04e67413f34039941f8221451be
+│   │   │   ├── 981b1ea13c5c8753dea5c538588060530fd483
+│   │   │   ├── 50e9cdd36cbbc3e69e4c7058ce1839a64e29c0
+│   │   │   └── 52c987b9c2c8b2e55a5ff4a776be132bc1ec5d
+│   │   ├── 4e
+│   │   │   ├── 2bd941ddaa2abfd9c0db5a316b8306af4c8baf
+│   │   │   ├── 4aeb7d37894341af8725c126e651fb9bba6b95
+│   │   │   ├── 99550967b1363cbd17a33a0f605b4db4165761
+│   │   │   └── 0089b96bc4733d6202625d26094f9dd6e91c1a
+│   │   ├── 20
+│   │   │   └── 2288938ea17bf9b95fc92e83a2fd706746576e
+│   │   ├── 18
+│   │   │   ├── 57db0c41fb4a39a1005940d4674cfa2b99377e
+│   │   │   ├── 638adb1099f99372c964526fbb46de17a2a214
+│   │   │   ├── 34b4df6787f5fa06311a7e0b69565d05253ca8
+│   │   │   ├── ed7a62ff7674afa1e5ccc76f40f06209bf4978
+│   │   │   └── fa5eca4fc8c581e7cd0f084a56a45a3b4e232d
+│   │   ├── 27
+│   │   │   ├── 3c03d53da5a08b83ba2f1f252980fe847b9d8a
+│   │   │   └── 4d15a53b031e33fec17942d1c425448f9bd19e
+│   │   ├── 4b
+│   │   │   ├── 2fe4bc8f0eeddabbb568824537fe954abe03ca
+│   │   │   ├── 7b35c6e2632935d62e7aee0a7ac5ff8a06d855
+│   │   │   └── 780746eea4b11662e964d2dc050ec4325576f7
+│   │   ├── pack
+│   │   ├── 11
+│   │   │   ├── 595329e04c5a9c2f8e5138dacc79213dc92b5c
+│   │   │   └── 2d14d403234a6ffa382a8ba7b5bf0e598d9ecf
+│   │   ├── 7d
+│   │   │   └── 61027509e3dec4ac5277d8033f1afda48a06f5
+│   │   ├── 29
+│   │   │   ├── 83ef8df379f0f9f54c29dc07a4cc388f367e27
+│   │   │   ├── e04ace4ee4d999ef8aeb3cdefc499309ab6a1f
+│   │   │   └── ca8bc4f888681326aab4bd36d318c2703a3d8e
+│   │   ├── 7c
+│   │   │   └── c6de542c43e24ffabdc97c7aeff1fa5b44f211
+│   │   ├── 16
+│   │   │   └── c225633cbaba227823ce10e1338c8405fb7c62
+│   │   ├── 42
+│   │   │   ├── ae6380f89f9166e1363d7223f5eebec90f7f0d
+│   │   │   ├── 95c93f46ae8ba06c7353340eac0aff5f59d4a3
+│   │   │   └── 1b84e4ba67fcd6e3b7054360539b20ea9b607b
+│   │   ├── 89
+│   │   │   ├── 55bd28cdda7cd5dae76799b372f0de51434f22
+│   │   │   ├── 06cfdedeba9af0b34345669563d198a3767035
+│   │   │   └── 7a02e6e68e1d4ba3432b06468731aa371a30c2
+│   │   ├── 1f
+│   │   │   ├── 55d3634cfd357887de972aaba9ebafb2cea667
+│   │   │   ├── 4f6665bff7c79593a50faf08a096efa2eb6a61
+│   │   │   └── d61a0b3ec065ab16647296205601fcd366c666
+│   │   ├── 73
+│   │   │   └── 3cf6bd88c2c8a9d1e7ce13a4708efa15641756
+│   │   ├── 87
+│   │   │   ├── 3b6c6f072e6a88f6eaca1e61ad8a1950c3a4c6
+│   │   │   ├── cc22f9dfc5fe30f94374bc79be3aca1f768d2a
+│   │   │   ├── c1ba79aafa4b733012adf81f954bf20c3a6919
+│   │   │   └── 2143af28f85e62e862d16c131e2f233de709cb
+│   │   ├── 80
+│   │   │   ├── e55b55f8e68e4a0d0c722c7b95c1f322589fc7
+│   │   │   └── c6f54ff5941aad6244aa9f3be3cb4d4d0311ec
+│   │   ├── 74
+│   │   │   └── cd905a117dc363b23b5bc53d3e241adb2f5698
+│   │   ├── 1a
+│   │   │   ├── d29261edd995941d5e98ae9095eb2748dc382c
+│   │   │   └── 694f0f5e989529a54e8e63b5e0d088f678db5f
+│   │   ├── 28
+│   │   │   └── bc21480b3cd1c1c4b1fb1adb97bab939bdd08d
+│   │   ├── 7b
+│   │   │   ├── a363a12b125a3cd8d2c3ef533608a464da9386
+│   │   │   └── 32af1bccbc56cac5cd0af8db7a437c1c9f86ce
+│   │   ├── 8f
+│   │   │   └── 9f3c3d63651d5b4054d49f7f0b7ebba219a09c
+│   │   ├── 8a
+│   │   │   ├── acce8629373862f9366e2c72ee63d232ff98e5
+│   │   │   └── 2568818db3fb1291149ee26e2703128b3c1345
+│   │   ├── 7e
+│   │   │   ├── a78cc64b64402ea1a99dec901296b6243063bd
+│   │   │   └── ce6708b59c5f783b5f766a73870259ab023ff7
+│   │   ├── 19
+│   │   │   ├── c7f0d76cd6fa9ed689aad153b2a4b7a198b3cf
+│   │   │   └── 39f5aa66804a345e261f7e86384182132383ea
+│   │   ├── 4c
+│   │   │   ├── afa8041e5ece62b1f4199ebc369244697cf3c0
+│   │   │   └── e817c29e5db856ea05ce8c0190842edf3dcf7f
+│   │   ├── 26
+│   │   │   ├── 600347c50af59a6b8ee3f3fa2d80099ee77fe7
+│   │   │   ├── 84a5aa580a0c34777796409b7f74566c89168a
+│   │   │   └── 42e14fce7afd6a44833b75f00c5d574b6e8299
+│   │   ├── 21
+│   │   │   ├── a20fb3ca48f676e7b548b5dc5d4c570017df3d
+│   │   │   ├── bc6b32a1c4a0c5ed12040b593d7dfa63783e6d
+│   │   │   ├── 8eb26908610cc25d6f7525e1030b79250232f3
+│   │   │   └── e8bb2b9b5a649e5e51785953f6e418afb00943
+│   │   ├── 4d
+│   │   │   └── 0178f9e1def91c0c8ccd158c75a67d72738ce1
+│   │   ├── 75
+│   │   │   ├── 983460c665853b2b329f938ebce4ee12a9cee4
+│   │   │   └── dceabea1dd2185b0046e6ba33575348740a326
+│   │   ├── 81
+│   │   │   ├── ee04f229c538ff060a56599d82a8ea877af33d
+│   │   │   ├── 633a3c3bd890f3bcef4c5f6d0ca08718a8cbcb
+│   │   │   └── 97e4bd409828f6006a73616e0a809a91a53ea4
+│   │   ├── 86
+│   │   │   ├── 78778d38778f8535ecb85c99f622d02249b0cf
+│   │   │   └── e3ced69e861b463c80370023f07ca8fc19402e
+│   │   ├── 72
+│   │   │   └── a2f7c444930c72853cc3cdcd7ad4eaa6d172ac
+│   │   ├── 2f
+│   │   │   ├── f1022e036dffc1e87eb09554decb9ddd6cbce0
+│   │   │   ├── 96445edfc590886268faffbe4578d5cd40554e
+│   │   │   ├── 76929408531a3b0b0e1ca65c95e955bde6af63
+│   │   │   └── d55c034e37aa83cd1421d37c46d1f9ae9e317d
+│   │   ├── 43
+│   │   │   ├── 553504971593be79c318d8bd35069e68e5d4b2
+│   │   │   └── ae20365c2d184a70fa0733f373f303f09f56b1
+│   │   ├── 88
+│   │   │   ├── 1401b258d8e545959af6b1f256ef2b04b7d209
+│   │   │   └── fe60c9de55b97df1266b7b3f4d8743a1f0fece
+│   │   ├── 9f
+│   │   │   ├── 5bf1551f66d111a033788473a45dfb757dab60
+│   │   │   ├── c833d90512051dc2691707e63a2025aee70653
+│   │   │   └── 34f9438cd2b85bc2149f911f0438fda3565992
+│   │   ├── 6b
+│   │   │   ├── 63f02e104461b1c7850a9d293dc7c805694911
+│   │   │   ├── af9ff566a81375a5d2f9ae430474543e409284
+│   │   │   └── 90e803dc0be95fb952d08b27f7611daa75d11f
+│   │   ├── 07
+│   │   │   ├── db0fb29759342f3abe44c287749ecfedf84a7b
+│   │   │   └── a42e36ccb7832d60086d9024b621cf70c10f2b
+│   │   ├── 38
+│   │   │   ├── 2e60a9fe7fc8e2fcafd58a3907210d1d4458df
+│   │   │   └── 6d0df966aac7fb7503712bdac901aa166e02c6
+│   │   ├── 00
+│   │   │   ├── 22de3cee8dacdbc50d7e23172ede63db33d48b
+│   │   │   └── fe557c376758d2dc601def58524d18314499af
+│   │   ├── 6e
+│   │   │   ├── da0d741f2748c93115ec56a2179b7e338412ea
+│   │   │   └── 63588ba50efc8a36ab1af5b79a4c62e51064fe
+│   │   ├── 9a
+│   │   │   ├── ce43834796935ea7aa18fa65982b29fae3735e
+│   │   │   ├── 0eb305175f1d809d51435e2949b480751f81b4
+│   │   │   └── 8dde2832ca1ac38a15ca84d076e2fe5376dc98
+│   │   ├── 36
+│   │   │   ├── 5f35195647b8f627c3561077c218c10c965d14
+│   │   │   ├── 9ea099b95c9d6a30e950f192a56f124137de5b
+│   │   │   └── 4780a27658a104141c6929f0577644b1d2dc76
+│   │   ├── 5c
+│   │   │   ├── 791673057711f0bac7cd0152b868daadaf16e2
+│   │   │   ├── c588fabdb00aad24e2545543fca28f782d8883
+│   │   │   ├── 076e88d49907ef828e6049d5034cabf4ca151e
+│   │   │   └── 3cd08951428d63189feae7668030d0836d577a
+│   │   ├── 09
+│   │   │   └── 8146da0e2d4fc134c6176675594d9779b95f62
+│   │   ├── 5d
+│   │   │   ├── ef8e8b958dca5a6e9d0d8a023d5e9997e1a80e
+│   │   │   ├── 4ee521ea7ad91a4790fc2a7a633c77b3285515
+│   │   │   └── 7150a18b95a4ee79062cdedf81ca260cb3ec96
+│   │   ├── info
+│   │   ├── 91
+│   │   │   ├── 7ddf78969357ec15a117e58f8e3f40767ae2f2
+│   │   │   ├── 6c3dad036555edf6782457b2ca518205724973
+│   │   │   └── aa2fe28e06542e2c60a1576a32ec5ffec2b78e
+│   │   ├── 65
+│   │   │   ├── 1ab80a4f3d23b165c8c6b16f88c47d7083b836
+│   │   │   └── df0c9fe316605df5f6dd9619274443d7fb251d
+│   │   ├── 62
+│   │   │   ├── ec5213dda25e2f5bf34c401a2d9696671dd95f
+│   │   │   └── 86f034905c8a89bd099f60ceeda6d1fdd81f91
+│   │   ├── 3a
+│   │   │   ├── 90dce82b902dd71429dff9a64f9de10741806c
+│   │   │   ├── d35a8cddffc17d33e6e9a120f99d2597f2f33e
+│   │   │   └── 7e325a48394f053aff4e3384b812f20d0e8b3a
+│   │   ├── 54
+│   │   │   ├── 5cc511abf0cc90fc9020cf6665f5aad2062eec
+│   │   │   └── b757a5c47b7a34e0a4335cc93bc5607634a2cc
+│   │   ├── 53
+│   │   │   └── 5fccc919b9b40b6eca813922b92dcef0f46308
+│   │   ├── 3f
+│   │   │   ├── 7b8200ec4f334ad05338d4fa2c257d7628cd39
+│   │   │   └── 87d422e506114b807a69d811a54e9e92cb2b68
+│   │   ├── 30
+│   │   │   ├── 8cb413f516d93b5fe7c04fb2c6e3aa62989ba1
+│   │   │   └── 390d42519611e3f6ecfc5d6e82617b0f303866
+│   │   ├── 5e
+│   │   │   ├── 6e80f28917e7e67908cee7618c8a27e9cb132a
+│   │   │   └── b645e66ee0c87c291af1d1a54e6b7896da5bda
+│   │   ├── 37
+│   │   │   ├── 3f12b621ce4104de5ca9ba47ecd7d5b5db929e
+│   │   │   ├── 251fb9c694143e1ebb313dd76a8f0c05f9ecd9
+│   │   │   └── 18c449ae43b939766be352e5b2f7d6a494f425
+│   │   ├── 08
+│   │   │   └── 1a365be02056fca38a1329a49cde7686826682
+│   │   ├── 6d
+│   │   │   ├── 550489a71c661403381380bfceac2844d1f91f
+│   │   │   └── 4172bccc99d311e1b69bc4b2553827398682b3
+│   │   ├── 01
+│   │   │   ├── 01699e0993341d938db336b4f07d960bb8957f
+│   │   │   └── 27b4bf27803c0d73a55dfd3c48af49a06f2134
+│   │   ├── 06
+│   │   │   └── 72a13642197ec4cdd61da2f678e3bedd7ca66a
+│   │   ├── 99
+│   │   │   ├── 1a716d54186b242ea0a09c13b5533f5719d6bf
+│   │   │   ├── 1137c22e260e2b16253e4cce58c3625d5d3a31
+│   │   │   └── 055da9a4197142d8f9ab71705b3f06ac2ab220
+│   │   ├── 52
+│   │   │   ├── 04189573091172b2be6760b59ca46029dd1816
+│   │   │   ├── f6571740d45a8e8435210df657b000be18b3a9
+│   │   │   └── 749b793e005cb1a3cbb534fa1be10401746ce7
+│   │   ├── 55
+│   │   │   ├── 7327e8e4d1e19fa81f21ef8050f134adcdeaa4
+│   │   │   ├── 49ee926506dfac46719fb0ba183fa58c1c7429
+│   │   │   └── 8d66ec96590499f67da28d02740626462c03e9
+│   │   ├── 97
+│   │   │   └── facac8fdb72434f020f624770f0966af9e8fbc
+│   │   ├── 63
+│   │   │   ├── f95da7d47c2848bbec240754008940a58fa09c
+│   │   │   └── ee778a41e766c42e454d423ee1d9285504f692
+│   │   ├── 0f
+│   │   │   ├── 1c01dfd6ab1ac6085b9b414d3fbd285721d308
+│   │   │   └── 9a833957b69799ec77f22f2cd032c83324614d
+│   │   ├── 0a
+│   │   │   ├── 4336cacb44060fd769a62a207065c34a882a25
+│   │   │   ├── 295c23b3a71180235162de57d83598e5cb0313
+│   │   │   └── f72329378222422406533c03c5180b5326e8fc
+│   │   ├── 64
+│   │   │   ├── 21cedafc1390cedfb380a309f129633126ca36
+│   │   │   └── 707b2f5369e9ca20e549b5b5e53fcba2b54247
+│   │   ├── bf
+│   │   │   ├── 062cfb71e5411748041f64b5e7bc87a1733d2a
+│   │   │   └── 75f4b59ebf40d1fed6e702ef11da4e4aea0d05
+│   │   ├── d3
+│   │   │   ├── 87eff3ed6b7b5a5e04a86485d5683ec20ae761
+│   │   │   ├── f6560d0e192a0f5d3fe7d2d50b3717304b953d
+│   │   │   └── 9ee1123f61f11fe606683214f238fd4362f971
+│   │   ├── d4
+│   │   │   ├── 7dccb83f5d08b42eb51793776170879467d508
+│   │   │   ├── 4c8e7af22301819d2aa170a7de7de8e48256f7
+│   │   │   ├── a62dfab64ca0ec41130cab0804a908c5aec9cb
+│   │   │   └── 1beeb5d5562ddbc227c2cc674f5b15ffa431fc
+│   │   ├── ba
+│   │   │   ├── ebee3617a9b1d3b2d1d1c78f58e54970b2f922
+│   │   │   └── e7ef6f71160364668852a61f8b3666d788f19e
+│   │   ├── a0
+│   │   │   ├── f0ed5a7ce154d9bd2119d44a03a26fbf2c7133
+│   │   │   ├── 19100c0ca954b42e45c705c80ca6703b388dc3
+│   │   │   └── 3b3317db0c000ce1d6dc143b2b6c1b580bb86b
+│   │   ├── a7
+│   │   │   ├── e39b3498d097f60e48af99a881be5e3fbee634
+│   │   │   ├── 16350da208cf2e60be1b2356fe3d620ab8e40d
+│   │   │   └── b77dfa62fbfc2a8dab766437a2c0e03a6bf9bf
+│   │   ├── b8
+│   │   │   └── abb37532762feab94d49a9ac0a42ef62da627e
+│   │   ├── b1
+│   │   │   ├── 9cac73a554880196e17249b3dcc8dc07eee7dd
+│   │   │   ├── be8539331d02aad74afdaeab79dd11a4a58a20
+│   │   │   ├── d69cb0fb412f078a33227640e223fdfc40b27d
+│   │   │   └── a79e100aa8e68eafdfd937ab06c82cdb8f0c9a
+│   │   ├── dd
+│   │   │   ├── 5cde60f1b155f0c08b369e71823e031477b0d8
+│   │   │   ├── abb17b63d18ffb505218c4fc00f60a84c1a067
+│   │   │   ├── d39a4e32b4b598f6a370ab36473c9816bade2a
+│   │   │   └── cbfad70bbb9e76d1a259408a4ac34870d922e9
+│   │   ├── dc
+│   │   │   ├── 1abb0a2dac9bba332339b271fb9c1dd60b7cfb
+│   │   │   ├── b4e6f73f5e354cb9afaf1354467c996660cc45
+│   │   │   └── d85653dec37b5998224a1d9546e585d0cc6ddd
+│   │   ├── b6
+│   │   │   ├── db983d64982c4bc9e46f40cdbe29c27bd9ca0d
+│   │   │   ├── 9200fc9df8688a2be0cd748eccff05b9d0f5c6
+│   │   │   ├── d04fe03f206f9e8fec2739b9010a873ad12676
+│   │   │   └── 3bb88b5ad2655e4019706960c1bd65b9652aa7
+│   │   ├── a9
+│   │   │   ├── 345bd29d7b5b33c6188af2e3795d532df94a80
+│   │   │   └── b15dcdf79415bb4639175e8dc2132dc6fffc75
+│   │   ├── d5
+│   │   │   ├── 82d67cae0c2322010fdb3636d2fc1bf5367521
+│   │   │   └── 04a2c7f5ab6fac0f97fc72edbd70271ac061dd
+│   │   ├── d2
+│   │   │   └── 3a1f2136b2afcfe590440e4b2822cd83f7630f
+│   │   ├── aa
+│   │   │   ├── 4eac7aca48739dfdc6ae1620f2e6f9660dbf81
+│   │   │   ├── f22a6c751ce64f69b45a07784e1d335e5d8e4e
+│   │   │   └── 139aad5c8ea742f37788f414ebf52c9e2074e0
+│   │   ├── af
+│   │   │   └── 981d7c99cd3c10dcbff2c7d4768699fb18f160
+│   │   ├── b7
+│   │   │   └── 097837ede36eb56734279ce6150e19c5ddb0da
+│   │   ├── b0
+│   │   │   └── cc678927dcf98eb6bbe0bed4fd007ea37a73dc
+│   │   ├── a6
+│   │   │   ├── 10bdc3d225154532bbd0fc547747c13023dfad
+│   │   │   └── 3ecdeacffd7ddc37f5f1fe6f23acd7b2b5bf4d
+│   │   ├── b9
+│   │   │   └── e6119d7687dd99eafcf1d215c2391c68b4c5bd
+│   │   ├── ef
+│   │   │   ├── 768bfbd0cf7d4f8742654f30c15c3c90bd4f4a
+│   │   │   ├── 1fd8a9796111741e12e03a1def3a090f0c92cc
+│   │   │   └── 0a6669d787de53cca08f8921f1fc94792aa5ca
+│   │   ├── c3
+│   │   │   └── dd671cb6e4e9a11f81743b4d3f82dc61250656
+│   │   ├── c4
+│   │   │   ├── 35f1621e0ff4175b6325c37c57bd1abdfb1e74
+│   │   │   ├── 04aaac77313b2b305d128fe28f27358d9447a0
+│   │   │   ├── 7cb344b9b7c3cad7d23e572f4d3cdb1758b02e
+│   │   │   └── 00e543296e0b66d1895a66e870e4b66c4e235d
+│   │   ├── ea
+│   │   │   ├── 0977f6b65d9962c4d41e11986ee46b7d3a9aea
+│   │   │   └── 378d3efbcf363e727d6c0689702d02ebd9700a
+│   │   ├── e1
+│   │   │   └── 2fce6ad445dd22b3de1ce769a2a9e1b4ec63b7
+│   │   ├── cd
+│   │   │   ├── a541d5acab4ac733d7a51207b5cb507c905984
+│   │   │   └── 50b8ac33e391326b2f4e90f45be3f15050df3c
+│   │   ├── cc
+│   │   │   ├── 3d5231e9ed5ec4dd1a3d4d560ce9ce0a0d421e
+│   │   │   ├── 7065f5649e2a406e86cdea2f9e2475bdaba545
+│   │   │   └── 550902687d29494d5e42ce706f7c42286ed1a8
+│   │   ├── e6
+│   │   │   └── 0657bcce3a2f1949e0ee7ec97925520b1afab1
+│   │   ├── f9
+│   │   │   ├── aa604143b46ea53de8943eb5ca7ecd50f9fe92
+│   │   │   ├── 22dc9b2d9f677f864ef01657fd0e057683d094
+│   │   │   └── 1ee6cdb837d726fb42794c32c4308b6dd402b8
+│   │   ├── f0
+│   │   │   └── bb75ff91cf4aa40db2796029f8603fea5d086f
+│   │   ├── f7
+│   │   │   ├── 6639ee9fd14cf419b9d0157dd293e94c33fe97
+│   │   │   └── 48c94ee6eb42a32232cb0bf0f4381d70af2298
+│   │   ├── e8
+│   │   │   ├── 51ca3ed43be76274be255a68e706cbbacb5106
+│   │   │   └── c25e55d1fdd3004f9d97312ec763055e01adbf
+│   │   ├── fa
+│   │   │   ├── fda49c177b579818c86a5de476afcf05af70f9
+│   │   │   └── 813da9975231fafeedf34cf2c11c44281a223d
+│   │   ├── c5
+│   │   │   ├── 9d5d8e46fa3fba1f82c268a3c0a3c46f6b8499
+│   │   │   └── b96f322481fb3f4c5feaa29ff979d58221c941
+│   │   ├── c2
+│   │   │   └── 8e32d0b26f91eda5eb5f6d3df71ff6df1be41e
+│   │   ├── f6
+│   │   │   └── 445cb04049df747732a26481c95653be3b6c97
+│   │   ├── e9
+│   │   │   ├── 63c3b94ef4d2bda91af35d680eef0216cfac76
+│   │   │   └── 1905004e3a6707fb99570ea7edd6e21e56ca72
+│   │   ├── f1
+│   │   │   ├── 5d9c28f01fd1cab66f1f66f5809d29faeac8c0
+│   │   │   └── 88d811b7fc0e5a08820000a72891edd4bb6f71
+│   │   ├── e7
+│   │   │   └── 1faec58aa34be1686133876161b266263664b4
+│   │   ├── cb
+│   │   │   └── d0b38ee138308058189dff32df3b7e18a5fcac
+│   │   ├── f8
+│   │   │   ├── dbd6ba240d893a44afcf8e2809a69b7787f313
+│   │   │   ├── b0c7807bec686dcd072bc017a2ce93e28bfffe
+│   │   │   └── 565e81e0f74bd422236c572c8cd0356791351f
+│   │   ├── e0
+│   │   │   ├── 82dbcfa62861934319b03a5e9a8ab00f651c9c
+│   │   │   ├── eb6e751a1423e48cc699e225a855059b706bf0
+│   │   │   ├── 422d08484748e18e406419f9787b781148fe12
+│   │   │   ├── 5b4e9020bf7348ff99a354635b5dd52f377f31
+│   │   │   └── f291b26a4cf2d14405de954ffbc2fa1ecddb68
+│   │   ├── 2c
+│   │   │   ├── 489c3083216d7a5e66b22fa14f1baad96c7cb6
+│   │   │   └── cfbab0c4b411b05323e3d8b45f0e3c08191ed4
+│   │   ├── 79
+│   │   │   └── af72330cb7337b5439602867bdb6ad4ea651d1
+│   │   ├── 2d
+│   │   │   ├── 1f35c68999fdcbd8d587d43c5ba73110617b4a
+│   │   │   ├── 58016fb2471caca16fd6ad3abf256183f49e4d
+│   │   │   ├── 05aa1d38865ba21546adc1b09aa176820f2280
+│   │   │   ├── eecbede6ae856c8ecefcbbbed96b032e5d11e7
+│   │   │   ├── bd0588b767e802d3ff640de6319e5fdca4de24
+│   │   │   ├── 48721161c392f07c7c4af10b42c0351458dbae
+│   │   │   ├── 0222f0c22b475cb0f0ef96973628a3de6043f5
+│   │   │   └── 98ac21bb4bdeffca3a55fe52456b1be773c119
+│   │   ├── 41
+│   │   │   ├── ff2676f755e24e7cb44b7c6311e29241e996e7
+│   │   │   └── 5e3167dda088d60252fdee704c8b4674dfdeab
+│   │   ├── 83
+│   │   │   ├── b686a9929b2e03e6608d41047f8167678d12b2
+│   │   │   └── 992dbf345c588e44e1e9f643d77ad5d7e72c74
+│   │   ├── 77
+│   │   │   ├── f46e8d5647d272e1c7c597e232a2787bbb8dea
+│   │   │   ├── 3c1838535395ed0277542ce8671c01a4545ce5
+│   │   │   └── 8e7129f7fefa66eb2efdd854dd8302e004227a
+│   │   ├── 48
+│   │   │   ├── d20ba8b258224269603184cb92c4a28b20385b
+│   │   │   └── cfc327a65b527fd73a8eaf144298e753e64357
+│   │   ├── 70
+│   │   │   ├── 739e9536639a2b99c4a58b4eec46d546e16c8c
+│   │   │   └── 03c49ceecf489d528632f19391d81e1479a895
+│   │   ├── 1e
+│   │   │   └── 65234659541af54a3b94167b2fe3ac05a33da1
+│   │   ├── 84
+│   │   │   ├── 90ddf433b55aa480debc92203d4993be6a1ca8
+│   │   │   ├── 56b1812601bee0b086826c553ad47a0f88e4f3
+│   │   │   └── cf03accebdc320caa28394b4fd52e63d17504c
+│   │   ├── 4a
+│   │   │   ├── 7689bebbd92c6e1b1edd03e0528a0ef4393eb8
+│   │   │   └── 27653f01af74a9f9eccb8595ef6f221cfceba4
+│   │   ├── 24
+│   │   │   └── 7e41eb496109c1beed6e9f496d70f19dc5c048
+│   │   ├── 23
+│   │   │   ├── 11be07628fbbed4eace753830f2b5c59668fb1
+│   │   │   └── ada53cbce8a440f4589c1923a28233e70cd9ae
+│   │   ├── 4f
+│   │   │   ├── 40f7e948d79333936dac15869f7fc890c399ab
+│   │   │   └── 806c3d125d2e51bbd7d1c7002ea689fbd5e3cb
+│   │   ├── 15
+│   │   │   └── d65a98a08d39e50437912f15a79545bda96591
+│   │   ├── 12
+│   │   │   └── cfbc7b61f008801859b747cfa898775a8cacfa
+│   │   ├── 8c
+│   │   │   ├── d427aeef73e18fdd507f107e5805d01dd93ac5
+│   │   │   ├── 10789002d808ddb37bbe01df7bb8081ab5fb38
+│   │   │   └── 711a3c792061d5e9948d7490029e4ee0c0d8a6
+│   │   ├── 1d
+│   │   │   └── de137c0ad3c02c18f9846993c192456a2292a9
+│   │   ├── 71
+│   │   │   └── 5e624b30ab74162dbeac1b6f92feecef8d691f
+│   │   ├── 76
+│   │   │   ├── 8294c3b3cdee1b8bb60849faad86aaa05b4ab9
+│   │   │   └── 63df6965cf17ddb26febf25e7dc3a40a8c07b6
+│   │   ├── 1c
+│   │   │   └── aa936c99fbcbf070271666561c495327ef1170
+│   │   ├── 82
+│   │   │   ├── 6277fc162064bd11a0056a3b78f830f9674ff7
+│   │   │   └── 268ac19cf2834c01fb46fbf67a901ec9ebefa3
+│   │   ├── 49
+│   │   │   └── f002be31841bb62bcc9248dc3fee260094f3f5
+│   │   ├── 40
+│   │   │   ├── dc4c56cd59963a0308eef39b910aa44f836bef
+│   │   │   ├── 7c790d2e5637e7e373516521225091f7306942
+│   │   │   └── c360151a09b90ea2b449b4e8f07c9a16d5837d
+│   │   ├── 2e
+│   │   │   └── 1286db30b5b2ef168e9c52f064a9061c3e2e0d
+│   │   ├── 2b
+│   │   │   └── bcef18fcaecad298b06232e5aa3a87623b418a
+│   │   ├── 47
+│   │   │   └── 68b3dd95a336aaa96559d7a12b35bd51ea9427
+│   │   ├── 78
+│   │   │   ├── 07cc06e94e3d481df827b4ccd6b664359c72a4
+│   │   │   └── a0c6231753fc96c1aea8d5e3bb4bab6aa72c92
+│   │   ├── 8b
+│   │   │   ├── 420f068c16cbe28f815434eb424e44563745f5
+│   │   │   ├── 5b1f8f21d923c80a7d4c787e66774f4d9a170f
+│   │   │   ├── b41fd051023736429e7021c869b23513f0984f
+│   │   │   ├── 20e48523e572ecc3221c210f9befbf524c19b4
+│   │   │   ├── 8b5e4c477713d5b98363f5ca0d6d0a0b7b417c
+│   │   │   ├── 564a8b97c6de3d4a44f7f8232b725dc7a24528
+│   │   │   ├── 1c68051c599cc795a9782739065a0e45c65371
+│   │   │   ├── 5deecfcc66381a9c6690a8a617072ccf6b35d5
+│   │   │   └── 7569440fda41479a52c442ae69650434a5c9f7
+│   │   ├── 7f
+│   │   │   └── c7e4c56f0568ab2b5d89ed5b8e6fa7f1efa9ea
+│   │   ├── 7a
+│   │   │   ├── f8b7cdb21ef9e3a0829e9931bd7b9df0a8e69a
+│   │   │   ├── d7038c7074f03a7d16bc9269fbe26388e1b0ee
+│   │   │   └── 0af8874bfd4084091c495ff1bf9aede523b11a
+│   │   ├── 14
+│   │   │   ├── 1fface5e965654ad9d36ee080ec1ac530eee6a
+│   │   │   └── 1fe557078f06a5e50045901f76a72eaf751920
+│   │   └── 25
+│   │       ├── 1f5146a319a0109f841a5f3fd29c04a3989081
+│   │       └── f649a2e9a28673d1cdde58e277cc32174924a3
+│   ├── info
+│   │   └── exclude
+│   ├── logs
+│   │   ├── refs
+│   │   │   ├── heads
+│   │   │   │   └── main
+│   │   │   └── remotes
+│   │   │       └── origin
+│   │   │           └── main
+│   │   └── HEAD
+│   ├── hooks
+│   │   ├── commit-msg.sample
+│   │   ├── pre-rebase.sample
+│   │   ├── pre-commit.sample
+│   │   ├── applypatch-msg.sample
+│   │   ├── fsmonitor-watchman.sample
+│   │   ├── pre-receive.sample
+│   │   ├── prepare-commit-msg.sample
+│   │   ├── post-update.sample
+│   │   ├── pre-merge-commit.sample
+│   │   ├── pre-applypatch.sample
+│   │   ├── pre-push.sample
+│   │   ├── update.sample
+│   │   └── push-to-checkout.sample
+│   ├── refs
+│   │   ├── heads
+│   │   │   └── main
+│   │   ├── tags
+│   │   └── remotes
+│   │       └── origin
+│   │           └── main
+│   ├── ORIG_HEAD
+│   ├── config
+│   ├── HEAD
+│   ├── description
+│   ├── index
+│   ├── COMMIT_EDITMSG
+│   └── FETCH_HEAD
+├── LICENSE
+├── requirements.txt
+├── README.md
+├── .gitignore
+└── main.py
