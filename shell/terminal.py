@@ -59,7 +59,11 @@ class Shell:
                     break
                     
         finally:
-            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
+            try:
+                termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
+            except termios.error as e:
+                pass
+
             os.close(self.leader_fd)
             os.close(self.follower_fd)
 
