@@ -33,4 +33,4 @@ python main.py
 ### December 22
 Focus on shell experience, can accept shell commands and natural language queries and pretty-print them ✨
 
-<video src='assets/2023-12-22.mov'>
+<video src='https://github.com/scottsus/flamethrower/blob/main/assets/2023-12-22.mov'>
