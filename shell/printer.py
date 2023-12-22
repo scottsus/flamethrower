@@ -91,8 +91,7 @@ class Printer(BaseModel):
         try:
             while True:
                 prev = ''
-                for chunk in stream:
-                    token = chunk.choices[0].delta.content
+                for token in stream:
                     if token == '```':
                         break
                     elif prev == '``' and token.startswith('`'):
@@ -104,9 +103,7 @@ class Printer(BaseModel):
                 with Live(console=console, refresh_per_second=2) as live:
                     accumulated_content = ''
                     is_first = True
-                    for chunk in stream:
-                        token = chunk.choices[0].delta.content
-                        
+                    for token in stream:                        
                         if is_first:
                             is_first = False
                             if is_programming_language(token):
@@ -126,5 +123,5 @@ class Printer(BaseModel):
                         live.update(syntax, refresh=True)
         except AttributeError:
             pass
-        
+
         tty.setraw(sys.stdin)

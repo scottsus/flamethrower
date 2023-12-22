@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from .special_keys import *
 from .printer import Printer
-from models.llm import ask
+from models.llm import LLM
 
 class CommandHandler(BaseModel):
     fd: int = -1
@@ -13,6 +13,7 @@ class CommandHandler(BaseModel):
     buffer: str = ''
     is_natural_language_query: bool = False
     printer: Printer = None
+    llm: LLM = None
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -20,6 +21,7 @@ class CommandHandler(BaseModel):
             fd=sys.stdout.fileno(),
             tty_settings=self.tty_settings
         )
+        self.llm = LLM()
 
     # TODO: Handle logic for backspace between natural language and regular commands
     def handle(self, key: bytes):
@@ -61,7 +63,7 @@ class CommandHandler(BaseModel):
         self.buffer = ''
         os.write(self.fd, key)
 
-        stream = ask(query)
+        stream = self.llm.ask(query)
         self.printer.print_llm_response(stream)
 
     def handle_backspace_key(self, key: bytes):
