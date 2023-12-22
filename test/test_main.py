@@ -18,15 +18,15 @@ time.sleep(1)
 pyautogui.write('What is the capital of Brazil?')
 pyautogui.press('enter')
 
-time.sleep(1)
+time.sleep(1.5)
 pyautogui.write('Write Java code for the LeetCode TwoSum problem')
 pyautogui.press('enter')
 
-time.sleep(1)
+time.sleep(20)
 pyautogui.write('Write Python code for the LeetCode TwoSum problem')
 pyautogui.press('enter')
 
-time.sleep(1)
+time.sleep(17)
 pyautogui.write('exit')
 pyautogui.press('enter')
 
