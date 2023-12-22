@@ -13,12 +13,24 @@ git clone git@github.com:scottsus/flamethrower.git
 pip install -r requirements.txt
 ```
 
-3. Run flamethrower
+3. Export openai key
+```
+export OPENAI_API_KEY=sk-xxxxxxx
+```
+
+4. Run flamethrower
 ```
 python main.py
 ```
 
-4. Use as cli (optional)
+5. Use as cli (optional)
 ```
 # TODO: clean build.sh
 ```
+
+## Progress
+
+### December 22
+Focus on shell experience, can accept shell commands and natural language queries and pretty-print them ✨
+
+<video src='assets/2023-12-22.mov'>
