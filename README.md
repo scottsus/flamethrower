@@ -21,6 +21,7 @@ export OPENAI_API_KEY=sk-xxxxxxx
 4. Run flamethrower
 ```
 python main.py
+
 ```
 
 5. Use as cli (optional)
@@ -33,4 +34,4 @@ python main.py
 ### December 22
 Focus on shell experience, can accept shell commands and natural language queries and pretty-print them ✨
 
-<video src='https://github.com/scottsus/flamethrower/blob/main/assets/2023-12-22.mov'>
+https://github.com/scottsus/flamethrower/assets/88414565/7826c070-8f3a-4393-a561-b683bf901a63
