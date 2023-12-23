@@ -1,6 +1,8 @@
 import os
 import pathspec
 
+TARGET_FILE_NAME = 'tree.txt'
+
 def generate_directory_summary(startpath):
     summary_dir = os.path.join(startpath, '.flamethrower')
     if not os.path.exists(summary_dir):
@@ -11,7 +13,7 @@ def generate_directory_summary(startpath):
         with open('.gitignore', 'r') as gitignore_file:
             gitignore = pathspec.PathSpec.from_lines('gitwildmatch', gitignore_file.readlines())
 
-    with open(os.path.join(summary_dir, 'summary.txt'), 'w') as summary_file:
+    with open(os.path.join(summary_dir, TARGET_FILE_NAME), 'w') as summary_file:
         process_directory(startpath, summary_file, gitignore=gitignore)
 
 def process_directory(dir_path, summary_file, prefix='', gitignore=None):
