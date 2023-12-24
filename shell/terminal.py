@@ -18,7 +18,7 @@ class Shell:
         sys.exit(0)
 
     def run(self):
-        setup_zsh_env()
+        prompt = setup_zsh_env()
         env = os.environ.copy()
         env['ZDOTDIR'] = os.path.join(os.getcwd(), '.flamethrower')
         self.child_process = subprocess.Popen(['zsh'],
@@ -33,7 +33,8 @@ class Shell:
 
         cmdHandler = CommandHandler(
             fd=self.leader_fd,
-            tty_settings=old_settings
+            tty_settings=old_settings,
+            prompt=prompt,
         )
 
         try:

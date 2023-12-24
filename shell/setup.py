@@ -30,7 +30,7 @@ colored_welcome_screen = (
     "\n"
 )
 
-def setup_zsh_env():
+def setup_zsh_env() -> Prompt:
     if not os.path.exists(flamethrower_dir):
         os.makedirs(flamethrower_dir)
     
@@ -50,4 +50,6 @@ def setup_zsh_env():
     # print(colored_welcome_screen)
     prompt = Prompt()
     print(prompt.generate_initial_prompt())
+
+    return prompt
     

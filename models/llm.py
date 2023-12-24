@@ -1,7 +1,5 @@
 import os
-import re
-import time
-import hashlib
+import json
 from pydantic import BaseModel
 from openai import OpenAI
 
@@ -33,38 +31,18 @@ class LLM(BaseModel):
 
         return stream
 
-    def ask(self, query: str):
-        key = self.generate_cache_key(query)
-        cache_path = os.path.join(self.cache_dir, key)
-
-        if os.path.exists(cache_path):
-            with open(cache_path, 'r') as f:
-                cached_response = f.read()
-                # this splits ```, ' ', and '\n' into separate tokens
-                tokens = re.findall(r'```|\S+|\s+', cached_response)
-                for token in tokens:
-                    nice_delay = 0.03
-                    time.sleep(nice_delay)
-                    yield token
-                yield None
+    def new_json_request(self, query: str, tools: list[str], model: str = 'gpt-3.5-turbo'):
+        tool_calls = None
+        while tool_calls is None:
+            res = self.client.chat.completions.create(
+                model=model,
+                messages=[{
+                    'role': 'user',
+                    'content': query
+                }],
+                tools=tools,
+            )
+            tool_calls = res.choices[0].message.tool_calls
         
-        else:
-            stream = self.new_chat_request(query)
-            response = ''
-
-            try:
-                for chunk in stream:
-                    token = chunk.choices[0].delta.content or ''
-                    response += token
-                    yield token
-            except AttributeError:
-                pass
-            finally:
-                with open(cache_path, 'w') as f:
-                    f.write(response)
-
-                yield None
-        
-
-    def generate_cache_key(self, query: str):
-        return hashlib.md5(query.encode()).hexdigest() + '.txt'
+        return json.loads(tool_calls[0].function.arguments)
+    
