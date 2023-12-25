@@ -82,11 +82,14 @@ class Prompt(BaseModel):
         target_file_contents = ''
         for file_name in self.target_file_names:
             file_path = os.path.join(os.getcwd(), file_name)
-            with open(file_path, 'r') as file:
-                target_file_contents += (
-                    f'{file_name}\n'
-                    f'```\n{file.read().strip()}\n```\n'
-                )
+            try:
+                with open(file_path, 'r') as file:
+                    target_file_contents += (
+                        f'{file_name}\n'
+                        f'```\n{file.read().strip()}\n```\n'
+                    )
+            except UnicodeDecodeError:
+                pass
         if target_file_contents:
             target_file_contents = f'Currently you are working with these files:\n{target_file_contents}\n'
         
@@ -104,7 +107,8 @@ class Prompt(BaseModel):
             + target_file_contents
             + query_line
             + stdout_log_line
-            + 'Write code to achieve the crucial task above.'
+            + 'If it is a coding problem, write code to achieve the crucial task above.\n'
+            + 'Otherwise, just reply in a straightforward fashion.'
         )
 
         last_prompt_path = os.path.join(os.getcwd(), '.flamethrower', 'last_prompt.txt')
@@ -137,14 +141,17 @@ class Prompt(BaseModel):
         ]
 
         res = self.llm.new_json_request(
+            f'This workspace is about {self.description}. '
             f'Given the directory structure {self.dir_structure}, '
             f'determine which files are relevant to the following user query: {query}. '
-            'Only use the files which you think are absolutely necessary to complete the user query.',
+            'Only use the files which you think are absolutely necessary to complete the user query. '
+            'If the user is asking some generic non-workspace-related question, just return an empty list.',
             tools=tools,
             model='gpt-4'
         )
 
-        file_names = res['file_names']
+        max_files_used = 5
+        file_names = res['file_names'][:max_files_used]
         print('Focusing on the following files:', file_names)
         return file_names
 
