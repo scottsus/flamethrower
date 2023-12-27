@@ -1,10 +1,10 @@
-import os
 import sys
 from pydantic import BaseModel
-
-from .special_keys import *
+import config.constants as config
 from .printer import Printer
 from context.prompt import Prompt
+from context.conv_manager import ConversationManager
+from utils.special_keys import *
 
 class CommandHandler(BaseModel):
     pos: int = 0
@@ -12,6 +12,7 @@ class CommandHandler(BaseModel):
     is_nl_query: bool = False # is natural language query
     prompt: Prompt = None
     printer: Printer = None
+    conv_manager: ConversationManager = None
 
     def handle(self, key: bytes):
         if key == CTRL_C:
@@ -85,11 +86,17 @@ class CommandHandler(BaseModel):
         self.buffer = ''
         self.printer.write_leader(key)
 
-        self.printer.write_to_file(
-            query.encode('utf-8'),
-            target_file=os.path.join(os.getcwd(), '.flamethrower', '.zsh_history'),
-            is_nl_query=True
+        def update_zsh_history(query: str) -> None:
+            with open(config.get_zsh_history_path(), 'a') as f:
+                f.write(query + '\n')
+        
+        update_zsh_history(query)
+        self.conv_manager.append_message(
+            role='user',
+            content=query,
+            name='human'
         )
+        
         stream = self.prompt.get_answer(query)
         self.printer.print_llm_response(stream)
 

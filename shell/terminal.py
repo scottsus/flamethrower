@@ -5,16 +5,19 @@ import tty
 import termios
 import subprocess
 from select import select
+import config.constants as config
 from .setup import setup_zsh_env
 from .command_handler import CommandHandler
 from .printer import Printer
-from .sequence_parser import *
+from context.conv_manager import ConversationManager
 
 class Shell:
     def __init__(self):
         self.block_size = 1024
         self.leader_fd, self.follower_fd = pty.openpty()
         self.child_process = None
+        self.conv_manager = None
+        self.printer = None
 
     def execute_kill_signal(self):
         sys.exit(0)
@@ -22,7 +25,7 @@ class Shell:
     def run(self):
         prompt = setup_zsh_env()
         env = os.environ.copy()
-        env['ZDOTDIR'] = os.path.join(os.getcwd(), '.flamethrower')
+        env['ZDOTDIR'] = config.FLAMETHROWER_DIR
         self.child_process = subprocess.Popen(['zsh'],
                                               env=env,
                                               stdin=self.follower_fd,
@@ -33,14 +36,17 @@ class Shell:
         old_settings = termios.tcgetattr(sys.stdin)
         tty.setraw(sys.stdin)
 
-        printer = Printer(
+        self.conv_manager = ConversationManager()
+        self.printer = Printer(
             leader_fd=self.leader_fd,
             stdout_fd=sys.stdout.fileno(),
-            tty_settings=old_settings
+            tty_settings=old_settings,
+            conv_manager=self.conv_manager
         )
         cmdHandler = CommandHandler(
             prompt=prompt,
-            printer=printer
+            printer=self.printer,
+            conv_manager=self.conv_manager
         )
 
         try:
@@ -56,7 +62,7 @@ class Shell:
 
                     # Write to stdout and to logfile
                     os.write(sys.stdout.fileno(), data)
-                    printer.write_to_file(data)
+                    self.conv_manager.update_conv_from_stdout(data)
                 
                 # From user input
                 if sys.stdin in r:

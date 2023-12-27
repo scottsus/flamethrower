@@ -42,3 +42,12 @@ def is_ansi_escape_sequence(data: bytes) -> bool:
         return True
 
     return False
+
+def get_cleaned_data(data: bytes) -> bytes:
+    if is_ansi_escape_sequence(data):
+        return b''
+    
+    if is_single_key(data):
+        return b''
+    
+    return data

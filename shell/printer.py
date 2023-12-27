@@ -6,13 +6,12 @@ from pydantic import BaseModel
 from rich.console import Console
 from rich.syntax import Syntax
 from rich.live import Live
-from .special_keys import (
+from context.conv_manager import ConversationManager
+from utils.special_keys import (
     ENTER_KEY,
     CLEAR_FROM_START,
     CURSOR_TO_START,
 )
-from .languages import is_programming_language
-from .sequence_parser import *
 
 STDIN_DEFAULT = b'\033[0m'
 STDIN_RED = b'\033[31m'
@@ -29,67 +28,13 @@ STDIN_LIGHT_CYAN = b'\033[96m'
 STDIN_LIGHT_MAGENTA = b'\033[95m'
 
 class Printer(BaseModel):
+    class Config:
+        arbitrary_types_allowed = True
+    
     leader_fd: int = 0
-    stdout_fd: int = 0 # should be sys.stdout.fileno()
+    stdout_fd: int = 0
     tty_settings: list = []
-    conversation_path: str = os.path.join(
-        os.getcwd(), '.flamethrower', 'conv.log'
-    )
-    is_first_cmd: bool = True
-
-    def __init__(self, **data):
-        super().__init__(**data)
-        # if the file exists, delete it
-        if os.path.exists(self.conversation_path):
-            os.remove(self.conversation_path)
-        if not os.path.exists(self.conversation_path):
-            with open(self.conversation_path, 'w') as f:
-                f.write('')
-
-
-    def write_to_file(self, data: bytes, target_file: str = '', is_nl_query: bool = False) -> None:
-        with open(target_file or self.conversation_path, 'a') as f:
-            if is_nl_query:
-                f.write((data + b'\n').decode('utf-8'))
-                return
-
-            if is_ansi_escape_sequence(data):
-                return
-            
-            if is_single_key(data):
-                return
-
-            def get_user_cmd():                
-                with open(os.path.join(os.getcwd(), '.flamethrower', '.zsh_history')) as f:
-                    history = f.read()
-                    if not history:
-                        return ''
-                    
-                    history = history.split('\n')
-                    last_index = -1
-                    last_command = history[last_index]
-                    
-                    while last_command == '':
-                        last_index -= 1
-                        last_command = history[last_index]
-
-                    return last_command
-                
-            if self.is_first_cmd:
-                self.is_first_cmd = False
-                return
-            
-            if is_prompt_newline(data):
-                user_cmd = get_user_cmd()
-                if user_cmd == '' or user_cmd.lower() == 'exit':
-                    return
-                elif is_capitalized(user_cmd):
-                    f.write(f'\nThe above was the response of an LLM when executing the query: {user_cmd}\n')
-                else:
-                    f.write(f'\nThe above was the result of executing the command: [{user_cmd}]\n\n')
-            else:
-                f.write(data.decode('utf-8'))
-
+    conv_manager: ConversationManager = None
 
     def write_leader(self, data: bytes):
         if self.leader_fd:
@@ -149,33 +94,53 @@ class Printer(BaseModel):
         3. Swap back into pty
         """
 
+        def is_programming_language(name: str) -> bool:
+            programming_languages = [
+                'bash',
+                'c',
+                'c++',
+                'java',
+                'javascript',
+                'typescript',
+                'python',
+                'go',
+                'rust',
+                'ruby',
+                'php',
+                'swift',
+            ]
+            return name in programming_languages
+
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.tty_settings)
         
         self.print_default(ENTER_KEY + CLEAR_FROM_START + CURSOR_TO_START)
+        def append_conv(content: str) -> None:
+            self.conv_manager.append_message(
+                role='assistant',
+                content=content,
+            )
+
+        nl_content, code_content = '', ''
         try:
             while True:
-                content = ''
+                # Natural language responses
                 prev = ''
-                will_write_backticks = False
                 for token in stream:
                     if token == '```':
-                        will_write_backticks = True
                         break
                     elif prev == '``' and token.startswith('`'):
-                        will_write_backticks = True
                         break
                     prev = token or ''
                     
                     self.print_stdout(token.encode('utf-8'))
-                    content += token or ''
+                    nl_content += token or ''
                 
-                self.write_to_file(content.encode('utf-8'))
-                if will_write_backticks:
-                    self.write_to_file('```'.encode('utf-8'))
+                append_conv(nl_content)
+                nl_content = ''
                     
+                # Coding responses
                 console, lang = Console(), 'python'
                 with Live(console=console, refresh_per_second=2) as live:
-                    content = ''
                     is_first = True
                     for token in stream:                        
                         if is_first:
@@ -192,13 +157,19 @@ class Printer(BaseModel):
                         if token == '``':
                             continue
                         
-                        content += token or ''
-                        syntax = Syntax(content, lang, theme='monokai', line_numbers=False)
+                        code_content += token or ''
+                        syntax = Syntax(code_content, lang, theme='monokai', line_numbers=False)
                         live.update(syntax, refresh=True)
                     
-                    # not forgetting to append conv.log
-                    self.write_to_file((content + '\n```').encode('utf-8'))
+                    append_conv(f'\n```{code_content}\n```')
+                    code_content = ''
         except AttributeError:
+            # that means EOF was reached
             pass
+        finally:
+            if nl_content:
+                append_conv(nl_content)
+            if code_content:
+                append_conv(f'```{code_content}\n```')
 
         tty.setraw(sys.stdin)

@@ -4,8 +4,10 @@ import time
 import hashlib
 from datetime import datetime
 from pydantic import BaseModel
+import config.constants as config
 from context.dir_walker import generate_directory_summary
 from models.llm import LLM
+from utils.pretty import pretty_print
 
 def generate_greeting():
     now = datetime.now()
@@ -19,6 +21,7 @@ def generate_greeting():
         return 'Good evening 👋'
 
 def generate_description():
+    # TODO: Summarize README
     target_file = 'README.md'
     if os.path.exists(target_file):
         with open(target_file, 'r') as f:
@@ -30,8 +33,7 @@ def generate_description():
 def generate_dir_structure():
     generate_directory_summary(os.getcwd())
 
-    target_file = 'tree.txt'
-    target_path = os.path.join(os.getcwd(), '.flamethrower', target_file)
+    target_path = config.get_dir_structure_path()
     if os.path.exists(target_path):
         with open(target_path, 'r') as f:
             tree = f.read()
@@ -67,14 +69,26 @@ class Prompt(BaseModel):
             '- To try it out, type "Refactor /path/to/file" in the terminal.'
         )
 
-    def generate_chat_completions_prompt(self, query: str = '', stdout_log: str = ''):
+    def generate_chat_completions_prompt(self, query: str = '', conv: str = '') -> list:
+        messages = []
+
         description_line = ''
         if self.description:
             description_line = f'This project is about {self.description}. '
+            messages.append({
+                'role': 'user',
+                'content': description_line,
+                'name': 'human'
+            })
         
         dir_structure_line = ''
         if self.dir_structure:
             dir_structure_line = f'The directory structure looks like:\n{self.dir_structure}\n'
+            messages.append({
+                'role': 'user',
+                'content': dir_structure_line,
+                'name': 'human'
+            })
 
         if not self.target_file_names:
             self.target_file_names = self.infer_target_file_names(query)
@@ -92,30 +106,43 @@ class Prompt(BaseModel):
                 pass
         if target_file_contents:
             target_file_contents = f'Currently you are working with these files:\n{target_file_contents}\n'
-        
+            messages.append({
+                'role': 'user',
+                'content': target_file_contents,
+                'name': 'human'
+            })
+
+        if conv:
+            messages.append({
+                'role': 'user',
+                'content': 'Here is the most recent conversation between the human, stdout logs, and assistant:\n',
+                'name': 'stdout'
+            })
+            messages.append({
+                'role': 'user',
+                'content': f'```\n{conv}```\n',
+                'name': 'stdout'
+            })
+
         query_line = ''
         if query:
-            query_line = f'Given the context, here is your crucial task: {query}\n'
+            query_line = (
+                f'Given the context, here is your **crucial task: {query}**\n'
+                'If it is a coding problem, write code to achieve the crucial task above.\n'
+                'Otherwise, just reply in a straightforward fashion.'
+            )
+            messages.append({
+                'role': 'user',
+                'content': query_line,
+                'name': 'human'
+            })
 
-        stdout_log_line = ''
-        if stdout_log:
-            stdout_log_line = f'Here is the stdout log: {stdout_log}\n'
+        last_prompt_path = config.get_last_prompt_path()
 
-        prompt = (
-            description_line
-            + dir_structure_line
-            + target_file_contents
-            + query_line
-            + stdout_log_line
-            + 'If it is a coding problem, write code to achieve the crucial task above.\n'
-            + 'Otherwise, just reply in a straightforward fashion.'
-        )
-
-        last_prompt_path = os.path.join(os.getcwd(), '.flamethrower', 'last_prompt.txt')
         with open(last_prompt_path, 'w') as f:
-            f.write(prompt)
+            f.write(pretty_print(messages))
 
-        return prompt
+        return messages
     
     def infer_target_file_names(self, query: str):
         tools = [
@@ -143,11 +170,10 @@ class Prompt(BaseModel):
         res = self.llm.new_json_request(
             f'This workspace is about {self.description}. '
             f'Given the directory structure {self.dir_structure}, '
-            f'determine which files are relevant to the following user query: {query}. '
+            f'determine which files are relevant to the following user query: "{query}". '
             'Only use the files which you think are absolutely necessary to complete the user query. '
             'If the user is asking some generic non-workspace-related question, just return an empty list.',
             tools=tools,
-            model='gpt-4'
         )
 
         max_files_used = 5
@@ -155,17 +181,25 @@ class Prompt(BaseModel):
         # TODO: allow user to select which files
         print('Focusing on the following files:', file_names)
         return file_names
+    
+    def load_conv(self):
+        with open(config.get_conversation_path(), 'r') as f:
+            conv = f.read()
+            pretty = pretty_print(conv)
+            
+            return pretty
 
     def get_answer(self, basic_query: str):
-        prompted_query = self.generate_chat_completions_prompt(basic_query)
+        conv = self.load_conv()
+        messages = self.generate_chat_completions_prompt(basic_query, conv)
 
-        key = self.generate_cache_key(prompted_query)
-        cache_dir = os.path.join(os.getcwd(), '.flamethrower', 'response_cache')
-        if not os.path.exists(cache_dir):
-            os.makedirs(cache_dir, exist_ok=True)
+        # key = self.generate_cache_key(query)
+        # cache_dir = config.get_llm_response_cache_dir()
+        # if not os.path.exists(cache_dir):
+        #     os.makedirs(cache_dir, exist_ok=True)
 
-        cache_path = os.path.join(cache_dir, key)
-        if os.path.exists(cache_path):
+        # cache_path = os.path.join(cache_dir, key)
+        if False: # os.path.exists(cache_path):
             with open(cache_path, 'r') as f:
                 cached_response = f.read()
                 # this splits ```, ' ', and '\n' into separate tokens
@@ -177,7 +211,7 @@ class Prompt(BaseModel):
                 yield None
         
         else:
-            stream = self.llm.new_chat_request(prompted_query)
+            stream = self.llm.new_chat_request(messages)
             response = ''
 
             try:
@@ -188,8 +222,8 @@ class Prompt(BaseModel):
             except AttributeError:
                 pass
             finally:
-                with open(cache_path, 'w') as f:
-                    f.write(response)
+                # with open(cache_path, 'w') as f:
+                #     f.write(response)
 
                 yield None
         

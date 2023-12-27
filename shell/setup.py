@@ -1,7 +1,6 @@
 import os
 from context.prompt import Prompt
-
-flamethrower_dir = os.path.join(os.getcwd(), '.flamethrower')
+from config.constants import *
 
 zshrc_contents = """# basic zshrc for pty
 
@@ -33,26 +32,29 @@ colored_welcome_screen = (
 )
 
 def setup_zsh_env() -> Prompt:
-    if not os.path.exists(flamethrower_dir):
-        os.makedirs(flamethrower_dir)
+    if not os.path.exists(FLAMETHROWER_DIR):
+        os.makedirs(FLAMETHROWER_DIR)
     
-    zshrc_path = f'{flamethrower_dir}/.zshrc'
+    zshrc_path = get_zsh_config_path()
     if not os.path.exists(zshrc_path):
         with open(zshrc_path, 'w') as f:
             f.write(zshrc_contents)
     
-    zsh_autosuggestions_path = f'{flamethrower_dir}/zsh-autosuggestions'
+    zsh_autosuggestions_path = flamethrower_path('zsh-autosuggestions')
     if not os.path.exists(zsh_autosuggestions_path):
         os.system(f'git clone git@github.com:zsh-users/zsh-autosuggestions.git {zsh_autosuggestions_path}')
 
-    zsh_syntax_highlighting_path = f'{flamethrower_dir}/zsh-syntax-highlighting'
+    zsh_syntax_highlighting_path = flamethrower_path('zsh-syntax-highlighting')
     if not os.path.exists(zsh_syntax_highlighting_path):
         os.system(f'git clone git@github.com:zsh-users/zsh-syntax-highlighting.git {zsh_syntax_highlighting_path}')
     
-    zsh_history_path = f'{flamethrower_dir}/.zsh_history'
+    zsh_history_path = get_zsh_history_path()
     if not os.path.exists(zsh_history_path):
         with open(zsh_history_path, 'w') as f:
             f.write('')
+    
+    if not os.path.exists(FLAMETHROWER_LOG_DIR):
+        os.makedirs(FLAMETHROWER_LOG_DIR)
 
     prompt = Prompt()
     # TODO: use printer API
