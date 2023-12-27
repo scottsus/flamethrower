@@ -149,20 +149,28 @@ class Printer(BaseModel):
         self.print_default(ENTER_KEY + CLEAR_FROM_START + CURSOR_TO_START)
         try:
             while True:
+                content = ''
                 prev = ''
+                will_write_backticks = False
                 for token in stream:
                     if token == '```':
-                        self.write_to_file('```'.encode('utf-8'))
+                        will_write_backticks = True
                         break
                     elif prev == '``' and token.startswith('`'):
-                        self.write_to_file('```'.encode('utf-8'))
+                        will_write_backticks = True
                         break
                     prev = token or ''
+                    
                     self.print_stdout(token.encode('utf-8'))
+                    content += token or ''
+                
+                self.write_to_file(content.encode('utf-8'))
+                if will_write_backticks:
+                    self.write_to_file('```'.encode('utf-8'))
                     
                 console, lang = Console(), 'python'
                 with Live(console=console, refresh_per_second=2) as live:
-                    accumulated_content = ''
+                    content = ''
                     is_first = True
                     for token in stream:                        
                         if is_first:
@@ -179,12 +187,12 @@ class Printer(BaseModel):
                         if token == '``':
                             continue
                         
-                        accumulated_content += token or ''
-                        syntax = Syntax(accumulated_content, lang, theme='monokai', line_numbers=False)
+                        content += token or ''
+                        syntax = Syntax(content, lang, theme='monokai', line_numbers=False)
                         live.update(syntax, refresh=True)
                     
                     # not forgetting to append conv.log
-                    self.write_to_file((accumulated_content + '\n```').encode('utf-8'))
+                    self.write_to_file((content + '\n```').encode('utf-8'))
         except AttributeError:
             pass
 
