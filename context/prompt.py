@@ -152,6 +152,7 @@ class Prompt(BaseModel):
 
         max_files_used = 5
         file_names = res['file_names'][:max_files_used]
+        # TODO: allow user to select which files
         print('Focusing on the following files:', file_names)
         return file_names
 

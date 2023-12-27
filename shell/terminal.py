@@ -7,6 +7,8 @@ import subprocess
 from select import select
 from .setup import setup_zsh_env
 from .command_handler import CommandHandler
+from .printer import Printer
+from .sequence_parser import *
 
 class Shell:
     def __init__(self):
@@ -31,23 +33,30 @@ class Shell:
         old_settings = termios.tcgetattr(sys.stdin)
         tty.setraw(sys.stdin)
 
+        printer = Printer(
+            leader_fd=self.leader_fd,
+            stdout_fd=sys.stdout.fileno(),
+            tty_settings=old_settings
+        )
         cmdHandler = CommandHandler(
-            fd=self.leader_fd,
-            tty_settings=old_settings,
             prompt=prompt,
+            printer=printer
         )
 
         try:
             while True:
                 timeout = 0.5 # seconds
                 r, w, e = select([self.leader_fd, sys.stdin], [], [], timeout)
-                
+
                 # From leader process
                 if self.leader_fd in r:
                     data = os.read(self.leader_fd, self.block_size)
                     if not data:
                         break
+
+                    # Write to stdout and to logfile
                     os.write(sys.stdout.fileno(), data)
+                    printer.write_to_file(data)
                 
                 # From user input
                 if sys.stdin in r:
