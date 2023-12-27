@@ -12,21 +12,21 @@ def is_prompt_newline(data: bytes) -> bool:
 
 def is_ansi_escape_sequence(data: bytes) -> bool:
     ansi_escape_sequences = [
-        b' ',
-        b'[0m',
-        b'[1m',
-        b'[4m',
-        b'[24m',
-        b'[31m',
-        b'[32m',
-        b'[33m',
-        b'[39m',
-        b'[90m',
-        b'[K',
-        b'[11D',
-        b'[13D',
-        b'[18D',
-        b'[?2',  # Note: This seems to be an incomplete sequence.
+        b' ',       # Space character, not an ANSI sequence.
+        b'[0m',     # Reset / Normal: All attributes off.
+        b'[1m',     # Bold or increased intensity.
+        b'[4m',     # Underline: Single.
+        b'[24m',    # Not underlined: Underline off.
+        b'[31m',    # Foreground color: Red.
+        b'[32m',    # Foreground color: Green.
+        b'[33m',    # Foreground color: Yellow.
+        b'[39m',    # Default foreground color.
+        b'[90m',    # Foreground color: Bright black (gray).
+        b'[K',      # Erase line: Clears part of the line.
+        b'[11D',    # Cursor movement: Move cursor left by 11 spaces.
+        b'[13D',    # Cursor movement: Move cursor left by 13 spaces.
+        b'[18D',    # Cursor movement: Move cursor left by 18 spaces.
+        b'[?2',     # Incomplete sequence, possibly related to mode setting.
     ]
 
     # Sequence starting with escape dataacter (zsh-syntax-highlighting)
@@ -40,14 +40,5 @@ def is_ansi_escape_sequence(data: bytes) -> bool:
         index += 1
     if any(data.startswith(backspace * index + b'\x1b' + seq) for seq in ansi_escape_sequences):
         return True
-
-    # TODO: there is still some noise that is difficult to remove
-    noise = (
-        b'\r\n\x1b[1m\x1b[3m%\x1b[23m\x1b[1m\x1b[0m'
-        b'                                                                               ' # 80 spaces
-        b'\r \r\n'
-    )
-    # if data.endswith(noise):
-    #     return True
 
     return False
