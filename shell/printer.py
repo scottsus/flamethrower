@@ -46,8 +46,12 @@ class Printer(BaseModel):
                 f.write('')
 
 
-    def write_to_file(self, data: bytes) -> None:
-        with open(self.conversation_path, 'a') as f:
+    def write_to_file(self, data: bytes, target_file: str = '', is_nl_query: bool = False) -> None:
+        with open(target_file or self.conversation_path, 'a') as f:
+            if is_nl_query:
+                f.write((data + b'\n').decode('utf-8'))
+                return
+
             if is_ansi_escape_sequence(data):
                 return
             
@@ -74,7 +78,10 @@ class Printer(BaseModel):
                 user_cmd = get_user_cmd()
                 if user_cmd == '' or user_cmd.lower() == 'exit':
                     return
-                f.write(f'\nThe above was the result of executing [{user_cmd}]\n\n')
+                elif is_capitalized(user_cmd):
+                    f.write(f'\nThe above was the response of an LLM when executing the query: {user_cmd}\n')
+                else:
+                    f.write(f'\nThe above was the result of executing the command: [{user_cmd}]\n\n')
             else:
                 f.write(data.decode('utf-8'))
 

@@ -1,4 +1,8 @@
 
+def is_capitalized(text: str) -> bool:
+    if not text:
+        return False
+    return text[0].isupper()
 
 def is_single_key(data: bytes) -> bool:
     return len(data) == 1

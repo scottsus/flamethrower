@@ -85,6 +85,11 @@ class CommandHandler(BaseModel):
         self.buffer = ''
         self.printer.write_leader(key)
 
+        self.printer.write_to_file(
+            query.encode('utf-8'),
+            target_file=os.path.join(os.getcwd(), '.flamethrower', '.zsh_history'),
+            is_nl_query=True
+        )
         stream = self.prompt.get_answer(query)
         self.printer.print_llm_response(stream)
 
