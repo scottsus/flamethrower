@@ -9,6 +9,8 @@ PS1='%B%F{red}%n:%f %F{white}%1~%f%b 🌊 '
 
 source $ZDOTDIR/zsh-autosuggestions/zsh-autosuggestions.zsh
 source $ZDOTDIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+setopt INC_APPEND_HISTORY
 """
 
 original_welcome_screen = """
@@ -47,6 +49,11 @@ def setup_zsh_env() -> Prompt:
     if not os.path.exists(zsh_syntax_highlighting_path):
         os.system(f'git clone git@github.com:zsh-users/zsh-syntax-highlighting.git {zsh_syntax_highlighting_path}')
     
+    zsh_history_path = f'{flamethrower_dir}/.zsh_history'
+    if not os.path.exists(zsh_history_path):
+        with open(zsh_history_path, 'w') as f:
+            f.write('')
+
     prompt = Prompt()
     # TODO: use printer API
     print(prompt.generate_initial_prompt())

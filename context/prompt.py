@@ -160,8 +160,11 @@ class Prompt(BaseModel):
         prompted_query = self.generate_chat_completions_prompt(basic_query)
 
         key = self.generate_cache_key(prompted_query)
-        cache_path = os.path.join(os.getcwd(), '.flamethrower', key)
+        cache_dir = os.path.join(os.getcwd(), '.flamethrower', 'response_cache')
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir, exist_ok=True)
 
+        cache_path = os.path.join(cache_dir, key)
         if os.path.exists(cache_path):
             with open(cache_path, 'r') as f:
                 cached_response = f.read()
