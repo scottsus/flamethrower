@@ -152,10 +152,10 @@ class Printer(BaseModel):
                 prev = ''
                 for token in stream:
                     if token == '```':
-                        # self.write_to_file('```\n'.encode('utf-8'))
+                        self.write_to_file('```'.encode('utf-8'))
                         break
                     elif prev == '``' and token.startswith('`'):
-                        # self.write_to_file('```\n'.encode('utf-8'))
+                        self.write_to_file('```'.encode('utf-8'))
                         break
                     prev = token or ''
                     self.print_stdout(token.encode('utf-8'))
@@ -172,10 +172,8 @@ class Printer(BaseModel):
                                 continue
                         
                         if token == '```':
-                            # self.write_to_file('```\n'.encode('utf-8'))
                             break
                         elif prev == '``' and token.startswith('`'):
-                            # self.write_to_file('```\n'.encode('utf-8'))
                             break
                         prev = token or ''
                         if token == '``':
@@ -186,7 +184,7 @@ class Printer(BaseModel):
                         live.update(syntax, refresh=True)
                     
                     # not forgetting to append conv.log
-                    self.write_to_file(accumulated_content.encode('utf-8'))
+                    self.write_to_file((accumulated_content + '\n```').encode('utf-8'))
         except AttributeError:
             pass
 
