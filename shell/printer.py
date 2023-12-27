@@ -35,6 +35,7 @@ class Printer(BaseModel):
     conversation_path: str = os.path.join(
         os.getcwd(), '.flamethrower', 'conv.log'
     )
+    is_first_cmd: bool = True
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -73,7 +74,11 @@ class Printer(BaseModel):
                         last_command = history[last_index]
 
                     return last_command
-
+                
+            if self.is_first_cmd:
+                self.is_first_cmd = False
+                return
+            
             if is_prompt_newline(data):
                 user_cmd = get_user_cmd()
                 if user_cmd == '' or user_cmd.lower() == 'exit':
