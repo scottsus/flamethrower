@@ -1,7 +1,6 @@
 # Flamethrower
 .flamethrower
 build.sh
-response_cache
 
 # Python
 venv

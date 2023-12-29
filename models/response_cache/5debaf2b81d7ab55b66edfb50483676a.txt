@@ -1,0 +1,48 @@
+Here, as an example, you will see ways to improve and declutter the mentioned "context/dir_walker.py" script.
+
+Before Refactoring:
+```python
+import os
+
+def dir_walker(root):
+    dir_list = []
+    file_list = []
+    
+    for dirpath, dirnames, filenames in os.walk(root):
+        for dir in dirnames:
+            dir_list.append(os.path.join(dirpath, dir))
+        for file in filenames:
+            file_list.append(os.path.join(dirpath, file))
+
+    return dir_list, file_list
+```
+
+Refactored code:
+```python
+import os
+from typing import Tuple, List
+
+def dir_walker(root: str) -> Tuple[List[str], List[str]]:
+    """Walk through directory and segregate files and directories.
+
+    Parameters:
+    root -- path to the directory to walk
+
+    Returns:
+    Tuple containing two lists -- list of directories and list of files.
+    """
+    
+    dir_list, file_list = [], []
+    
+    for dirpath, dirnames, filenames in os.walk(root):
+        dir_list += [os.path.join(dirpath, dir) for dir in dirnames]
+        file_list += [os.path.join(dirpath, file) for file in filenames]
+
+    return dir_list, file_list
+```
+
+Here's what has been done:
+1. Defined the type hinting at function definition to make code cleaner and easier to understand.
+2. Used list comprehension for appending elements to list which is more Pythonic.
+3. Added docstring to make the usage of the function clear.
+4. Removed unnecessary intermediate variables, making the code more concise.

@@ -1,0 +1,14 @@
+Here is a Java program that prints numbers from 1 to 96:
+
+```java
+public class PrintNumbers {
+
+    public static void main(String[] args) {
+        for (int i = 1; i <= 96; i++) {
+            System.out.println(i);
+        }
+    }
+}
+```
+
+When you run this program, it will output the numbers from 1 to 96, each on a separate line.

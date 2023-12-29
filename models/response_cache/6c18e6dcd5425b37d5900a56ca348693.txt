@@ -1,0 +1,1 @@
+Your task is to refactor the `dir_walker.py` file in the `context` directory.

@@ -1,0 +1,13 @@
+Here is an example Java code that prints numbers from 1 to 99:
+
+```java
+public class PrintNumbers {
+    public static void main(String[] args) {
+        for (int i = 1; i <= 99; i++) {
+            System.out.println(i);
+        }
+    }
+}
+```
+
+This code uses a `for` loop to iterate from 1 to 99 and prints each number using the `System.out.println()` method.

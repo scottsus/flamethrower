@@ -1,0 +1,30 @@
+Sure! Here's an example solution to the LeetCode Two Sum problem implemented in Python:
+
+```
+def twoSum(nums, target):
+    # Create a hash map to store the complement of each element
+    complement_map = {}
+    
+    # Iterate through the array
+    for i, num in enumerate(nums):
+        # Check if the complement exists in the hash map
+        if num in complement_map:
+            # Return the indices of the two numbers that add up to the target
+            return [complement_map[num], i]
+        else:
+            # Calculate the complement of the current number and store it in the map
+            complement_map[target - num] = i
+    
+    # Return an empty list if no solution is found
+    return []
+```
+
+To test the function, you can call it with an array of numbers and a target value, like this:
+
+```
+nums = [2, 7, 11, 15]
+target = 9
+print(twoSum(nums, target))
+```
+
+This will output `[0, 1]`, which means that the numbers at indices 0 and 1 (2 and 7) add up to the target value of 9.

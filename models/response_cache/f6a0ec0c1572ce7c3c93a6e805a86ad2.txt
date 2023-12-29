@@ -1,0 +1,54 @@
+Here's an example of TypeScript code for the LeetCode FourSum problem:
+
+```typescript
+function fourSum(nums: number[], target: number): number[][] {
+  if (nums.length < 4) {
+    return [];
+  }
+  
+  nums.sort((a, b) => a - b);
+  
+  const result: number[][] = [];
+  
+  for (let i = 0; i < nums.length - 3; i++) {
+    if (i > 0 && nums[i] === nums[i - 1]) {
+      continue;
+    }
+    
+    for (let j = i + 1; j < nums.length - 2; j++) {
+      if (j > i + 1 && nums[j] === nums[j - 1]) {
+        continue;
+      }
+      
+      let left = j + 1;
+      let right = nums.length - 1;
+      
+      while (left < right) {
+        const sum = nums[i] + nums[j] + nums[left] + nums[right];
+        
+        if (sum === target) {
+          result.push([nums[i], nums[j], nums[left], nums[right]]);
+          
+          while (left < right && nums[left] === nums[left + 1]) {
+            left++;
+          }
+          while (left < right && nums[right] === nums[right - 1]) {
+            right--;
+          }
+          
+          left++;
+          right--;
+        } else if (sum < target) {
+          left++;
+        } else {
+          right--;
+        }
+      }
+    }
+  }
+  
+  return result;
+}
+```
+
+This code uses a two-pointer approach to find all the distinct quadruplets in the given array `nums` that sum up to the target value. The code first sorts the array in ascending order. Then, it iterates through each possible pair of numbers `(nums[i], nums[j])` as the first two numbers in the quadruplet. It uses two pointers, `left` and `right`, to explore the remaining numbers and find the last two numbers in the quadruplet. If the sum of the four numbers equals the target, it adds the quadruplet to the `result` array. If the sum is smaller than the target, it increments the `left` pointer to increase the sum, and if the sum is larger than the target, it decrements the `right` pointer to decrease the sum. The code also skips duplicate numbers to avoid duplicate quadruplets in the result. Finally, it returns the `result` array containing all the distinct quadruplets.

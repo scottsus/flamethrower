@@ -1,0 +1,13 @@
+Here is the code to write numbers from 1 to 97 in Java:
+
+```java
+public class Numbers1To97 {
+    public static void main(String[] args) {
+        for (int i = 1; i <= 97; i++) {
+            System.out.println(i);
+        }
+    }
+}
+```
+
+This code uses a for loop to iterate from 1 to 97, printing each number using the `System.out.println()` statement.

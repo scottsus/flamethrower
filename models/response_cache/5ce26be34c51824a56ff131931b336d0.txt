@@ -1,0 +1,29 @@
+Here's an example of how you can solve the Two Sum problem in TypeScript:
+
+```
+function twoSum(nums: number[], target: number): number[] {
+  const map = new Map<number, number>();
+
+  for (let i = 0; i < nums.length; i++) {
+    const complement = target - nums[i];
+
+    if (map.has(complement)) {
+      return [map.get(complement)!, i];
+    }
+
+    map.set(nums[i], i);
+  }
+
+  throw new Error('No two sum solution found.');
+}
+
+// Example usage:
+const nums = [2, 7, 11, 15];
+const target = 9;
+
+console.log(twoSum(nums, target)); // Output: [0, 1]
+```
+
+In this code, we are using a map to store the value-index pairs. We iterate through the array of numbers and for each number, we calculate its complement (the difference between the target and the number). If the complement is already in the map, it means we have found a pair of numbers that sum up to the target, so we return their indices. If the complement is not in the map, we store the number and its index in the map for future comparisons.
+
+If no two sum solution is found, we throw an error.

@@ -1,0 +1,98 @@
+I am assuming that you want to refactor the `dir_walker.py`. Here is the refactored `dir_walker.py` code.
+
+Refactoring involves enhancements to optimize code design and implementation. In this case, we can split the large functions into smaller ones, use appropriate naming conventions, add comments, and improve exception handling.
+
+```python
+import os
+import pathspec
+
+TARGET_FILE_NAME = 'tree.txt'
+GITIGNORE_FILE = '.gitignore'
+IGNORE_DIRECTORY = ['.git']
+
+
+def create_project_summary(startpath):
+    summary_file_path = create_summary_directory(startpath)
+    gitignore_lines = get_gitignore_lines()
+
+    with open(summary_file_path, 'w') as summary_file:
+        process_directory(startpath, summary_file, gitignore_lines=gitignore_lines)
+
+
+def create_summary_directory(startpath):
+    summary_dir = os.path.join(startpath, '.flamethrower')
+
+    if not os.path.exists(summary_dir):
+        os.makedirs(summary_dir)
+
+    return os.path.join(summary_dir, TARGET_FILE_NAME)
+
+
+def get_gitignore_lines():
+    if os.path.exists(GITIGNORE_FILE):
+        with open(GITIGNORE_FILE, 'r') as gitignore_file:
+            return pathspec.PathSpec.from_lines('gitwildmatch', gitignore_file.readlines())
+    return None
+
+
+def process_directory(dir_path, summary_file, prefix='', gitignore_lines=None):
+    entries = get_filtered_entries(dir_path, gitignore_lines)
+    hidden_dirs, regular_dirs, files = categorize_entries(entries, dir_path)
+    
+    for i, entry in enumerate(hidden_dirs + regular_dirs + files):
+        path = os.path.join(dir_path, entry)
+        prefix_extension = '│   ' if i < len(entries) - 1 else '    '
+
+        if os.path.isdir(path):
+            process_dir_entry(path, i, len(entries), summary_file, prefix, gitignore_lines, prefix_extension)
+        else:
+            append_to_summary_file(entry, i, len(entries), summary_file, prefix)
+
+
+def get_filtered_entries(dir_path, gitignore):
+    entries = os.listdir(dir_path)
+
+    if gitignore:
+        entries = [e for e in entries if not gitignore.match_file(os.path.join(dir_path, e)) and e not in IGNORE_DIRECTORY]
+
+    return entries
+
+
+def categorize_entries(entries, dir_path):
+    hidden_dirs = [d for d in entries if os.path.isdir(os.path.join(dir_path, d)) and d.startswith('.')]
+    regular_dirs = [d for d in entries if os.path.isdir(os.path.join(dir_path, d)) and not d.startswith('.')]
+    files = [f for f in entries if os.path.isfile(os.path.join(dir_path, f))]
+
+    hidden_dirs.sort()
+    regular_dirs.sort()
+    files.sort()
+
+    return hidden_dirs, regular_dirs, files
+
+
+def process_dir_entry(path, index, total, summary_file, prefix, gitignore, prefix_extension):
+    readme_path = os.path.join(path, 'README.md')
+    summary_line = ''
+
+    if os.path.exists(readme_path):
+        summary_line = summarize_readme(readme_path)
+
+    append_to_summary_file(os.path.basename(path), index, total, summary_file, prefix, summary_line)
+    process_directory(path, summary_file, prefix + prefix_extension, gitignore)
+
+
+def append_to_summary_file(entry, index, total, summary_file, prefix, summary_line=''):
+    connector = '├──' if index < total - 1 else '└──'
+    summary_file.write(f'{prefix}{connector} {entry}{summary_line}\n')
+
+
+def summarize_readme(readme_path: str) -> str:
+    with open(readme_path, 'r') as file:
+        content = file.read()
+
+    max_content_len = 100
+    summary = content[:max_content_len].replace('\n', ' ')
+
+    return summary
+```
+Finally, test the functionality after making these changes and cross-verify that it works as expected.

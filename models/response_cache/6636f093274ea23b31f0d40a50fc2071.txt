@@ -1,0 +1,106 @@
+To refactor the `dir_walker.py` file, you can make the following improvements:
+
+1. Split the functions into smaller, more focused functions to improve readability and maintainability.
+2. Use more meaningful variable names to enhance code understanding.
+3. Add type hints and docstrings to improve code documentation.
+4. Remove unnecessary comments and imports.
+5. Follow PEP 8 style guidelines for consistent code.
+
+Here's an example of how you can refactor the `dir_walker.py` file:
+
+```python
+import os
+import pathspec
+from typing import Optional
+
+
+def generate_directory_summary(startpath: str) -> None:
+    summary_dir = os.path.join(startpath, '.flamethrower')
+    os.makedirs(summary_dir, exist_ok=True)
+    
+    gitignore = None
+    gitignore_path = os.path.join(startpath, '.gitignore')
+
+    if os.path.exists(gitignore_path):
+        with open(gitignore_path, 'r') as gitignore_file:
+            gitignore = pathspec.PathSpec.from_lines('gitwildmatch', gitignore_file.readlines())
+
+    target_file_path = os.path.join(summary_dir, 'tree.txt')
+
+    with open(target_file_path, 'w') as summary_file:
+        process_directory(startpath, summary_file, gitignore=gitignore)
+
+
+def process_directory(dir_path: str, summary_file, prefix: str = '', gitignore: Optional[pathspec.PathSpec] = None) -> None:
+    entries = os.listdir(dir_path)
+
+    if gitignore:
+        entries = [entry for entry in entries if not gitignore.match_file(os.path.join(dir_path, entry))]
+        entries = [entry for entry in entries if entry != '.git']
+
+    hidden_dirs, regular_dirs, files = separate_entries(entries, dir_path)
+
+    hidden_dirs.sort()
+    regular_dirs.sort()
+    files.sort()
+
+    sorted_entries = hidden_dirs + regular_dirs + files
+
+    for index, entry in enumerate(sorted_entries):
+        path = os.path.join(dir_path, entry)
+        if os.path.isdir(path):
+            process_subdirectory(path, index, len(sorted_entries), summary_file, prefix, gitignore)
+        else:
+            write_file_entry(entry, index, len(sorted_entries), summary_file, prefix)
+
+
+def separate_entries(entries: list[str], dir_path: str) -> tuple[list[str], list[str], list[str]]:
+    hidden_dirs = []
+    regular_dirs = []
+    files = []
+
+    for entry in entries:
+        path = os.path.join(dir_path, entry)
+        if os.path.isdir(path):
+            if entry.startswith('.'):
+                hidden_dirs.append(entry)
+            else:
+                regular_dirs.append(entry)
+        elif os.path.isfile(path):
+            files.append(entry)
+
+    return hidden_dirs, regular_dirs, files
+
+
+def process_subdirectory(path: str, index: int, total: int, summary_file, prefix: str, gitignore: Optional[pathspec.PathSpec] = None) -> None:
+    readme_path = os.path.join(path, 'README.md')
+
+    if os.path.exists(readme_path):
+        summary = summarize_readme(readme_path)
+        summary_line = f' // {summary}'
+    else:
+        summary_line = ''
+
+    connector = '├──' if index < total - 1 else '└──'
+    summary_file.write(f'{prefix}{connector} {os.path.basename(path)}{summary_line}\n')
+
+    ext_prefix = '│   ' if index < total - 1 else '    '
+    process_directory(path, summary_file, prefix=prefix + ext_prefix, gitignore=gitignore)
+
+
+def write_file_entry(file_name: str, index: int, total: int, summary_file, prefix: str) -> None:
+    connector = '├──' if index < total - 1 else '└──'
+    summary_file.write(f'{prefix}{connector} {file_name}\n')
+
+
+def summarize_readme(readme_path: str) -> str:
+    with open(readme_path, 'r') as file:
+        content = file.read()
+
+    max_content_len = 100
+    summary = content[:max_content_len].replace('\n', ' ')
+    
+    return summary
+```
+
+Remember to update the imports and function calls in other parts of your project that use the `dir_walker.py` module.
