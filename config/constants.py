@@ -44,7 +44,6 @@ DIR_STRUCTURE_FILE_NAME = 'tree.log'
 CONVERSATION_FILE_NAME = 'conv.json'
 PRETTY_CONVERSATION_FILE_NAME = 'conv.log'
 LAST_PROMPT_FILE_NAME = 'last_prompt.log'
-LLM_RESPONSE_CACHE_DIR_NAME = 'response_cache'
 
 def get_dir_structure_path() -> str:
     return flamethrower_log_dir(DIR_STRUCTURE_FILE_NAME)
@@ -57,6 +56,3 @@ def get_pretty_conversation_path() -> str:
 
 def get_last_prompt_path() -> str:
     return flamethrower_log_dir(LAST_PROMPT_FILE_NAME)
-
-def get_llm_response_cache_dir() -> str:
-    return flamethrower_log_dir(LLM_RESPONSE_CACHE_DIR_NAME)

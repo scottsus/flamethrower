@@ -1,7 +1,5 @@
 import os
-import re
-import time
-import hashlib
+from typing import Iterator, Optional
 from datetime import datetime
 from pydantic import BaseModel
 import config.constants as config
@@ -9,7 +7,7 @@ from context.dir_walker import generate_directory_summary
 from models.llm import LLM
 from utils.pretty import pretty_print
 
-def generate_greeting():
+def generate_greeting() -> str:
     now = datetime.now()
     current_hour = now.hour
 
@@ -20,7 +18,7 @@ def generate_greeting():
     else:
         return 'Good evening 👋'
 
-def generate_description():
+def generate_description() -> str:
     # TODO: Summarize README
     target_file = 'README.md'
     if os.path.exists(target_file):
@@ -30,7 +28,7 @@ def generate_description():
     else:
         return ''
 
-def generate_dir_structure():
+def generate_dir_structure() -> str:
     generate_directory_summary(os.getcwd())
 
     target_path = config.get_dir_structure_path()
@@ -59,14 +57,18 @@ class Prompt(BaseModel):
         self.dir_structure = generate_dir_structure()
         self.llm = LLM()
     
-    def generate_initial_prompt(self):
+    def generate_initial_prompt(self) -> str:
+        STDIN_LIGHT_CYAN = '\033[96m'
+        STDIN_DEFAULT = '\033[0m'
+
         return (
-            f'{self.greeting} {self.description} '
+            f'{self.greeting}\n\n'
+            f'This looks like a coding project about {self.description}.\n'
             f'The directory structure looks like:\n{self.dir_structure}\n'
             '- For now, feel free to use me as a regular shell.\n'
             '- When you need my help, write your query in the terminal starting with a capital letter.\n'
             '- The command should turn orange, and I will have the necessary context from your workspace and stdout to assist you.\n'
-            '- To try it out, type "Refactor /path/to/file" in the terminal.'
+            f'- To try it out, type {STDIN_LIGHT_CYAN}"Refactor /path/to/file"{STDIN_DEFAULT} in the terminal.'
         )
 
     def generate_chat_completions_prompt(self, query: str = '', conv: str = '') -> list:
@@ -112,17 +114,17 @@ class Prompt(BaseModel):
                 'name': 'human'
             })
 
-        if conv:
-            messages.append({
-                'role': 'user',
-                'content': 'Here is the most recent conversation between the human, stdout logs, and assistant:\n',
-                'name': 'stdout'
-            })
-            messages.append({
-                'role': 'user',
-                'content': f'```\n{conv}```\n',
-                'name': 'stdout'
-            })
+        conv = self.load_conv()
+        messages.append({
+            'role': 'user',
+            'content': 'Here is the most recent conversation between the human, stdout logs, and assistant:\n',
+            'name': 'user'
+        })
+        messages.append({
+            'role': 'user',
+            'content': f'```\n{conv}```\n',
+            'name': 'stdout'
+        })
 
         query_line = ''
         if query:
@@ -144,7 +146,7 @@ class Prompt(BaseModel):
 
         return messages
     
-    def infer_target_file_names(self, query: str):
+    def infer_target_file_names(self, query: str) -> list[str]:
         tools = [
             {
                 'type': 'function',
@@ -182,51 +184,24 @@ class Prompt(BaseModel):
         print('Focusing on the following files:', file_names)
         return file_names
     
-    def load_conv(self):
+    def load_conv(self) -> str:
         with open(config.get_conversation_path(), 'r') as f:
             conv = f.read()
             pretty = pretty_print(conv)
             
             return pretty
 
-    def get_answer(self, basic_query: str):
-        conv = self.load_conv()
-        messages = self.generate_chat_completions_prompt(basic_query, conv)
+    def get_answer(self, query: str) -> Iterator[Optional[str]]:
+        messages = self.generate_chat_completions_prompt(query)
+        stream = self.llm.new_chat_request(messages)
+        response = ''
 
-        # key = self.generate_cache_key(query)
-        # cache_dir = config.get_llm_response_cache_dir()
-        # if not os.path.exists(cache_dir):
-        #     os.makedirs(cache_dir, exist_ok=True)
-
-        # cache_path = os.path.join(cache_dir, key)
-        if False: # os.path.exists(cache_path):
-            with open(cache_path, 'r') as f:
-                cached_response = f.read()
-                # this splits ```, ' ', and '\n' into separate tokens
-                tokens = re.findall(r'```|\S+|\s+', cached_response)
-                for token in tokens:
-                    nice_delay = 0.03
-                    time.sleep(nice_delay)
-                    yield token
-                yield None
-        
-        else:
-            stream = self.llm.new_chat_request(messages)
-            response = ''
-
-            try:
-                for chunk in stream:
-                    token = chunk.choices[0].delta.content or ''
-                    response += token
-                    yield token
-            except AttributeError:
-                pass
-            finally:
-                # with open(cache_path, 'w') as f:
-                #     f.write(response)
-
-                yield None
-        
-
-    def generate_cache_key(self, query: str):
-        return hashlib.md5(query.encode()).hexdigest() + '.txt'
+        try:
+            for chunk in stream:
+                token = chunk.choices[0].delta.content or ''
+                response += token
+                yield token
+        except AttributeError:
+            pass
+        finally:
+            yield None
