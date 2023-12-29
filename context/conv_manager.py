@@ -26,7 +26,7 @@ class ConversationManager(BaseModel):
         except Exception:
             return []
 
-    def append_message(self, role: str, content: str, name: str = '') -> None:
+    def append_conv(self, role: str, content: str, name: str = '') -> None:
         new_message = { 'role': role, 'content': content }
         if name:
             new_message['name'] = name
@@ -67,12 +67,12 @@ class ConversationManager(BaseModel):
             if stdout_log == b'':
                 return
             
-            self.append_message(
+            self.append_conv(
                 role='user',
                 content=user_cmd,
                 name='human'
             )
-            self.append_message(
+            self.append_conv(
                 role='user',
                 content=stdout_log.decode('utf-8'),
                 name='stdout'

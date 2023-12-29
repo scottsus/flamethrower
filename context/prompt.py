@@ -1,45 +1,13 @@
 import os
-from typing import Iterator, Optional
 from datetime import datetime
 from pydantic import BaseModel
 import config.constants as config
 from context.dir_walker import generate_directory_summary
 from models.llm import LLM
+from agents.file_chooser import FileChooser
 from utils.pretty import pretty_print
 
-def generate_greeting() -> str:
-    now = datetime.now()
-    current_hour = now.hour
-
-    if current_hour < 12:
-        return 'Good morning 👋'
-    elif current_hour < 18:
-        return 'Good afternoon 👋'
-    else:
-        return 'Good evening 👋'
-
-def generate_description() -> str:
-    # TODO: Summarize README
-    target_file = 'README.md'
-    if os.path.exists(target_file):
-        with open(target_file, 'r') as f:
-            readme = f.read()
-            return readme[:100]
-    else:
-        return ''
-
-def generate_dir_structure() -> str:
-    generate_directory_summary(os.getcwd())
-
-    target_path = config.get_dir_structure_path()
-    if os.path.exists(target_path):
-        with open(target_path, 'r') as f:
-            tree = f.read()
-            return tree
-    else:
-        return ''
-
-class Prompt(BaseModel):
+class PromptGenerator(BaseModel):
     # at initialization
     greeting: str = ''
     description: str = ''
@@ -57,7 +25,7 @@ class Prompt(BaseModel):
         self.dir_structure = generate_dir_structure()
         self.llm = LLM()
     
-    def generate_initial_prompt(self) -> str:
+    def construct_greeting(self) -> str:
         STDIN_LIGHT_CYAN = '\033[96m'
         STDIN_DEFAULT = '\033[0m'
 
@@ -71,7 +39,7 @@ class Prompt(BaseModel):
             f'- To try it out, type {STDIN_LIGHT_CYAN}"Refactor /path/to/file"{STDIN_DEFAULT} in the terminal.'
         )
 
-    def generate_chat_completions_prompt(self, query: str = '', conv: str = '') -> list:
+    def construct_messages(self, query: str = '', conv: str = '') -> list:
         messages = []
 
         description_line = ''
@@ -93,7 +61,11 @@ class Prompt(BaseModel):
             })
 
         if not self.target_file_names:
-            self.target_file_names = self.infer_target_file_names(query)
+            self.target_file_names = FileChooser().infer_target_file_paths(
+                self.description,
+                self.dir_structure,
+                query
+            )
 
         target_file_contents = ''
         for file_name in self.target_file_names:
@@ -146,44 +118,6 @@ class Prompt(BaseModel):
 
         return messages
     
-    def infer_target_file_names(self, query: str) -> list[str]:
-        tools = [
-            {
-                'type': 'function',
-                'function': {
-                    'name': 'blah',
-                    'description': 'Infer target file names relevant to user query',
-                    'parameters': {
-                        'type': 'object',
-                        'properties': {
-                            'file_names': {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'string'
-                                }
-                            }
-                        },
-                        'required': ['file_names']
-                    }
-                }
-            }
-        ]
-
-        res = self.llm.new_json_request(
-            f'This workspace is about {self.description}. '
-            f'Given the directory structure {self.dir_structure}, '
-            f'determine which files are relevant to the following user query: "{query}". '
-            'Only use the files which you think are absolutely necessary to complete the user query. '
-            'If the user is asking some generic non-workspace-related question, just return an empty list.',
-            tools=tools,
-        )
-
-        max_files_used = 5
-        file_names = res['file_names'][:max_files_used]
-        # TODO: allow user to select which files
-        print('Focusing on the following files:', file_names)
-        return file_names
-    
     def load_conv(self) -> str:
         with open(config.get_conversation_path(), 'r') as f:
             conv = f.read()
@@ -191,17 +125,38 @@ class Prompt(BaseModel):
             
             return pretty
 
-    def get_answer(self, query: str) -> Iterator[Optional[str]]:
-        messages = self.generate_chat_completions_prompt(query)
-        stream = self.llm.new_chat_request(messages)
-        response = ''
+"""
+Helper functions
+"""
 
-        try:
-            for chunk in stream:
-                token = chunk.choices[0].delta.content or ''
-                response += token
-                yield token
-        except AttributeError:
-            pass
-        finally:
-            yield None
+def generate_greeting() -> str:
+    now = datetime.now()
+    current_hour = now.hour
+
+    if current_hour < 12:
+        return 'Good morning 👋'
+    elif current_hour < 18:
+        return 'Good afternoon 👋'
+    else:
+        return 'Good evening 👋'
+
+def generate_description() -> str:
+    # TODO: Summarize README
+    target_file = 'README.md'
+    if os.path.exists(target_file):
+        with open(target_file, 'r') as f:
+            readme = f.read()
+            return readme[:100]
+    else:
+        return ''
+
+def generate_dir_structure() -> str:
+    generate_directory_summary(os.getcwd())
+
+    target_path = config.get_dir_structure_path()
+    if os.path.exists(target_path):
+        with open(target_path, 'r') as f:
+            tree = f.read()
+            return tree
+    else:
+        return ''

@@ -1,5 +1,5 @@
 import os
-from context.prompt import Prompt
+from context.prompt import PromptGenerator
 from config.constants import *
 
 zshrc_contents = """# basic zshrc for pty
@@ -31,7 +31,7 @@ colored_welcome_screen = (
     "\n"
 )
 
-def setup_zsh_env() -> Prompt:
+def setup_zsh_env() -> PromptGenerator:
     if not os.path.exists(FLAMETHROWER_DIR):
         os.makedirs(FLAMETHROWER_DIR)
     
@@ -56,9 +56,9 @@ def setup_zsh_env() -> Prompt:
     if not os.path.exists(FLAMETHROWER_LOG_DIR):
         os.makedirs(FLAMETHROWER_LOG_DIR)
 
-    prompt = Prompt()
+    pg = PromptGenerator()
     # TODO: use printer API
-    print(prompt.generate_initial_prompt())
+    print(pg.construct_greeting())
 
-    return prompt
+    return pg
     

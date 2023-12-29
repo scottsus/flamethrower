@@ -10,20 +10,23 @@ from .setup import setup_zsh_env
 from .command_handler import CommandHandler
 from .printer import Printer
 from context.conv_manager import ConversationManager
+from agents.executor import Executor
 
 class Shell:
     def __init__(self):
         self.block_size = 1024
         self.leader_fd, self.follower_fd = pty.openpty()
         self.child_process = None
+        self.command_handler = None
         self.conv_manager = None
+        self.executor = None
         self.printer = None
 
     def execute_kill_signal(self):
         sys.exit(0)
 
     def run(self):
-        prompt = setup_zsh_env()
+        prompt_generator = setup_zsh_env()
         env = os.environ.copy()
         env['ZDOTDIR'] = config.FLAMETHROWER_DIR
         self.child_process = subprocess.Popen(['zsh'],
@@ -43,10 +46,15 @@ class Shell:
             tty_settings=old_settings,
             conv_manager=self.conv_manager
         )
-        cmdHandler = CommandHandler(
-            prompt=prompt,
+        self.executor = Executor(
+            conv_manager=self.conv_manager,
+            printer=self.printer
+        )
+        self.cmdHandler = CommandHandler(
+            prompt_generator=prompt_generator,
             printer=self.printer,
-            conv_manager=self.conv_manager
+            conv_manager=self.conv_manager,
+            executor=self.executor
         )
 
         try:
@@ -69,7 +77,7 @@ class Shell:
                     key = os.read(sys.stdin.fileno(), self.block_size)
                     if not key:
                         break
-                    cmdHandler.handle(key)
+                    self.cmdHandler.handle(key)
                 
                 if self.child_process.poll() is not None:
                     break

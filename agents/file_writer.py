@@ -1,116 +1,64 @@
+import os
+import re
+from pydantic import BaseModel
 from models.llm import LLM
 
-# Given an LLM coding response, extract the code and write it to a file
-llm = LLM()
+system_message = """
+You are an extremely powerful programming assistant that can write flawless code.
+You have a single, crucial task: Given an expert engineer's coding response and a target file:
+  1. Read the target file, if it exists
+  2. Understand the expert engineer's response and extract the code
+  3. Meaningfully incorporate the extracted code into the target file
+You are completely overwriting the existing target file, so it is imperative that 
+the code you write is both syntactically and semantically correct.
+"""
 
-# stream = llm.new_chat_request('Write python code to solve the LeetCode TwoSum problem')
+class FileWriter(BaseModel):
+    llm: LLM = None
 
-# content = ''
-# for token in stream:
-#     print(token.choices[0].delta.content, end='', flush=True)
+    def __init__(self, **data):
+        super().__init__(**data)
+        self.llm = LLM(system_message=system_message)
+    
+    def write_code(self, target_path: str, assistant_implementation: str) -> None:
+        old_contents = ''
+        target_path = os.path.join(os.getcwd(), target_path)
+        try:
+            with open(target_path, 'r') as f:
+                old_contents = f.read()
+        except FileNotFoundError:
+            pass
 
-# print(content)
+        query = (
+            f'This is the starting code: {old_contents}.\n'
+            f'This is the solution provided by an expert engineer: {assistant_implementation}.\n'
+            'Your job is to **incorporate the solution above into the starting code**, following the steps outlined above.\n'
+            'Do not add explanations, and ensure that the code you write is both syntactically and semantically correct.\n'
+        )
 
-tools = [
-    {
-        'type': 'function',
-        'function': {
-            'name': 'blah',
-            'description': 'Actual code that will be written into a target file',
-            'parameters': {
-                'type': 'object',
-                'properties': {
-                    'explanation': {
-                        'type': 'string'
-                    },
-                    'code': {
-                        'type': 'string'
-                    },
-                    'target_file': {
-                        'type': 'string'
-                    }
+        llm_res = self.llm.new_chat_request(
+            messages=[
+                {
+                    'role': 'system',
+                    'content': self.llm.system_message,
                 },
-                'required': ['target_file', 'code']
-            }
-        }
-    }
-]
+                {
+                    'role': 'user',
+                    'content': query,
+                }
+            ],
+            model='gpt-4-1106-preview',
+            loading_message=f'✍️  Writing the changes to {target_path}...',
+        )
 
-starting_point = """
-class A():
-    def greeting():
-        print('hello')
+        new_contents = self.clean_backticks(llm_res)
+        
+        with open(target_path, 'w') as f:
+            f.write(new_contents)
 
-class B():
-    def greeting():
-        print('hello')
-
-class C():
-    def greeting():
-        print('hello')
-
-class Solution():
-    def twoSum():
-        pass
-"""
-
-solution = """
-This looks like the classic LeetCode TwoSum problem! In order to solve this in Python, use the following implementation below.
-
-```
-... existing code ...
-
-class Solution(object):
-    def twoSum(self, nums, target):
-        h = {}
-        for i, num in enumerate(nums):
-            n = target - num
-            if n not in h:
-                h[num] = i
-            else:
-                return [h[n], i]
-```
-"""
-
-res = llm.new_json_request(f'This is the starting code: {starting_point}.\n'
-                           f'This is the solution provided by an expert engineer: {solution}.\n'
-                           f'Your crucial task is to incorporate the solution above into the starting code, while providing a short explanation of the solution.\n'
-                           'You MUST write your response to "blah.py"', tools=tools)
-
-prev = ''
-content = ''
-logfile = open('logfile.txt', 'w')
-for chunk in res:
-    try:
-        token = chunk.choices[0].delta.tool_calls[0].function.arguments
-        if prev.endswith('\\'):
-            if token.startswith('n'):
-                token = token[1:]
-                print(f'\n{token}', end='', flush=True)
-                content += '\n' + token
-                prev = '\n'
-            # else if token is some other escape
-        elif token.endswith('\\'):
-            token = token[:-1]
-            print(token, end='', flush=True)
-            content += token
-            prev = '\\'
-        else:
-            if token == '\\n' or token == '\\\n':
-                token = '\n'
-            print(token, end='', flush=True)
-            content += token
-            prev = token
-    except TypeError:
-        pass
-
-print('\n')
-print(content)
-
-
-# target_file, code = res['target_file'], res['code']
-# print(code)
-
-# with open(target_file, 'w') as f:
-#     f.write(code)
-#     print(code)
+    def clean_backticks(self, text: str) -> str:
+        try:
+            pattern = r"```(?:\w+\n)?(.*?)```"
+            return re.search(pattern, text, re.DOTALL).group(1)
+        except AttributeError:
+            return text

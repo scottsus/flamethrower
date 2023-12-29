@@ -15,3 +15,8 @@ def get_last_user_cmd() -> str:
             last_command = history[last_index]
 
         return last_command
+    
+def update_zsh_history(query: str) -> None:
+    with open(config.get_zsh_history_path(), 'a') as f:
+        f.write(query + '\n')
+        

@@ -7,25 +7,13 @@ from rich.console import Console
 from rich.syntax import Syntax
 from rich.live import Live
 from context.conv_manager import ConversationManager
+import config.constants as config
 from utils.special_keys import (
     ENTER_KEY,
     CLEAR_FROM_START,
     CURSOR_TO_START,
 )
-
-STDIN_DEFAULT = b'\033[0m'
-STDIN_RED = b'\033[31m'
-STDIN_YELLOW = b'\033[33m'
-STDIN_GREEN = b'\033[92m'
-STDIN_BLUE = b'\033[94m'
-STDIN_CYAN = b'\033[96m'
-STDIN_GRAY = b'\033[90m'
-STDIN_WHITE = b'\033[97m'
-
-STDIN_LIGHT_GREEN = b'\033[92m'
-STDIN_LIGHT_BLUE = b'\033[94m'
-STDIN_LIGHT_CYAN = b'\033[96m'
-STDIN_LIGHT_MAGENTA = b'\033[95m'
+from utils.colors import *
 
 class Printer(BaseModel):
     class Config:
@@ -115,12 +103,16 @@ class Printer(BaseModel):
         
         self.print_default(ENTER_KEY + CLEAR_FROM_START + CURSOR_TO_START)
         def append_conv(content: str) -> None:
-            self.conv_manager.append_message(
+            self.conv_manager.append_conv(
                 role='assistant',
                 content=content,
             )
+        
+        def log_last_response(content: str) -> None:
+            with open(config.get_last_response_path(), 'w') as f:
+                f.write(content)
 
-        nl_content, code_content = '', ''
+        nl_content, code_content, complete_content = '', '', ''
         try:
             while True:
                 # Natural language responses
@@ -135,7 +127,7 @@ class Printer(BaseModel):
                     self.print_stdout(token.encode('utf-8'))
                     nl_content += token or ''
                 
-                append_conv(nl_content)
+                complete_content += nl_content
                 nl_content = ''
                     
                 # Coding responses
@@ -161,15 +153,17 @@ class Printer(BaseModel):
                         syntax = Syntax(code_content, lang, theme='monokai', line_numbers=False)
                         live.update(syntax, refresh=True)
                     
-                    append_conv(f'\n```{code_content}\n```')
+                    complete_content += f'\n```{code_content}\n```\n'
                     code_content = ''
         except AttributeError:
             # that means EOF was reached
             pass
         finally:
             if nl_content:
-                append_conv(nl_content)
+                complete_content += nl_content
             if code_content:
-                append_conv(f'```{code_content}\n```')
+                complete_content += f'```{code_content}\n```\n'
+            append_conv(complete_content)
+            log_last_response(complete_content)
 
         tty.setraw(sys.stdin)
