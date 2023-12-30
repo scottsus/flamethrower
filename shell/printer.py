@@ -24,58 +24,58 @@ class Printer(BaseModel):
     tty_settings: list = []
     conv_manager: ConversationManager = None
 
-    def write_leader(self, data: bytes):
+    def write_leader(self, data: bytes) -> None:
         if self.leader_fd:
             os.write(self.leader_fd, data)
 
-    def print_stdout(self, data: bytes):
+    def print_stdout(self, data: bytes) -> None:
         if self.stdout_fd:
             os.write(self.stdout_fd, data)
 
-    def print_color(self, data: bytes, color: bytes, reset: bool = False):
+    def print_color(self, data: bytes, color: bytes, reset: bool = False) -> None:
         if self.stdout_fd:
             os.write(self.stdout_fd, color)
             self.print_stdout(data)
         if reset:
             os.write(self.stdout_fd, STDIN_DEFAULT)
 
-    def print_default(self, data: bytes):
-        self.print_color(data, STDIN_DEFAULT)
+    def print_default(self, data: bytes, reset: bool) -> None:
+        self.print_color(data, STDIN_DEFAULT, reset=reset)
     
-    def print_red(self, data: bytes):
-        self.print_color(data, STDIN_RED)
+    def print_red(self, data: bytes, reset: bool) -> None:
+        self.print_color(data, STDIN_RED, reset=reset)
     
-    def print_yellow(self, data: bytes):
-        self.print_color(data, STDIN_YELLOW)
+    def print_yellow(self, data: bytes, reset: bool) -> None:
+        self.print_color(data, STDIN_YELLOW, reset=reset)
     
-    def print_green(self, data: bytes):
-        self.print_color(data, STDIN_GREEN)
+    def print_green(self, data: bytes, reset: bool) -> None:
+        self.print_color(data, STDIN_GREEN, reset=reset)
     
-    def print_blue(self, data: bytes):
-        self.print_color(data, STDIN_BLUE)
+    def print_blue(self, data: bytes, reset: bool) -> None:
+        self.print_color(data, STDIN_BLUE, reset=reset)
     
-    def print_cyan(self, data: bytes):
-        self.print_color(data, STDIN_CYAN)
+    def print_cyan(self, data: bytes, reset: bool) -> None:
+        self.print_color(data, STDIN_CYAN, reset=reset)
     
-    def print_gray(self, data: bytes):
-        self.print_color(data, STDIN_GRAY)
+    def print_gray(self, data: bytes, reset: bool) -> None:
+        self.print_color(data, STDIN_GRAY, reset=reset)
 
-    def print_white(self, data: bytes):
-        self.print_color(data, STDIN_WHITE)
+    def print_white(self, data: bytes, reset: bool) -> None:
+        self.print_color(data, STDIN_WHITE, reset=reset)
 
-    def print_light_green(self, data: bytes):
-        self.print_color(data, STDIN_LIGHT_GREEN)
+    def print_light_green(self, data: bytes, reset: bool) -> None:
+        self.print_color(data, STDIN_LIGHT_GREEN, reset=reset)
     
-    def print_light_blue(self, data: bytes):
-        self.print_color(data, STDIN_LIGHT_BLUE)
+    def print_light_blue(self, data: bytes, reset: bool) -> None:
+        self.print_color(data, STDIN_LIGHT_BLUE, reset=reset)
 
-    def print_light_cyan(self, data: bytes):
-        self.print_color(data, STDIN_LIGHT_CYAN)
+    def print_light_cyan(self, data: bytes, reset: bool) -> None:
+        self.print_color(data, STDIN_LIGHT_CYAN, reset=reset)
     
-    def print_light_magenta(self, data: bytes):
-        self.print_color(data, STDIN_LIGHT_MAGENTA)
+    def print_light_magenta(self, data: bytes, reset: bool) -> None:
+        self.print_color(data, STDIN_LIGHT_MAGENTA, reset=reset)
 
-    def print_llm_response(self, stream):
+    def print_llm_response(self, stream) -> None:
         """
         1. Swap out of pty back into main shell
         2. Print the code using Python Rich

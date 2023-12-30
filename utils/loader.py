@@ -21,7 +21,7 @@ class Loader(BaseModel):
         if data.get('message') == '':
             self.message = '🧠 Thinking...'
 
-    def spin(self):
+    def spin(self) -> None:
         sys.stdout.write('\n')
         while not self.done:
             elapsed = time.time() - self.start_time
@@ -30,7 +30,7 @@ class Loader(BaseModel):
             sys.stdout.flush()
             time.sleep(speed)
 
-    def stop(self):
+    def stop(self) -> None:
         self.done = True
         sys.stdout.write((CLEAR_FROM_START + CLEAR_TO_END + CURSOR_TO_START).decode("utf-8"))
         sys.stdout.flush()

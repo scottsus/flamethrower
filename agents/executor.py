@@ -52,7 +52,7 @@ class Executor(BaseModel):
         self.llm = LLM(system_message=system_message)
         self.file_writer = FileWriter()
 
-    def execute_action(self, command):
+    def execute_action(self, command) -> str:
         output = ''
         try:
             completed_process = subprocess.run(
@@ -119,24 +119,23 @@ class Executor(BaseModel):
             self.printer.print_llm_response(stream)
         
         # Max retries exceeded
-        self.printer.print_red("Something is wrong, I'm going to need your help to debug this.")
-        self.printer.print_default()
+        self.printer.print_red("Something is wrong, I'm going to need your help to debug this.", reset=True)
 
     def get_last_assistant_response(self) -> str:
         with open(config.get_last_response_path(), 'r') as f:
             return f.read()
 
-    def make_decision_from(self, objective: str, latest_response: str) -> None:
+    def make_decision_from(self, objective: str, latest_response: str) -> dict:
         query = (
             f'This is the objective:\n{objective}'
             f'This is the latest response:\n{latest_response}'
             'Given this objective and response, choose a possible action.'
         )
-        res = self.llm.new_json_request(
+        decision = self.llm.new_json_request(
             query=query,
             json_schema=self.json_schema,
             loading_message='🤖 Determining next step...'
         )
 
-        return res
+        return decision
     

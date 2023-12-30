@@ -66,7 +66,7 @@ class LLM(BaseModel):
         finally:
             yield None
     
-    def new_json_request(self, query: str, json_schema: dict, loading_message: str = '') -> Iterator[Optional[str]]:
+    def new_json_request(self, query: str, json_schema: dict, loading_message: str = '') -> dict:
         loader = Loader(message=loading_message)
         loader_thread = threading.Thread(target=loader.spin)
         loader_thread.start()
