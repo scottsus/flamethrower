@@ -47,7 +47,6 @@ class FileWriter(BaseModel):
                     'content': query,
                 }
             ],
-            model='gpt-4-1106-preview',
             loading_message=f'✍️  Writing the changes to {target_path}...',
         )
 

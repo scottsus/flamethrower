@@ -6,6 +6,7 @@ from openai import OpenAI
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from typing import Iterator, Optional
+from models.models import OPENAI_GPT_4_TURBO
 from utils.loader import Loader
 
 default_system_message = """
@@ -24,6 +25,7 @@ class LLM(BaseModel):
         arbitrary_types_allowed = True
 
     client: OpenAI = None
+    default_model = OPENAI_GPT_4_TURBO
     system_message: str = default_system_message
 
     def __init__(self, **data):
@@ -32,14 +34,14 @@ class LLM(BaseModel):
             api_key=os.getenv('OPENAI_API_KEY'),
         )
 
-    def new_chat_request(self, messages: list, model: str = 'gpt-4-1106-preview', loading_message: str = '') -> str:
+    def new_chat_request(self, messages: list, loading_message: str = '') -> str:
         loader = Loader(message=loading_message)
         loader_thread = threading.Thread(target=loader.spin)
         loader_thread.start()
 
         try:
             res = self.client.chat.completions.create(
-                model=model,
+                model=self.default_model,
                 messages=messages,
                 stream=False
             )
@@ -48,9 +50,9 @@ class LLM(BaseModel):
         finally:
             loader.stop()
 
-    def new_streaming_chat_request(self, messages: list, model: str ='gpt-4-1106-preview') -> Iterator[Optional[str]]:
+    def new_streaming_chat_request(self, messages: list) -> Iterator[Optional[str]]:
         stream = self.client.chat.completions.create(
-            model=model,
+            model=self.default_model,
             messages=messages,
             stream=True,
         )
@@ -64,7 +66,7 @@ class LLM(BaseModel):
         finally:
             yield None
     
-    def new_json_request(self, query: str, json_schema: dict, model: str = 'gpt-4-1106-preview', loading_message: str = '') -> Iterator[Optional[str]]:
+    def new_json_request(self, query: str, json_schema: dict, loading_message: str = '') -> Iterator[Optional[str]]:
         loader = Loader(message=loading_message)
         loader_thread = threading.Thread(target=loader.spin)
         loader_thread.start()
@@ -73,7 +75,7 @@ class LLM(BaseModel):
             while True:
                 try:
                     res = self.client.chat.completions.create(
-                        model=model,
+                        model=self.default_model,
                         messages=[
                             {
                                 'role': 'system',
