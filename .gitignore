@@ -1,18 +1,17 @@
 # Flamethrower
 .flamethrower
-build.sh
 
 # Python
-venv
-.venv
 __pycache__
 
 # Poetry
+.venv
 dist
 
 # Shell
 .zsh*
 
 # Misc
+.env
 .vscode
 .DS_Store
