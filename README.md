@@ -9,6 +9,7 @@ The ultimate debugging experience.
     ```
     pip install flamethrower
     ```
+    `WARN`: this installs `flamethrower` deps into your global python environment -- which you will need if you want to run flamethrower on any workspace.
 
 2. Export OpenAI key for `flamethrower` to use
 
