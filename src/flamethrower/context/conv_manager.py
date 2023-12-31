@@ -1,8 +1,8 @@
 import json
 from io import TextIOWrapper
 from pydantic import BaseModel
-import config.constants as config
-from utils import (
+import flamethrower.config.constants as config
+from flamethrower.utils import (
     sequence_parser as sp,
     zsh_history as zh,
     pretty as pr

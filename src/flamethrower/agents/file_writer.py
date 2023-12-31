@@ -1,7 +1,7 @@
 import os
 import re
 from pydantic import BaseModel
-from models.llm import LLM
+from flamethrower.models.llm import LLM
 
 system_message = """
 You are an extremely powerful programming assistant that can write flawless code.

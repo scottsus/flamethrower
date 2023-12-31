@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from models.llm import LLM
+from flamethrower.models.llm import LLM
 
 json_schema = {
     'type': 'object',

@@ -6,14 +6,14 @@ from pydantic import BaseModel
 from rich.console import Console
 from rich.syntax import Syntax
 from rich.live import Live
-from context.conv_manager import ConversationManager
-import config.constants as config
-from utils.special_keys import (
+from flamethrower.context.conv_manager import ConversationManager
+import flamethrower.config.constants as config
+from flamethrower.utils.special_keys import (
     ENTER_KEY,
     CLEAR_FROM_START,
     CURSOR_TO_START,
 )
-from utils.colors import *
+from flamethrower.utils.colors import *
 
 class Printer(BaseModel):
     class Config:
@@ -39,40 +39,40 @@ class Printer(BaseModel):
         if reset:
             os.write(self.stdout_fd, STDIN_DEFAULT)
 
-    def print_default(self, data: bytes, reset: bool) -> None:
+    def print_default(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_DEFAULT, reset=reset)
     
-    def print_red(self, data: bytes, reset: bool) -> None:
+    def print_red(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_RED, reset=reset)
     
-    def print_yellow(self, data: bytes, reset: bool) -> None:
+    def print_yellow(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_YELLOW, reset=reset)
     
-    def print_green(self, data: bytes, reset: bool) -> None:
+    def print_green(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_GREEN, reset=reset)
     
-    def print_blue(self, data: bytes, reset: bool) -> None:
+    def print_blue(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_BLUE, reset=reset)
     
-    def print_cyan(self, data: bytes, reset: bool) -> None:
+    def print_cyan(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_CYAN, reset=reset)
     
-    def print_gray(self, data: bytes, reset: bool) -> None:
+    def print_gray(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_GRAY, reset=reset)
 
-    def print_white(self, data: bytes, reset: bool) -> None:
+    def print_white(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_WHITE, reset=reset)
 
-    def print_light_green(self, data: bytes, reset: bool) -> None:
+    def print_light_green(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_GREEN, reset=reset)
     
-    def print_light_blue(self, data: bytes, reset: bool) -> None:
+    def print_light_blue(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_BLUE, reset=reset)
 
-    def print_light_cyan(self, data: bytes, reset: bool) -> None:
+    def print_light_cyan(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_CYAN, reset=reset)
     
-    def print_light_magenta(self, data: bytes, reset: bool) -> None:
+    def print_light_magenta(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_MAGENTA, reset=reset)
 
     def print_llm_response(self, stream) -> None:

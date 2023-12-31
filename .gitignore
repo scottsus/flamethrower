@@ -4,7 +4,11 @@ build.sh
 
 # Python
 venv
+.venv
 __pycache__
+
+# Poetry
+dist
 
 # Shell
 .zsh*

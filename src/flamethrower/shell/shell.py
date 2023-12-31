@@ -5,12 +5,12 @@ import tty
 import termios
 import subprocess
 from select import select
-import config.constants as config
+import flamethrower.config.constants as config
 from .setup import setup_zsh_env
 from .command_handler import CommandHandler
 from .printer import Printer
-from context.conv_manager import ConversationManager
-from agents.executor import Executor
+from flamethrower.context.conv_manager import ConversationManager
+from flamethrower.agents.executor import Executor
 
 class Shell:
     def __init__(self):

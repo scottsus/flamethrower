@@ -1,6 +1,6 @@
 import os
 import pathspec
-import config.constants as config
+import flamethrower.config.constants as config
 
 def generate_directory_summary(start_path):
     gitignore = None

@@ -1,6 +1,6 @@
 import os
-from context.prompt import PromptGenerator
-from config.constants import *
+from flamethrower.context.prompt import PromptGenerator
+from flamethrower.config.constants import *
 
 zshrc_contents = """# basic zshrc for pty
 

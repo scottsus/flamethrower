@@ -1,11 +1,11 @@
 import os
 from datetime import datetime
 from pydantic import BaseModel
-import config.constants as config
-from context.dir_walker import generate_directory_summary
-from models.llm import LLM
-from agents.file_chooser import FileChooser
-from utils.pretty import pretty_print
+import flamethrower.config.constants as config
+from flamethrower.context.dir_walker import generate_directory_summary
+from flamethrower.models.llm import LLM
+from flamethrower.agents.file_chooser import FileChooser
+from flamethrower.utils.pretty import pretty_print
 
 class PromptGenerator(BaseModel):
     # at initialization

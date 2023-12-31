@@ -1,10 +1,10 @@
 import subprocess
 from pydantic import BaseModel
-from models.llm import LLM
-from context.conv_manager import ConversationManager
-from shell.printer import Printer
+import flamethrower.config.constants as config
+from flamethrower.models.llm import LLM
+from flamethrower.context.conv_manager import ConversationManager
+from flamethrower.shell.printer import Printer
 from .file_writer import FileWriter
-import config.constants as config
 
 json_schema = {
     'type': 'object',

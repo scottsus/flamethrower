@@ -1,11 +1,11 @@
 import sys
 from pydantic import BaseModel
 from .printer import Printer
-from context.prompt import PromptGenerator
-from context.conv_manager import ConversationManager
-from agents.executor import Executor
-from utils.special_keys import *
-from utils.zsh_history import update_zsh_history
+from flamethrower.context.prompt import PromptGenerator
+from flamethrower.context.conv_manager import ConversationManager
+from flamethrower.agents.executor import Executor
+from flamethrower.utils.special_keys import *
+from flamethrower.utils.zsh_history import update_zsh_history
 
 class CommandHandler(BaseModel):
     pos: int = 0

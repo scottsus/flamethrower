@@ -1,4 +1,4 @@
-import config.constants as config
+import flamethrower.config.constants as config
 
 def get_last_user_cmd() -> str:
     with open(config.get_zsh_history_path()) as f:
@@ -19,4 +19,3 @@ def get_last_user_cmd() -> str:
 def update_zsh_history(query: str) -> None:
     with open(config.get_zsh_history_path(), 'a') as f:
         f.write(query + '\n')
-        

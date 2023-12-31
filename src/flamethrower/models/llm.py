@@ -6,8 +6,8 @@ from openai import OpenAI
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from typing import Iterator, Optional
-from models.models import OPENAI_GPT_4_TURBO
-from utils.loader import Loader
+from flamethrower.models.models import OPENAI_GPT_4_TURBO
+from flamethrower.utils.loader import Loader
 
 default_system_message = """
 You are an incredibly powerful programming assistant that can write flawless code.
@@ -25,7 +25,7 @@ class LLM(BaseModel):
         arbitrary_types_allowed = True
 
     client: OpenAI = None
-    default_model = OPENAI_GPT_4_TURBO
+    default_model: str = OPENAI_GPT_4_TURBO
     system_message: str = default_system_message
 
     def __init__(self, **data):

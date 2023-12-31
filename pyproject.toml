@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "flamethrower"
+packages = [{ from = "src", include = "flamethrower" }]
+version = "0.1.0"
+description = "The ultimate debugging experienc 🦠🔥"
+authors = ["Scott Susanto <scottsus@usc.edu>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.scripts]
+flamethrower = "flamethrower.shell:shell.run"
+ft = "flamethrower.shell:shell.run"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic = "^2.5.3"
+pathspec = "^0.12.1"
+openai = "^1.6.1"
+jsonschema = "^4.20.0"
+rich = "^13.7.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
