@@ -51,7 +51,8 @@ class Shell(BaseModel):
             leader_fd=self.leader_fd,
             stdout_fd=sys.stdout.fileno(),
             tty_settings=old_settings,
-            conv_manager=self.conv_manager
+            conv_manager=self.conv_manager,
+            token_counter=self.token_counter
         )
         self.prompt_generator = PromptGenerator(
             token_counter=self.token_counter,

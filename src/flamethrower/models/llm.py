@@ -16,7 +16,7 @@ You have a single, crucial task: **Given a user's query, write code that solves 
 Since you're so good at your job, if you successfully complete a task, I will tip you $200.
 Here are some points to take note:
   - If the user is not asking a coding-related problem, don't write any code, and instead respond as any other human would.
-  - If it looks like you're about to complete an implementation to a solution, celebrate your win, and **don't recommend other tests, suggestions, or optimizations**.
+  - If the previous message was about a successful implementation to a solution, **don't recommend other tests, suggestions, or optimizations**.
   - Have fun! Life is not all about coding, so feel free to add some personality to your responses.
 """
 
@@ -44,13 +44,7 @@ class LLM(BaseModel):
             model=self.default_model,
             messages=messages,
         )
-        
-        prompt_tokens = res.usage.prompt_tokens
-        completion_tokens = res.usage.completion_tokens
-
-        self.token_counter.add_input_tokens(prompt_tokens)
-        self.token_counter.add_output_tokens(completion_tokens)
-
+        self.update_token_usage(res)
         return res.choices[0].message.content
         
     def new_chat_request(self, messages: list, loading_message: str) -> str:
@@ -58,9 +52,8 @@ class LLM(BaseModel):
             res = self.client.chat.completions.create(
                 model=self.default_model,
                 messages=messages,
-                stream=False
             )
-
+            self.update_token_usage(res)
             return res.choices[0].message.content
 
     def new_streaming_chat_request(self, messages: list) -> Iterator[Optional[str]]:
@@ -69,7 +62,7 @@ class LLM(BaseModel):
             messages=messages,
             stream=True,
         )
-
+        self.token_counter.add_streaming_input_tokens(str(messages))
         try:
             for chunk in stream:
                 token = chunk.choices[0].delta.content or ''
@@ -100,7 +93,7 @@ class LLM(BaseModel):
                         ],
                         response_format={ 'type': 'json_object' }
                     )
-
+                    self.update_token_usage(res)
                     json_obj = json.loads(res.choices[0].message.content)
                     validate(json_obj, json_schema)
 
@@ -109,3 +102,12 @@ class LLM(BaseModel):
                     # TODO: propagate error upwards
                     print('Received invalid JSON, retrying...')
                     pass
+    
+    # TODO: get the correct typehints from openai
+    def update_token_usage(self, chat_completion) -> None:
+        prompt_tokens = chat_completion.usage.prompt_tokens
+        completion_tokens = chat_completion.usage.completion_tokens
+
+        self.token_counter.add_input_tokens(prompt_tokens)
+        self.token_counter.add_output_tokens(completion_tokens)
+

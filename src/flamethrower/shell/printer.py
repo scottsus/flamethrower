@@ -6,13 +6,10 @@ from pydantic import BaseModel
 from rich.console import Console
 from rich.syntax import Syntax
 from rich.live import Live
-from flamethrower.context.conv_manager import ConversationManager
 import flamethrower.config.constants as config
-from flamethrower.utils.special_keys import (
-    ENTER_KEY,
-    CLEAR_FROM_START,
-    CURSOR_TO_START,
-)
+from flamethrower.context.conv_manager import ConversationManager
+from flamethrower.utils.token_counter import TokenCounter
+from flamethrower.utils.special_keys import *
 from flamethrower.utils.colors import *
 
 class Printer(BaseModel):
@@ -23,6 +20,7 @@ class Printer(BaseModel):
     stdout_fd: int = 0
     tty_settings: list = []
     conv_manager: ConversationManager = None
+    token_counter: TokenCounter = None
 
     def write_leader(self, data: bytes) -> None:
         if self.leader_fd:
@@ -138,7 +136,7 @@ class Printer(BaseModel):
                     
                 # Coding responses
                 console, lang = Console(), 'python'
-                with Live(console=console, refresh_per_second=2) as live:
+                with Live(console=console, refresh_per_second=10) as live:
                     is_first = True
                     for token in stream:                        
                         if is_first:
@@ -169,6 +167,8 @@ class Printer(BaseModel):
                 complete_content += nl_content
             if code_content:
                 complete_content += f'```{code_content}\n```\n'
+
+            self.token_counter.add_streaming_output_tokens(complete_content)
             append_conv(complete_content)
             log_last_response(complete_content)
 

@@ -45,6 +45,7 @@ DIR_TREE_FILE_NAME = 'dir_tree.log'
 DIR_LIST_FILE_NAME = 'dir_dict.json'
 CONVERSATION_FILE_NAME = 'conv.json'
 PRETTY_CONVERSATION_FILE_NAME = 'conv.log'
+CURRENT_FILES_FILE_NAME = 'current_files.log'
 LAST_PROMPT_FILE_NAME = 'last_prompt.log'
 LAST_RESPONSE_FILE_NAME  = 'last_response.log'
 
@@ -56,6 +57,9 @@ def get_dir_tree_path() -> str:
 
 def get_dir_dict_path() -> str:
     return flamethrower_log_dir(DIR_LIST_FILE_NAME)
+
+def get_current_files_path() -> str:
+    return flamethrower_log_dir(CURRENT_FILES_FILE_NAME)
 
 def get_conversation_path() -> str:
     return flamethrower_log_dir(CONVERSATION_FILE_NAME)

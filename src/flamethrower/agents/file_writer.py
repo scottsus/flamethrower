@@ -1,6 +1,7 @@
 import os
 import re
 from pydantic import BaseModel
+import flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
 from flamethrower.utils.token_counter import TokenCounter
 
@@ -27,9 +28,10 @@ class FileWriter(BaseModel):
     
     def write_code(self, target_path: str, assistant_implementation: str) -> None:
         old_contents = ''
-        target_path = os.path.join(os.getcwd(), target_path)
+        strict_target_path = self.choose_file_path(target_path)
+        complete_target_path = os.path.join(os.getcwd(), strict_target_path)
         try:
-            with open(target_path, 'r') as f:
+            with open(complete_target_path, 'r') as f:
                 old_contents = f.read()
         except FileNotFoundError:
             pass
@@ -52,13 +54,21 @@ class FileWriter(BaseModel):
                     'content': query,
                 }
             ],
-            loading_message=f'✍️  Writing the changes to {target_path}...',
+            loading_message=f'✍️  Writing the changes to {strict_target_path}...',
         )
 
         new_contents = self.clean_backticks(llm_res)
         
-        with open(target_path, 'w') as f:
+        with open(complete_target_path, 'w') as f:
             f.write(new_contents)
+    
+    def choose_file_path(self, given_file_path: str) -> str:
+        with open(config.get_current_files_path(), 'r') as f:
+            strict_file_paths = f.read().split('\n')
+
+            for strict_file_path in strict_file_paths:
+                if given_file_path in strict_file_path:
+                    return strict_file_path
 
     def clean_backticks(self, text: str) -> str:
         try:

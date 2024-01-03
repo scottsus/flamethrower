@@ -1,4 +1,6 @@
+import tiktoken
 from pydantic import BaseModel
+from flamethrower.models.models import OPENAI_GPT_4_TURBO
 
 class TokenCounter(BaseModel):
     total_input_tokens: int = 0
@@ -23,6 +25,20 @@ class TokenCounter(BaseModel):
     
     def add_output_tokens(self, tokens: int) -> None:
         self.total_output_tokens += tokens
+    
+    def add_streaming_input_tokens(self, complete_input_text: str) -> None:
+        # TODO: no hardcoded models
+        enc = tiktoken.encoding_for_model(OPENAI_GPT_4_TURBO)
+        num_input_tokens = len(enc.encode(complete_input_text))
+
+        self.total_input_tokens += num_input_tokens
+    
+    def add_streaming_output_tokens(self, complete_output_text: str) -> None:
+        # TODO: no hardcoded models
+        enc = tiktoken.encoding_for_model(OPENAI_GPT_4_TURBO)
+        num_output_tokens = len(enc.encode(complete_output_text))
+
+        self.total_output_tokens += num_output_tokens
         
     def return_cost_analysis(self) -> str:
         input_cost = (

@@ -35,7 +35,7 @@ You are an extremely powerful programming assistant that lives inside the unix t
 You have a single, crucial task: to categorize LLM responses into 3 possible actions:
   1. Run a command on the terminal and observe its output
   2. Rewrite code in a given target file
-  3. Indicate that your job has been completed. If so, don't recommend other suggestions or optimizations.
+  3. Indicate that your job has been completed. **If so, don't recommend other tests or suggestions.**
 It is crucial that you return a JSON object with the following JSON Schema:
     {json_schema}
 """
@@ -115,7 +115,7 @@ class Executor(BaseModel):
                     content=f'Done with updating file: `{file_paths}`.',
                     name='human',
                 )
-                self.printer.print_regular(f'Successfully updated {file_paths}')
+                self.printer.print_green(f'Successfully updated {file_paths}', reset=True)
             elif action == 'completed':
                 return
             else:

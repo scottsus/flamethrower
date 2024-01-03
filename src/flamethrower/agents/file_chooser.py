@@ -64,6 +64,11 @@ class FileChooser(BaseModel):
         
         # TODO: allow user to select which files
         file_paths = res['file_paths'][:self.max_files_used]
+        self.write_to_current_files(file_paths)
         
         return file_paths
-    
+
+    def write_to_current_files(self, file_paths: list) -> None:
+        with open(config.get_current_files_path(), 'w') as f:
+            for file_path in file_paths:
+                f.write(file_path + '\n')
