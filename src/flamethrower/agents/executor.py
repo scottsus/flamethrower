@@ -3,6 +3,7 @@ from pydantic import BaseModel
 import flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
 from flamethrower.context.conv_manager import ConversationManager
+from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.shell.printer import Printer
 from .file_writer import FileWriter
 
@@ -45,12 +46,18 @@ class Executor(BaseModel):
     json_schema: dict = json_schema
     conv_manager: ConversationManager = None
     file_writer: FileWriter = None
+    token_counter: TokenCounter = None
     printer: Printer = None
 
     def __init__(self, **data):
         super().__init__(**data)
-        self.llm = LLM(system_message=system_message)
-        self.file_writer = FileWriter()
+        self.llm = LLM(
+            system_message=system_message,
+            token_counter=self.token_counter,
+        )
+        self.file_writer = FileWriter(
+            token_counter=self.token_counter
+        )
 
     def execute_action(self, command) -> str:
         output = ''
@@ -69,7 +76,7 @@ class Executor(BaseModel):
         
         return output
     
-    def new_debugging_run(self, query: str, conv: list) -> None:
+    def new_implementation_run(self, query: str, conv: list) -> None:
         """
         To complete a debugging run, we need:
           1. An objective
@@ -108,6 +115,7 @@ class Executor(BaseModel):
                     content=f'Done with updating file: `{file_paths}`.',
                     name='human',
                 )
+                self.printer.print_regular(f'Successfully updated {file_paths}')
             elif action == 'completed':
                 return
             else:

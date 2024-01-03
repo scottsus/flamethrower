@@ -3,59 +3,74 @@ import sys
 import pty
 import tty
 import termios
-import subprocess
+from subprocess import Popen
 from select import select
-import flamethrower.config.constants as config
-from .setup import setup_zsh_env
-from .command_handler import CommandHandler
-from .printer import Printer
+from pydantic import BaseModel
+import flamethrower.shell.setup as setup
+from flamethrower.shell.command_handler import CommandHandler
 from flamethrower.context.conv_manager import ConversationManager
+from flamethrower.context.prompt import PromptGenerator
 from flamethrower.agents.executor import Executor
+from flamethrower.utils.token_counter import TokenCounter
+from flamethrower.shell.printer import Printer
 
-class Shell:
-    def __init__(self):
-        self.block_size = 1024
-        self.leader_fd, self.follower_fd = pty.openpty()
-        self.child_process = None
-        self.command_handler = None
-        self.conv_manager = None
-        self.executor = None
-        self.printer = None
-
-    def execute_kill_signal(self):
-        sys.exit(0)
+class Shell(BaseModel):
+    class Config:
+        arbitrary_types_allowed = True
+    
+    block_size: int = 1024
+    leader_fd: int = 0
+    follower_fd: int = 0
+    child_process: Popen[bytes] = None
+    command_handler: CommandHandler = None
+    conv_manager: ConversationManager = None
+    prompt_generator: PromptGenerator = None
+    executor: Executor = None
+    token_counter: TokenCounter = None
+    printer: Printer = None
 
     def run(self):
-        prompt_generator = setup_zsh_env()
-        env = os.environ.copy()
-        env['ZDOTDIR'] = config.FLAMETHROWER_DIR
-        self.child_process = subprocess.Popen(['zsh'],
-                                              env=env,
-                                              stdin=self.follower_fd,
-                                              stdout=self.follower_fd,
-                                              stderr=self.follower_fd)
+        env = setup.setup_zsh_env()
+        self.leader_fd, self.follower_fd = pty.openpty()
+        self.child_process = Popen(
+            ['zsh'],
+            env=env,
+            stdin=self.follower_fd,
+            stdout=self.follower_fd,
+            stderr=self.follower_fd
+        )
 
         # Set stdin in raw mode
         old_settings = termios.tcgetattr(sys.stdin)
         tty.setraw(sys.stdin)
 
+        # Instantiate other classes
         self.conv_manager = ConversationManager()
+        self.token_counter = TokenCounter()
         self.printer = Printer(
             leader_fd=self.leader_fd,
             stdout_fd=sys.stdout.fileno(),
             tty_settings=old_settings,
             conv_manager=self.conv_manager
         )
-        self.executor = Executor(
-            conv_manager=self.conv_manager,
+        self.prompt_generator = PromptGenerator(
+            token_counter=self.token_counter,
             printer=self.printer
         )
-        self.cmdHandler = CommandHandler(
-            prompt_generator=prompt_generator,
+        self.executor = Executor(
+            conv_manager=self.conv_manager,
+            token_counter=self.token_counter,
+            printer=self.printer
+        )
+        self.command_handler = CommandHandler(
+            prompt_generator=self.prompt_generator,
             printer=self.printer,
             conv_manager=self.conv_manager,
             executor=self.executor
         )
+
+        setup.setup_dir_summary(self.token_counter)
+        self.printer.print_regular(self.prompt_generator.construct_greeting())
 
         try:
             while True:
@@ -77,7 +92,7 @@ class Shell:
                     key = os.read(sys.stdin.fileno(), self.block_size)
                     if not key:
                         break
-                    self.cmdHandler.handle(key)
+                    self.command_handler.handle(key)
                 
                 if self.child_process.poll() is not None:
                     break
@@ -94,4 +109,9 @@ class Shell:
             if self.child_process:
                 self.child_process.terminate()
             
+            """
+            Outside the pty, these should be the only `print` statements
+            that do not use the Printer class.
+            """
+            print(self.token_counter.return_cost_analysis())
             print('\n👋 Goodbye!')

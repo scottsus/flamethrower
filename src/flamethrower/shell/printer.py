@@ -28,9 +28,15 @@ class Printer(BaseModel):
         if self.leader_fd:
             os.write(self.leader_fd, data)
 
-    def print_stdout(self, data: bytes) -> None:
+    def print_stdout(self, data: bytes | str) -> None:
         if self.stdout_fd:
-            os.write(self.stdout_fd, data)
+            if isinstance(data, str):
+                os.write(self.stdout_fd, data.encode('utf-8'))
+            else:
+                os.write(self.stdout_fd, data)
+    
+    def print_err(self, err: str) -> None:
+        self.print_red(err.encode('utf-8'), reset=True)
 
     def print_color(self, data: bytes, color: bytes, reset: bool = False) -> None:
         if self.stdout_fd:
@@ -39,8 +45,8 @@ class Printer(BaseModel):
         if reset:
             os.write(self.stdout_fd, STDIN_DEFAULT)
 
-    def print_default(self, data: bytes, reset: bool = False) -> None:
-        self.print_color(data, STDIN_DEFAULT, reset=reset)
+    def print_default(self, data: bytes) -> None:
+        self.print_color(data, STDIN_DEFAULT)
     
     def print_red(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_RED, reset=reset)
@@ -100,8 +106,8 @@ class Printer(BaseModel):
             return name in programming_languages
 
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.tty_settings)
-        
         self.print_default(ENTER_KEY + CLEAR_FROM_START + CURSOR_TO_START)
+
         def append_conv(content: str) -> None:
             self.conv_manager.append_conv(
                 role='assistant',
@@ -166,4 +172,10 @@ class Printer(BaseModel):
             append_conv(complete_content)
             log_last_response(complete_content)
 
+        tty.setraw(sys.stdin)
+
+    def print_regular(self, message: str):
+        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.tty_settings)
+        self.print_default(ENTER_KEY + CLEAR_FROM_START + CURSOR_TO_START)
+        self.print_stdout(message)
         tty.setraw(sys.stdin)

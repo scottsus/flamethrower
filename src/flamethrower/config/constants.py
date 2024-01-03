@@ -40,14 +40,22 @@ def flamethrower_log_dir(file_name: str) -> str:
         FLAMETHROWER_LOG_DIR, file_name
     )
 
-DIR_STRUCTURE_FILE_NAME = 'tree.log'
+SUMMARY_FILE_NAME = 'workspace_summary.log'
+DIR_TREE_FILE_NAME = 'dir_tree.log'
+DIR_LIST_FILE_NAME = 'dir_dict.json'
 CONVERSATION_FILE_NAME = 'conv.json'
 PRETTY_CONVERSATION_FILE_NAME = 'conv.log'
 LAST_PROMPT_FILE_NAME = 'last_prompt.log'
 LAST_RESPONSE_FILE_NAME  = 'last_response.log'
 
-def get_dir_structure_path() -> str:
-    return flamethrower_log_dir(DIR_STRUCTURE_FILE_NAME)
+def get_workspace_summary_path() -> str:
+    return flamethrower_log_dir(SUMMARY_FILE_NAME)
+
+def get_dir_tree_path() -> str:
+    return flamethrower_log_dir(DIR_TREE_FILE_NAME)
+
+def get_dir_dict_path() -> str:
+    return flamethrower_log_dir(DIR_LIST_FILE_NAME)
 
 def get_conversation_path() -> str:
     return flamethrower_log_dir(CONVERSATION_FILE_NAME)

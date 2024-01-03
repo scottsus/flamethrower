@@ -2,6 +2,7 @@ import os
 import re
 from pydantic import BaseModel
 from flamethrower.models.llm import LLM
+from flamethrower.utils.token_counter import TokenCounter
 
 system_message = """
 You are an extremely powerful programming assistant that can write flawless code.
@@ -15,10 +16,14 @@ the code you write is both syntactically and semantically correct.
 
 class FileWriter(BaseModel):
     llm: LLM = None
+    token_counter: TokenCounter = None
 
     def __init__(self, **data):
         super().__init__(**data)
-        self.llm = LLM(system_message=system_message)
+        self.llm = LLM(
+            system_message=system_message,
+            token_counter=self.token_counter,
+        )
     
     def write_code(self, target_path: str, assistant_implementation: str) -> None:
         old_contents = ''

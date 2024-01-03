@@ -16,10 +16,9 @@ class CommandHandler(BaseModel):
     executor: Executor = None
     printer: Printer = None
 
+    # TODO: Windows support
+
     def handle(self, key: bytes) -> None:
-        if key == CTRL_C:
-            sys.exit(0)
-        
         if self.pos == 0:
             self.handle_first_key(key)
         elif self.is_nl_query:
@@ -39,7 +38,7 @@ class CommandHandler(BaseModel):
         else:
             if key.isupper():
                 self.is_nl_query = True
-                self.printer.print_light_cyan(key)
+                self.printer.print_light_green(key)
             else:
                 self.is_nl_query = False
                 self.printer.write_leader(key)
@@ -96,7 +95,7 @@ class CommandHandler(BaseModel):
         )
 
         messages = self.prompt_generator.construct_messages(query)
-        self.executor.new_debugging_run(query, messages)
+        self.executor.new_implementation_run(query, messages)
 
     def handle_nl_backspace_key(self, key: bytes) -> None:
         if self.pos > 0:

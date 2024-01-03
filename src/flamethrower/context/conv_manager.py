@@ -1,3 +1,4 @@
+import os
 import json
 from io import TextIOWrapper
 from pydantic import BaseModel
@@ -69,7 +70,7 @@ class ConversationManager(BaseModel):
             
             self.append_conv(
                 role='user',
-                content=user_cmd,
+                content=f'{os.getcwd()} $ {user_cmd}',
                 name='human'
             )
             self.append_conv(

@@ -2,41 +2,42 @@ import os
 from datetime import datetime
 from pydantic import BaseModel
 import flamethrower.config.constants as config
-from flamethrower.context.dir_walker import generate_directory_summary
-from flamethrower.models.llm import LLM
 from flamethrower.agents.file_chooser import FileChooser
 from flamethrower.utils.pretty import pretty_print
+from flamethrower.agents.summarizer import Summarizer
+from flamethrower.utils.token_counter import TokenCounter
+from flamethrower.shell.printer import Printer
+from flamethrower.utils.colors import *
 
 class PromptGenerator(BaseModel):
-    # at initialization
     greeting: str = ''
     description: str = ''
     dir_structure: str = ''
-    llm: LLM = None
-
-    # for every query
-    run_script: str = ''
-    target_file_names: list = []
+    token_counter: TokenCounter = None
+    summarizer: Summarizer = None
+    printer: Printer = None
 
     def __init__(self, **data):
         super().__init__(**data)
         self.greeting = generate_greeting()
-        self.description = generate_description()
-        self.dir_structure = generate_dir_structure()
-        self.llm = LLM()
+        self.summarizer = Summarizer(
+            token_counter=self.token_counter
+        )
+        self.description = self.summarizer.summarize_readme()
+        self.dir_structure = get_dir_structure()
     
     def construct_greeting(self) -> str:
-        STDIN_LIGHT_CYAN = '\033[96m'
-        STDIN_DEFAULT = '\033[0m'
+        green = STDIN_GREEN.decode('utf-8')
+        default = STDIN_DEFAULT.decode('utf-8')
 
         return (
             f'{self.greeting}\n\n'
-            f'This looks like a coding project about {self.description}.\n'
-            f'The directory structure looks like:\n{self.dir_structure}\n'
+            f'{self.description}\n'
+            f'\nThe directory structure looks like:\n{self.dir_structure}\n'
             '- For now, feel free to use me as a regular shell.\n'
             '- When you need my help, write your query in the terminal starting with a capital letter.\n'
             '- The command should turn orange, and I will have the necessary context from your workspace and stdout to assist you.\n'
-            f'- To try it out, type {STDIN_LIGHT_CYAN}"Refactor /path/to/file"{STDIN_DEFAULT} in the terminal.'
+            f'- To try it out, type {green}"Refactor /path/to/file"{default} in the terminal.\n'
         )
 
     def construct_messages(self, query: str = '', conv: str = '') -> list:
@@ -60,15 +61,15 @@ class PromptGenerator(BaseModel):
                 'name': 'human'
             })
 
-        if not self.target_file_names:
-            self.target_file_names = FileChooser().infer_target_file_paths(
-                self.description,
-                self.dir_structure,
-                query
-            )
+        target_file_names = FileChooser(token_counter=self.token_counter).infer_target_file_paths(
+            self.description,
+            self.dir_structure,
+            query
+        )
+        self.printer.print_regular(f'👀 Focusing on the following files: {target_file_names}')
 
         target_file_contents = ''
-        for file_name in self.target_file_names:
+        for file_name in target_file_names:
             file_path = os.path.join(os.getcwd(), file_name)
             try:
                 with open(file_path, 'r') as file:
@@ -111,9 +112,9 @@ class PromptGenerator(BaseModel):
                 'name': 'human'
             })
 
-        last_prompt_path = config.get_last_prompt_path()
+        # TODO: get run script
 
-        with open(last_prompt_path, 'w') as f:
+        with open(config.get_last_prompt_path(), 'w') as f:
             f.write(pretty_print(messages))
 
         return messages
@@ -140,23 +141,10 @@ def generate_greeting() -> str:
     else:
         return 'Good evening 👋'
 
-def generate_description() -> str:
-    # TODO: Summarize README
-    target_file = 'README.md'
-    if os.path.exists(target_file):
-        with open(target_file, 'r') as f:
-            readme = f.read()
-            return readme[:100]
-    else:
+def get_dir_structure() -> str:
+    try:
+        with open(config.get_dir_tree_path(), 'r') as f:
+            return f.read()
+    except FileNotFoundError:
         return ''
-
-def generate_dir_structure() -> str:
-    generate_directory_summary(os.getcwd())
-
-    target_path = config.get_dir_structure_path()
-    if os.path.exists(target_path):
-        with open(target_path, 'r') as f:
-            tree = f.read()
-            return tree
-    else:
-        return ''
+    

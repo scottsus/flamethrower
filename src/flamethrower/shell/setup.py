@@ -1,6 +1,8 @@
 import os
-from flamethrower.context.prompt import PromptGenerator
+import asyncio
 from flamethrower.config.constants import *
+from flamethrower.context.dir_walker import DirectoryWalker
+from flamethrower.utils.token_counter import TokenCounter
 
 zshrc_contents = """# basic zshrc for pty
 
@@ -19,7 +21,7 @@ original_welcome_screen = """
  / __/ / /_/ / / / / / /  __/ /_/ / / / /  / /_/ / |/ |/ /  __/ /
 /_/ /_/\__,_/_/ /_/ /_/\___/\__/_/ /_/_/   \____/|__/|__/\___/_/
 
-    Major credits to pyfiglet to make this possible 🚀
+    Major credits to `pyfiglet` for making this possible 🚀
 """
 
 colored_welcome_screen = (
@@ -31,9 +33,12 @@ colored_welcome_screen = (
     "\n"
 )
 
-def setup_zsh_env() -> PromptGenerator:
+def setup_zsh_env() -> dict:
+    is_first_setup = False
+
     if not os.path.exists(FLAMETHROWER_DIR):
         os.makedirs(FLAMETHROWER_DIR)
+        is_first_setup = True
     
     zshrc_path = get_zsh_config_path()
     if not os.path.exists(zshrc_path):
@@ -55,10 +60,18 @@ def setup_zsh_env() -> PromptGenerator:
     
     if not os.path.exists(FLAMETHROWER_LOG_DIR):
         os.makedirs(FLAMETHROWER_LOG_DIR)
-
-    pg = PromptGenerator()
-    # TODO: use printer API
-    print(pg.construct_greeting())
-
-    return pg
     
+    env = os.environ.copy()
+    env['ZDOTDIR'] = FLAMETHROWER_DIR
+
+    if is_first_setup:
+        # Standard `print` is fine before pty is launched
+        print(colored_welcome_screen)
+
+    return env
+
+def setup_dir_summary(token_counter: TokenCounter) -> None:
+    dir_walker = DirectoryWalker(token_counter=token_counter)
+    asyncio.run(dir_walker.generate_directory_summary(
+        os.path.join(os.getcwd())
+    ))

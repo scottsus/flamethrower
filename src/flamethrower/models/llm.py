@@ -1,12 +1,12 @@
 import os
 import json
-import threading
 from pydantic import BaseModel
-from openai import OpenAI
+from openai import OpenAI, AsyncOpenAI
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 from typing import Iterator, Optional
 from flamethrower.models.models import OPENAI_GPT_4_TURBO
+from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.utils.loader import Loader
 
 default_system_message = """
@@ -25,21 +25,36 @@ class LLM(BaseModel):
         arbitrary_types_allowed = True
 
     client: OpenAI = None
+    async_client: AsyncOpenAI = None
     default_model: str = OPENAI_GPT_4_TURBO
     system_message: str = default_system_message
+    token_counter: TokenCounter = None
 
     def __init__(self, **data):
         super().__init__(**data)
         self.client: OpenAI = OpenAI(
             api_key=os.getenv('OPENAI_API_KEY'),
         )
+        self.async_client: AsyncOpenAI = AsyncOpenAI(
+            api_key=os.getenv('OPENAI_API_KEY'),
+        )
 
-    def new_chat_request(self, messages: list, loading_message: str = '') -> str:
-        loader = Loader(message=loading_message)
-        loader_thread = threading.Thread(target=loader.spin)
-        loader_thread.start()
+    async def new_async_chat_request(self, messages: list):
+        res = await self.async_client.chat.completions.create(
+            model=self.default_model,
+            messages=messages,
+        )
+        
+        prompt_tokens = res.usage.prompt_tokens
+        completion_tokens = res.usage.completion_tokens
 
-        try:
+        self.token_counter.add_input_tokens(prompt_tokens)
+        self.token_counter.add_output_tokens(completion_tokens)
+
+        return res.choices[0].message.content
+        
+    def new_chat_request(self, messages: list, loading_message: str) -> str:
+        with Loader(loading_message=loading_message).managed_loader():
             res = self.client.chat.completions.create(
                 model=self.default_model,
                 messages=messages,
@@ -47,8 +62,6 @@ class LLM(BaseModel):
             )
 
             return res.choices[0].message.content
-        finally:
-            loader.stop()
 
     def new_streaming_chat_request(self, messages: list) -> Iterator[Optional[str]]:
         stream = self.client.chat.completions.create(
@@ -66,12 +79,11 @@ class LLM(BaseModel):
         finally:
             yield None
     
-    def new_json_request(self, query: str, json_schema: dict, loading_message: str = '') -> dict:
-        loader = Loader(message=loading_message)
-        loader_thread = threading.Thread(target=loader.spin)
-        loader_thread.start()
-        
-        try:
+    def new_json_request(self, query: str, json_schema: dict, loading_message: str = '', completion_message: str = '') -> dict:
+        with Loader(
+            loading_message=loading_message,
+            completion_message=completion_message
+        ).managed_loader():
             while True:
                 try:
                     res = self.client.chat.completions.create(
@@ -94,6 +106,6 @@ class LLM(BaseModel):
 
                     return json_obj
                 except ValidationError:
+                    # TODO: propagate error upwards
                     print('Received invalid JSON, retrying...')
-        finally:
-            loader.stop()
+                    pass
