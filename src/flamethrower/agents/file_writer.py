@@ -30,14 +30,23 @@ class FileWriter(BaseModel):
         old_contents = ''
         strict_target_path = self.choose_file_path(target_path)
         complete_target_path = os.path.join(os.getcwd(), strict_target_path)
+        dir_path = os.path.dirname(complete_target_path)
+        
         try:
+            os.makedirs(dir_path, exist_ok=True)
             with open(complete_target_path, 'r') as f:
                 old_contents = f.read()
         except FileNotFoundError:
             pass
 
+        context = ''
+        if not old_contents:
+            context = 'You are writing to a new file.'
+        else:
+            context = f'This is the starting code: {old_contents}\n'
+
         query = (
-            f'This is the starting code: {old_contents}.\n'
+            f'{context}'
             f'This is the solution provided by an expert engineer: {assistant_implementation}.\n'
             'Your job is to **incorporate the solution above into the starting code**, following the steps outlined above.\n'
             'Do not add explanations, and ensure that the code you write is both syntactically and semantically correct.\n'
@@ -69,6 +78,8 @@ class FileWriter(BaseModel):
             for strict_file_path in strict_file_paths:
                 if given_file_path in strict_file_path:
                     return strict_file_path
+        
+        return given_file_path
 
     def clean_backticks(self, text: str) -> str:
         try:

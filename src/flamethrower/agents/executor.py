@@ -11,24 +11,33 @@ from flamethrower.shell.printer import Printer
 json_schema = {
     'type': 'object',
     'properties': {
-        'action': {
-            'type': 'string',
-            'enum': ['run', 'write', 'completed']
+        'actions': {
+            'type': 'array',
+            'items': {
+                'type': 'object',
+                'properties': {
+                    'action': {
+                        'type': 'string',
+                        'enum': ['run', 'write', 'completed']
+                    },
+                    'command': { 'type': 'string' },
+                    'file_paths': { 'type': 'string' }
+                },
+                'required': ['action'],
+                'allOf': [
+                    {
+                        'if': { 'properties': { 'action': { 'const': 'run' } } },
+                        'then': { 'required': ['command'] }
+                    },
+                    {
+                        'if': { 'properties': { 'action': { 'const': 'write' } } },
+                        'then': { 'required': ['file_paths'] }
+                    }
+                ]
+            }
         },
-        'command': { 'type': 'string' },
-        'file_paths': { 'type': 'string' },
     },
-    'required': ['action'],
-    'allOf': [
-        {
-        'if': { 'properties': { 'action': { 'const': 'run' } } },
-        'then': { 'required': ['command'] },
-        },
-        {
-        'if': { 'properties': { 'action': { 'const': 'write' } } },
-        'then': { 'required': ['file_paths'] },
-        },
-    ]
+    'required': ['actions']
 }
 
 system_message = f"""
@@ -60,7 +69,7 @@ class Executor(BaseModel):
             token_counter=self.token_counter
         )
 
-    def execute_action(self, command) -> str:
+    def execute_action(self, command: str) -> str:
         output = ''
         try:
             completed_process = subprocess.run(
@@ -74,7 +83,7 @@ class Executor(BaseModel):
             output = completed_process.stdout
         except subprocess.CalledProcessError as e:
             output = f'Error: {e.output}'
-        
+
         return output
     
     def new_implementation_run(self, query: str, conv: list) -> None:
@@ -93,37 +102,45 @@ class Executor(BaseModel):
         for _ in range(self.max_retries):
             last_driver_res = self.get_last_assistant_response()
             decision = self.make_decision_from(query, last_driver_res)
-
-            action = decision['action']
-            if action == 'run':
-                command = decision['command']
-                output = self.execute_action(command)
-                self.conv_manager.append_conv(
-                    role='user',
-                    content=command,
-                    name='human',
-                )
-                self.conv_manager.append_conv(
-                    role='user',
-                    content=output,
-                    name='stdout',
-                )
-            elif action == 'write':
-                file_paths = decision['file_paths']
-                self.file_writer.write_code(file_paths, last_driver_res)
-                self.conv_manager.append_conv(
-                    role='user',
-                    content=f'Done with updating file: `{file_paths}`.',
-                    name='human',
-                )
-                self.printer.print_green(f'Successfully updated {file_paths}\n', reset=True)
-            elif action == 'completed':
-                diffs = Diff(printer=self.printer).get_diffs()
-                # TODO: diffs for just that 1 file?
-                # self.printer.print_diffs(diffs)
-                return
-            else:
-                raise Exception('Invalid action')
+            
+            actions: list = decision['actions']
+            for obj in actions:
+                action = obj['action']
+                
+                if action == 'run':
+                    command = obj['command']
+                    self.printer.print_default(command)
+                    output = self.execute_action(command)
+                    self.printer.print_default(output)
+                    self.conv_manager.append_conv(
+                        role='user',
+                        content=command,
+                        name='human',
+                    )
+                    self.conv_manager.append_conv(
+                        role='user',
+                        content=output,
+                        name='stdout',
+                    )
+                
+                elif action == 'write':
+                    file_paths = obj['file_paths']
+                    self.file_writer.write_code(file_paths, last_driver_res)
+                    self.conv_manager.append_conv(
+                        role='user',
+                        content=f'Done with updating file: `{file_paths}`.',
+                        name='human',
+                    )
+                    self.printer.print_green(f'Successfully updated {file_paths}\n', reset=True)
+                
+                elif action == 'completed':
+                    diffs = Diff(printer=self.printer).get_diffs()
+                    # TODO: diffs for just that 1 file?
+                    # self.printer.print_diffs(diffs)
+                    return
+                
+                else:
+                    raise Exception('Invalid action')
 
             # Subsequent implementations of the solution
             conv = self.conv_manager.get_conv()
@@ -132,10 +149,6 @@ class Executor(BaseModel):
         
         # Max retries exceeded
         self.printer.print_red("Something is wrong, I'm going to need your help to debug this.", reset=True)
-
-    def get_last_assistant_response(self) -> str:
-        with open(config.get_last_response_path(), 'r') as f:
-            return f.read()
 
     def make_decision_from(self, objective: str, latest_response: str) -> dict:
         query = (
@@ -151,4 +164,8 @@ class Executor(BaseModel):
         )
 
         return decision
+    
+    def get_last_assistant_response(self) -> str:
+        with open(config.get_last_response_path(), 'r') as f:
+            return f.read()
     
