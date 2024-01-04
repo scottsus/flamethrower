@@ -2,6 +2,8 @@
 
 The ultimate debugging experience.
 
+https://github.com/scottsus/flamethrower/assets/88414565/93195176-c124-4528-b3c2-500ce87cd494
+
 ## Usage
 
 1. Pip install
@@ -9,7 +11,6 @@ The ultimate debugging experience.
     ```
     pip install flamethrower
     ```
-    `WARN`: this installs `flamethrower` deps into your global python environment -- which you will need if you want to run flamethrower on any workspace.
 
 2. Export OpenAI key for `flamethrower` to use
 
