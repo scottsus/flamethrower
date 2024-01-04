@@ -1,5 +1,6 @@
 import os
 import asyncio
+from git import Repo
 from flamethrower.config.constants import *
 from flamethrower.context.dir_walker import DirectoryWalker
 from flamethrower.utils.token_counter import TokenCounter
@@ -30,7 +31,6 @@ colored_welcome_screen = (
     "\033[35m  / /_/ / __ `/ __ `__ \\/ _ \\/ __/ __ \\/ ___/ __ \\ | /| / / _ \\/ ___/\n"
     " / __/ / /_/ / / / / / /  __/ /_/ / / / /  / /_/ / |/ |/ /  __/ /\033[0m\n"
     "\033[34m/_/ /_/\\__,_/_/ /_/ /_/\\___/\\__/_/ /_/_/   \\____/|__/|__/\\___/_/\033[0m"
-    "\n"
 )
 
 def setup_zsh_env() -> dict:
@@ -47,11 +47,11 @@ def setup_zsh_env() -> dict:
     
     zsh_autosuggestions_path = flamethrower_path('zsh-autosuggestions')
     if not os.path.exists(zsh_autosuggestions_path):
-        os.system(f'git clone git@github.com:zsh-users/zsh-autosuggestions.git {zsh_autosuggestions_path}')
+        Repo.clone_from('https://github.com/zsh-users/zsh-autosuggestions.git', zsh_autosuggestions_path)
 
     zsh_syntax_highlighting_path = flamethrower_path('zsh-syntax-highlighting')
     if not os.path.exists(zsh_syntax_highlighting_path):
-        os.system(f'git clone git@github.com:zsh-users/zsh-syntax-highlighting.git {zsh_syntax_highlighting_path}')
+        Repo.clone_from('https://github.com/zsh-users/zsh-syntax-highlighting.git', zsh_syntax_highlighting_path)
     
     zsh_history_path = get_zsh_history_path()
     if not os.path.exists(zsh_history_path):

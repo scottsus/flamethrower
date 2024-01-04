@@ -53,7 +53,7 @@ class Loader(BaseModel):
             time_elapsed = record_end_time - record_start_time
             time_elapsed_message = ''
             if self.will_report_timing:
-                time_elapsed_message = f' Time taken: {time_elapsed:.2f}s'
+                time_elapsed_message = f' Time taken: {time_elapsed:.2f}s\n'
             
             sys.stdout.write(f'{self.completion_message}{time_elapsed_message}')
             sys.stdout.flush()

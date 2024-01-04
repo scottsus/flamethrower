@@ -116,7 +116,7 @@ class Executor(BaseModel):
                     content=f'Done with updating file: `{file_paths}`.',
                     name='human',
                 )
-                self.printer.print_green(f'Successfully updated {file_paths}', reset=True)
+                self.printer.print_green(f'Successfully updated {file_paths}\n', reset=True)
             elif action == 'completed':
                 diffs = Diff(printer=self.printer).get_diffs()
                 # TODO: diffs for just that 1 file?
@@ -143,6 +143,7 @@ class Executor(BaseModel):
             f'This is the latest response:\n{latest_response}'
             'Given this objective and response, choose a possible action.'
         )
+        self.printer.print_default('\n')
         decision = self.llm.new_json_request(
             query=query,
             json_schema=self.json_schema,

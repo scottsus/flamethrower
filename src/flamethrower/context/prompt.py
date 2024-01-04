@@ -33,11 +33,10 @@ class PromptGenerator(BaseModel):
 
         return (
             f'{self.greeting}\n\n'
-            f'{self.description}\n'
-            f'\nThe directory structure looks like:\n{self.dir_structure}\n'
-            f'- For now, feel free to use me as a {green}regular shell{default}.\n'
+            f'{self.description}\n\n'
+            f'- For now, feel free to use me as a regular shell for commands like {green}ls{default} or {green}cd{default}.\n'
             '- When you need my help, write your query in the terminal starting with a capital letter.\n'
-            '- The command should turn orange, and I will have the necessary context from your workspace and stdout to assist you.\n'
+            '- The command should turn light green, and I will have the necessary context from your workspace and stdout to assist you.\n'
             f'- To try it out, type {light_green}"Refactor /path/to/file"{default} in the terminal.\n'
         )
 
@@ -67,7 +66,7 @@ class PromptGenerator(BaseModel):
             self.dir_structure,
             query
         )
-        self.printer.print_regular(f'👀 Focusing on the following files: {target_file_names}')
+        self.printer.print_regular(f'👀 Focusing on the following files: {target_file_names}\n')
 
         target_file_contents = ''
         for file_name in target_file_names:

@@ -84,7 +84,7 @@ class Summarizer(BaseModel):
                             'content': query,
                         }
                     ],
-                    loading_message=f'💭 Summarizing {readme_file}'
+                    loading_message=f'📚 Learning project...'
                 )
                 with open(summary_path, 'w') as summary_file:
                     summary_file.write(summary)
