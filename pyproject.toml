@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "flamethrower"
 packages = [{ from = "src", include = "flamethrower" }]
-version = "0.1.0"
-description = "The ultimate debugging experienc 🦠🔥"
+version = "0.1.9"
+description = "The ultimate debugging experience 🦠🔥"
 authors = ["Scott Susanto <scottsus@usc.edu>"]
 license = "MIT"
 readme = "README.md"

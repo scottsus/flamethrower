@@ -44,16 +44,11 @@ class Summarizer(BaseModel):
             'Summarize this file as part of the larger project.'
         )
         summary = await self.llm.new_async_chat_request(
-            messages=[
-                {
-                    'role': 'system',
-                    'content': system_message,
-                },
-                {
-                    'role': 'user',
-                    'content': query,
-                }
-            ],
+            messages=[{
+                'role': 'user',
+                'content': query,
+            }],
+            system_message=system_message
         )
 
         return summary
@@ -64,9 +59,9 @@ class Summarizer(BaseModel):
             with open(summary_path, 'r') as summary_file:
                 return summary_file.read()
         
-        readme_file_path = os.path.join(os.getcwd(), 'README.md')
-        with open(readme_file_path, 'r') as readme_file:
-            try:
+        summary = 'This project does not have a README. Infer from other files the purpose of this project.'
+        try:
+            with open(os.path.join(os.getcwd(), 'README.md'), 'r') as readme_file:
                 file_contents = readme_file.read()
                 query = (
                     'This is the repository main readme file.\n'
@@ -74,22 +69,17 @@ class Summarizer(BaseModel):
                     'Read it carefully and summarize what the project is about, and what technology stack is being used.\n'
                 )
                 summary = self.llm.new_chat_request(
-                    messages=[
-                        {
-                            'role': 'system',
-                            'content': system_message,
-                        },
-                        {
-                            'role': 'user',
-                            'content': query,
-                        }
-                    ],
-                    loading_message=f'📚 Learning project...'
+                    messages=[{
+                        'role': 'user',
+                        'content': query,
+                    }],
+                    loading_message=f'📚 Learning project...',
+                    system_message=system_message
                 )
-                with open(summary_path, 'w') as summary_file:
+        except FileNotFoundError:
+            pass
+        finally:
+            with open(summary_path, 'w') as summary_file:
                     summary_file.write(summary)
                 
-                return summary
-            except FileNotFoundError:
-                # TODO: propagate error upwards
-                print(f'File not found: {readme_file}')
+            return summary

@@ -43,18 +43,28 @@ class FileChooser(BaseModel):
     
     def infer_target_file_paths(self, description: str, dir_structure: str, user_query: str) -> list[str]:
         dir_info = ''
-        with open(config.get_dir_dict_path(), 'r') as f:
-            try:
+        try:
+            with open(config.get_dir_dict_path(), 'r') as f:
                 dir_info = f.read()
-            except FileNotFoundError:
-                print('Workspace has not been analyzed. Please restart flamethrower.')
-                pass
+        except FileNotFoundError:
+            print('Workspace has not been analyzed. Please restart flamethrower.')
+            pass
+        
+        stdout_logs = ''
+        try:
+            with open(config.get_pretty_conversation_path(), 'r') as f:
+                stdout_logs = f.read()
+        except FileNotFoundError:
+            pass
+        if stdout_logs:
+            stdout_logs = f'Here are the most recent stdout logs {stdout_logs}'
         
         query = (
             f'This workspace is about [{description}].'
             f'The directory structure is given as:\n{dir_structure}\n'
             f'Each file in the workspace has its own function summarized, and is given as a json object:\n{dir_info}'
-            f'Given the coding job [{user_query}], return a list of `file_paths` that are **relevant to the user query**.'
+            f'{stdout_logs}'
+            f'Given the logs and the coding job [{user_query}], return a list of `file_paths` that are **relevant to the user query**.'
         )
         res = self.llm.new_json_request(
             query=query,

@@ -100,6 +100,7 @@ class Printer(BaseModel):
                 'ruby',
                 'php',
                 'swift',
+                'sh',
             ]
             return name in programming_languages
 

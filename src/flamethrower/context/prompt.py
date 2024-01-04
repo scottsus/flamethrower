@@ -3,16 +3,18 @@ from datetime import datetime
 from pydantic import BaseModel
 import flamethrower.config.constants as config
 from flamethrower.agents.file_chooser import FileChooser
-from flamethrower.utils.pretty import pretty_print
+from flamethrower.context.conv_manager import ConversationManager
 from flamethrower.agents.summarizer import Summarizer
 from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.shell.printer import Printer
+from flamethrower.utils.pretty import pretty_print
 from flamethrower.utils.colors import *
 
 class PromptGenerator(BaseModel):
     greeting: str = ''
     description: str = ''
     dir_structure: str = ''
+    conv_manager: ConversationManager = None
     token_counter: TokenCounter = None
     summarizer: Summarizer = None
     printer: Printer = None
@@ -40,26 +42,27 @@ class PromptGenerator(BaseModel):
             f'- To try it out, type {light_green}"Refactor /path/to/file"{default} in the terminal.\n'
         )
 
-    def construct_messages(self, query: str = '', conv: str = '') -> list:
-        messages = []
+    def construct_messages(self, query: str = '') -> list:
+        # For later
+        conv = self.load_pretty_conv()
 
         description_line = ''
         if self.description:
             description_line = f'This project is about {self.description}. '
-            messages.append({
-                'role': 'user',
-                'content': description_line,
-                'name': 'human'
-            })
+            self.conv_manager.append_conv(
+                role='user',
+                content=description_line,
+                name='human'
+            )
         
         dir_structure_line = ''
         if self.dir_structure:
             dir_structure_line = f'The directory structure looks like:\n{self.dir_structure}\n'
-            messages.append({
-                'role': 'user',
-                'content': dir_structure_line,
-                'name': 'human'
-            })
+            self.conv_manager.append_conv(
+                role='user',
+                content=dir_structure_line,
+                name='human'
+            )
 
         target_file_names = FileChooser(token_counter=self.token_counter).infer_target_file_paths(
             self.description,
@@ -79,25 +82,27 @@ class PromptGenerator(BaseModel):
                     )
             except UnicodeDecodeError:
                 pass
+            except FileNotFoundError:
+                pass
         if target_file_contents:
             target_file_contents = f'Currently you are working with these files:\n{target_file_contents}\n'
-            messages.append({
-                'role': 'user',
-                'content': target_file_contents,
-                'name': 'human'
-            })
+            self.conv_manager.append_conv(
+                role='user',
+                content=target_file_contents,
+                name='human'
+            )
 
-        conv = self.load_conv()
-        messages.append({
-            'role': 'user',
-            'content': 'Here is the most recent conversation between the human, stdout logs, and assistant:\n',
-            'name': 'user'
-        })
-        messages.append({
-            'role': 'user',
-            'content': f'```\n{conv}```\n',
-            'name': 'stdout'
-        })
+        # Use the `conv` var from above
+        self.conv_manager.append_conv(
+            role='user',
+            content='Here is the most recent conversation between the human, stdout logs, and assistant:\n',
+            name='human'
+        )
+        self.conv_manager.append_conv(
+            role='user',
+            content=f'```\n{conv}```\n',
+            name='stdout'
+        )
 
         query_line = ''
         if query:
@@ -106,20 +111,20 @@ class PromptGenerator(BaseModel):
                 'If it is a coding problem, write code to achieve the crucial task above.\n'
                 'Otherwise, just reply in a straightforward fashion.'
             )
-            messages.append({
-                'role': 'user',
-                'content': query_line,
-                'name': 'human'
-            })
+            self.conv_manager.append_conv(
+                role='user',
+                content=query_line,
+                name='human'
+            )
 
-        # TODO: get run script
-
+        # TODO: 2 `conv`'s?
+        messages = self.conv_manager.get_conv()
         with open(config.get_last_prompt_path(), 'w') as f:
             f.write(pretty_print(messages))
 
         return messages
     
-    def load_conv(self) -> str:
+    def load_pretty_conv(self) -> str:
         with open(config.get_conversation_path(), 'r') as f:
             conv = f.read()
             pretty = pretty_print(conv)

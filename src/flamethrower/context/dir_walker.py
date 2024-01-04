@@ -1,13 +1,14 @@
 import os
 import json
 import asyncio
-import pathspec
+from pathspec import PathSpec
 from pydantic import BaseModel
 from typing import IO
 import flamethrower.config.constants as config
 from flamethrower.agents.summarizer import Summarizer
 from flamethrower.utils.loader import Loader
 from flamethrower.utils.token_counter import TokenCounter
+from flamethrower.context.sample_gitignore import sample_gitignore
 
 class DirectoryWalker(BaseModel):
     base_dir: str = os.getcwd()
@@ -37,7 +38,9 @@ class DirectoryWalker(BaseModel):
         gitignore = None
         if os.path.exists('.gitignore'):
             with open('.gitignore', 'r') as gitignore_file:
-                gitignore = pathspec.PathSpec.from_lines('gitwildmatch', gitignore_file.readlines())
+                gitignore = PathSpec.from_lines('gitwildmatch', gitignore_file.readlines())
+        else:
+            gitignore = PathSpec.from_lines('gitwildmatch', sample_gitignore.splitlines())
 
         with Loader(
             loading_message='🔧  Performing workspace first time setup (should take about 30s)...',
@@ -51,16 +54,16 @@ class DirectoryWalker(BaseModel):
             with open(config.get_dir_dict_path(), 'w') as dir_dict_file:
                 dir_dict_file.write(json.dumps(self.file_paths, indent=2))
 
-    def process_directory(self, dir_path: str, summary_file: str, prefix: IO[str] = '', gitignore: pathspec.PathSpec = None) -> None:
+    def process_directory(self, dir_path: str, summary_file: str, prefix: IO[str] = '', gitignore: PathSpec = None) -> None:
         entries = os.listdir(dir_path)
 
         if gitignore:
             entries = [
-                e for e in entries
-                if not gitignore.match_file(os.path.join(dir_path, e))
-            ]
-            entries = [
-                e for e in entries if e != '.git'
+                e for e in entries if (
+                    not gitignore.match_file(os.path.join(dir_path, e))
+                    and e != '.git'
+                    and e != '.flamethrower'
+                )
             ]
 
         hidden_dirs = [
@@ -92,7 +95,7 @@ class DirectoryWalker(BaseModel):
                 self.write_file_entry(entry, i, len(sorted_entries), summary_file, prefix)
                 self.summarization_tasks.append(self.update_file_paths(path))
 
-    def process_subdirectory(self, path: str, index: int, total: int, summary_file: IO[str], prefix: str, gitignore: pathspec.PathSpec) -> None:
+    def process_subdirectory(self, path: str, index: int, total: int, summary_file: IO[str], prefix: str, gitignore: PathSpec) -> None:
         connector = '├──' if index < total - 1 else '└──'
         summary_file.write(f'{prefix}{connector} {os.path.basename(path)}\n')
 

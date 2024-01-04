@@ -55,6 +55,7 @@ class Shell(BaseModel):
             token_counter=self.token_counter
         )
         self.prompt_generator = PromptGenerator(
+            conv_manager=self.conv_manager,
             token_counter=self.token_counter,
             printer=self.printer
         )

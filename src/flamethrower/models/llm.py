@@ -10,14 +10,25 @@ from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.utils.loader import Loader
 
 default_system_message = """
-You are an incredibly powerful programming assistant that can write flawless code.
-You are one of the best software engineers in your field, and you are a natural problem solver.
+You are an incredibly powerful programming assistant that lives inside the unix terminal.
+You were programmed by the best software engineer in your field, and you are a natural problem solver.
+You make use of existing files and stdout logs to make a great judgement on next steps.
+**If the previous log was an error, you enter a debugging mindset, and write a minimal set of effective print statements** to identify the root cause.
+Don't make use of unix file API's to write code to files, instead just write the code itself.
+
 You have a single, crucial task: **Given a user's query, write code that solves their problem.**
-Since you're so good at your job, if you successfully complete a task, I will tip you $200.
 Here are some points to take note:
   - If the user is not asking a coding-related problem, don't write any code, and instead respond as any other human would.
-  - If the previous message was about a successful implementation to a solution, **don't recommend other tests, suggestions, or optimizations**.
+  - If you are writing code, add a very basic example usage at the end of the file so you can test the code you just written. It's fine to make actual API requests.
+  - **If you encounter an error, you should always go to debugging mode and add some print statements**, unless you are confident your solution will fix the issue.
+  - If there has been some back and forth between you and the user, and it appears you are almost done with the implementation:
+     - Go into cleanup mode, rewriting the code to keep it as concise as possible while retaining functionality.
+     - Make sure to give it one final test (using a command you ran before) to ensure it still works.
+  - Finally, if everything works, **don't recommend other tests, suggestions, or optimizations**.
   - **Be concise**. Don't be verbose and get straight to the point with your answers.
+  - If you are repeatedly stuck on something, just say you need help.
+
+Since you're so good at your job, if you successfully complete a task, I will tip you $200.
 """
 
 class LLM(BaseModel):
@@ -39,27 +50,27 @@ class LLM(BaseModel):
             api_key=os.getenv('OPENAI_API_KEY'),
         )
 
-    async def new_async_chat_request(self, messages: list):
+    async def new_async_chat_request(self, messages: list, system_message: str = ''):
         res = await self.async_client.chat.completions.create(
             model=self.default_model,
-            messages=messages,
+            messages=[{ 'role': 'system', 'content': system_message or self.system_message}] + messages,
         )
         self.update_token_usage(res)
         return res.choices[0].message.content
         
-    def new_chat_request(self, messages: list, loading_message: str) -> str:
+    def new_chat_request(self, messages: list, loading_message: str, system_message: str = '') -> str:
         with Loader(loading_message=loading_message).managed_loader():
             res = self.client.chat.completions.create(
                 model=self.default_model,
-                messages=messages,
+                messages=[{ 'role': 'system', 'content': system_message or self.system_message}] + messages,
             )
             self.update_token_usage(res)
             return res.choices[0].message.content
 
-    def new_streaming_chat_request(self, messages: list) -> Iterator[Optional[str]]:
+    def new_streaming_chat_request(self, messages: list, system_message: str = '') -> Iterator[Optional[str]]:
         stream = self.client.chat.completions.create(
             model=self.default_model,
-            messages=messages,
+            messages=[{ 'role': 'system', 'content': system_message or self.system_message}] + messages,
             stream=True,
         )
         self.token_counter.add_streaming_input_tokens(str(messages))

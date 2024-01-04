@@ -53,17 +53,12 @@ class FileWriter(BaseModel):
         )
 
         llm_res = self.llm.new_chat_request(
-            messages=[
-                {
-                    'role': 'system',
-                    'content': self.llm.system_message,
-                },
-                {
-                    'role': 'user',
-                    'content': query,
-                }
-            ],
+            messages=[{
+                'role': 'user',
+                'content': query,
+            }],
             loading_message=f'✍️  Writing the changes to {strict_target_path}...',
+            system_message=system_message
         )
 
         new_contents = self.clean_backticks(llm_res)
