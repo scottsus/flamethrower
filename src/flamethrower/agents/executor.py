@@ -184,7 +184,7 @@ class Executor(BaseModel):
                     self.printer.print_green(success_message, reset=True)
 
                 elif action == 'completed':
-                    diffs = Diff(printer=self.printer).get_diffs()
+                    # diffs = Diff(printer=self.printer).get_diffs()
                     # TODO: diffs for just that 1 file?
                     # self.printer.print_diffs(diffs)
                     return
