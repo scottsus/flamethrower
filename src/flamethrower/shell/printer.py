@@ -43,40 +43,40 @@ class Printer(BaseModel):
         if reset:
             os.write(self.stdout_fd, STDIN_DEFAULT)
 
-    def print_default(self, data: bytes) -> None:
+    def print_default(self, data: bytes | str) -> None:
         self.print_color(data, STDIN_DEFAULT)
     
-    def print_red(self, data: bytes, reset: bool = False) -> None:
+    def print_red(self, data: bytes | str, reset: bool = False) -> None:
         self.print_color(data, STDIN_RED, reset=reset)
     
-    def print_yellow(self, data: bytes, reset: bool = False) -> None:
+    def print_yellow(self, data: bytes | str, reset: bool = False) -> None:
         self.print_color(data, STDIN_YELLOW, reset=reset)
     
-    def print_green(self, data: bytes, reset: bool = False) -> None:
+    def print_green(self, data: bytes | str, reset: bool = False) -> None:
         self.print_color(data, STDIN_GREEN, reset=reset)
     
-    def print_blue(self, data: bytes, reset: bool = False) -> None:
+    def print_blue(self, data: bytes | str, reset: bool = False) -> None:
         self.print_color(data, STDIN_BLUE, reset=reset)
     
-    def print_cyan(self, data: bytes, reset: bool = False) -> None:
+    def print_cyan(self, data: bytes | str, reset: bool = False) -> None:
         self.print_color(data, STDIN_CYAN, reset=reset)
     
-    def print_gray(self, data: bytes, reset: bool = False) -> None:
+    def print_gray(self, data: bytes | str, reset: bool = False) -> None:
         self.print_color(data, STDIN_GRAY, reset=reset)
 
-    def print_white(self, data: bytes, reset: bool = False) -> None:
+    def print_white(self, data: bytes | str, reset: bool = False) -> None:
         self.print_color(data, STDIN_WHITE, reset=reset)
 
-    def print_light_green(self, data: bytes, reset: bool = False) -> None:
+    def print_light_green(self, data: bytes | str, reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_GREEN, reset=reset)
     
-    def print_light_blue(self, data: bytes, reset: bool = False) -> None:
+    def print_light_blue(self, data: bytes | str, reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_BLUE, reset=reset)
 
-    def print_light_cyan(self, data: bytes, reset: bool = False) -> None:
+    def print_light_cyan(self, data: bytes | str, reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_CYAN, reset=reset)
     
-    def print_light_magenta(self, data: bytes, reset: bool = False) -> None:
+    def print_light_magenta(self, data: bytes | str, reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_MAGENTA, reset=reset)
 
     def print_llm_response(self, stream) -> None:
@@ -172,6 +172,17 @@ class Printer(BaseModel):
             append_conv(complete_content)
             log_last_response(complete_content)
 
+        tty.setraw(sys.stdin)
+    
+    def print_diffs(self, diffs: list) -> None:
+        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.tty_settings)
+        for line in diffs:
+            if line.startswith('+'):
+                self.print_green(line + '\n', reset=True)
+            elif line.startswith('-'):
+                self.print_red(line + '\n', reset=True)
+            else:
+                self.print_default(line + '\n')
         tty.setraw(sys.stdin)
 
     def print_regular(self, message: str):

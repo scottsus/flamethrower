@@ -3,9 +3,10 @@ from pydantic import BaseModel
 import flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
 from flamethrower.context.conv_manager import ConversationManager
+from flamethrower.agents.file_writer import FileWriter
 from flamethrower.utils.token_counter import TokenCounter
+from flamethrower.utils.diff import Diff
 from flamethrower.shell.printer import Printer
-from .file_writer import FileWriter
 
 json_schema = {
     'type': 'object',
@@ -117,6 +118,9 @@ class Executor(BaseModel):
                 )
                 self.printer.print_green(f'Successfully updated {file_paths}', reset=True)
             elif action == 'completed':
+                diffs = Diff(printer=self.printer).get_diffs()
+                # TODO: diffs for just that 1 file?
+                # self.printer.print_diffs(diffs)
                 return
             else:
                 raise Exception('Invalid action')
