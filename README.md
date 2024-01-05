@@ -1,35 +1,31 @@
-# 🔥 flamethrower
+<h1 align='center'>🔥 flamethrower</h1>
 
-The ultimate debugging experience.
+LLM agents in your local machine → the ultimate debugging experience
+
+[![GitHub Repo](https://img.shields.io/badge/scottsus-flamethrower-red?&logo=github)](https://github.com/scottsus/flamethrower)
+![PyPI](https://img.shields.io/pypi/v/flamethrower.svg)
+![Code Size](https://img.shields.io/github/languages/code-size/scottsus/flamethrower.svg)
+[![Discord](https://img.shields.io/discord/XP4vVUQKPf.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.XP4vVUQKPf)
+![License](https://img.shields.io/github/license/scottsus/flamethrower.svg)
+[![Twitter](https://img.shields.io/twitter/follow/susantoscott.svg)](https://twitter.com/susantoscott)
+
+## What is this?
+
+🔥 flamethrower is an open source, high level, debugger that utilizes AI superpowers to draw context, offer suggestions, and iterate on those suggestions to accomplish a given task. Think a combination of GitHub Copilot's context-awareness in [KillianLucas' Open Source Open Interpreter](https://github.com/KillianLucas/open-interpreter) shell.
+
+## Demo
 
 https://github.com/scottsus/flamethrower/assets/88414565/93195176-c124-4528-b3c2-500ce87cd494
 
 ## Usage
 
-1. Pip install
+```
+pip install --upgrade flamethrower
 
-    ```
-    pip install flamethrower
-    ```
+EXPORT OPENAI_API_KEY=sk-xxxx
 
-2. Export OpenAI key for `flamethrower` to use
+cd {YOUR_WORKSPACE}
 
-    ```
-    EXPORT OPENAI_API_KEY=sk-xxxx
-    ```
+flamethrower
+```
 
-3. In whatever workspace/repo you're on, just type `flamethrower` or `ft`
-
-    ```
-    pwd
-    flamethrower
-    ```
-
-    flamethrower will gain an understanding of your project and directory structure.
-
-4. Use it as a regular shell: you can both run commands and ask natural language queries
-
-    ```
-    python main.py # or node server.ts or whatever your run script is
-    Wtf? Why did that happen? # natural language queries start with a capital letter
-    ```
