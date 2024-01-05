@@ -17,15 +17,50 @@ LLM agents in your local machine → the ultimate debugging experience
 
 https://github.com/scottsus/flamethrower/assets/88414565/93195176-c124-4528-b3c2-500ce87cd494
 
-## Usage
+## Quick Start
 
 ```
-pip install --upgrade flamethrower
+pip install flamethrower
+```
 
+### API Keys
+
+There's no getting around the friction of configuring API keys
+
+```
 EXPORT OPENAI_API_KEY=sk-xxxx
+```
 
-cd {YOUR_WORKSPACE}
+### Terminal
 
+Navigate to your current workspace, and simply run `flamethrower`, or `ft` for the pros.
+
+```
+cd {UNBELIEVABLY_COMPLICATED_WORKSPACE}
 flamethrower
 ```
 
+### Example Usage
+
+Use lowercase letters for commands you run in the shell, like `python main.py` or `node server.ts`
+
+```
+python main.py -> SOME_ERROR
+Wtf???? 🤬
+```
+
+An implementation run is initiated with a natural language query that begins with an uppercase letter.
+
+## Motivation for 🔥 flamethrower1
+
+### GitHub Copilot
+
+Closed source GitHub Copilot draws context very effectively, and `Quick Fix` is a neat feature that explains error from stdout logs if the last command returned a non-zero return code.
+
+### Open Interpreter
+
+The Open Interpreter, an open-source gem, specializes in crafting new code from the ground up. It's a favorite among data scientists and those needing sophisticated chart plotting, thanks to its iterative approach to achieving desired results.
+
+### A Research Project?
+
+🔥 flamethrower combines the agency afforded by Large Action Models (LAM) with the workspace awareness of Copilot, allowing it to take context-specific suggestions and continue iteration until a successful outcome. 🔥 is workspace-first, and aims to serve software engineers in complex tasks that need a lot of context management.
