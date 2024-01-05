@@ -49,9 +49,9 @@ python main.py -> SOME_ERROR
 Wtf???? 🤬
 ```
 
-An implementation run is initiated with a natural language query that begins with an uppercase letter.
+An implementation run is initiated with a natural language query that begins with an `uppercase letter`.
 
-## Motivation for 🔥 flamethrower1
+## Motivation for 🔥 flamethrower
 
 ### GitHub Copilot
 
