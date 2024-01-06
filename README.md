@@ -46,7 +46,7 @@ Use lowercase letters for commands you run in the shell, like `python main.py` o
 
 ```
 python main.py -> SOME_ERROR
-Wtf???? 🤬
+Wtf???? 🤬 # Literally type this in the terminal
 ```
 
 An implementation run is initiated with a natural language query that begins with an `uppercase letter`.
