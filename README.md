@@ -28,7 +28,7 @@ pip install flamethrower
 There's no getting around the friction of configuring API keys
 
 ```
-EXPORT OPENAI_API_KEY=sk-xxxx
+export OPENAI_API_KEY=sk-xxxx
 ```
 
 ### Terminal
