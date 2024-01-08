@@ -1,4 +1,7 @@
-<h1 align='center'>🔥 flamethrower</h1>
+<div align='center'>
+    <img src='assets/flamethrower-logo.png' width='300px'>
+    <h1>🔥 flamethrower</h1>
+</div>
 
 LLM agents in your local machine → the ultimate debugging experience
 
