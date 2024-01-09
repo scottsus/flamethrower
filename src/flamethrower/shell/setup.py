@@ -33,7 +33,7 @@ colored_welcome_screen = (
     "\033[34m/_/ /_/\\__,_/_/ /_/ /_/\\___/\\__/_/ /_/_/   \\____/|__/|__/\\___/_/\033[0m"
 )
 
-def setup_zsh_env() -> dict:
+def setup_zsh_env() -> dict | None:
     is_first_setup = False
 
     if not os.path.exists(FLAMETHROWER_DIR):
@@ -63,6 +63,16 @@ def setup_zsh_env() -> dict:
     
     env = os.environ.copy()
     env['ZDOTDIR'] = FLAMETHROWER_DIR
+
+    # Basic check to see that OpenAI API Key exists
+    openai_api_key = os.environ.get('OPENAI_API_KEY')
+    if not openai_api_key:
+        print(
+            f'Error: OpenAI API Key not found. Please run the following command in your shell:\n'
+            '\n  `export OPENAI_API_KEY=sk-xxxx`\n\n'
+            'You can find your OpenAI Api Keys at https://platform.openai.com/api-keys'
+        )
+        return None
 
     if is_first_setup:
         # Standard `print` is fine before pty is launched

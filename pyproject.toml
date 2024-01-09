@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "flamethrower"
 packages = [{ from = "src", include = "flamethrower" }]
-version = "0.1.10"
+version = "0.1.11"
 description = "The ultimate debugging experience 🦠🔥"
 authors = ["Scott Susanto <scottsus@usc.edu>"]
 license = "MIT"
@@ -20,6 +20,7 @@ jsonschema = "^4.20.0"
 rich = "^13.7.0"
 tiktoken = "^0.5.2"
 gitpython = "^3.1.40"
+backoff = "^2.2.1"
 
 
 [build-system]

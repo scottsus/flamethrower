@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 import  flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
-from flamethrower.utils.token_counter import TokenCounter
+from flamethrower.models.openai_client import OpenAIClient
 
 json_schema = {
     'type': 'object',
@@ -30,16 +30,12 @@ Important notes:
 """
 
 class FileChooser(BaseModel):
-    max_files_used: int = 8
     llm: LLM = None
-    token_counter: TokenCounter = None
+    max_files_used: int = 8
 
     def __init__(self, **data):
         super().__init__(**data)
-        self.llm = LLM(
-            system_message=system_message,
-            token_counter=self.token_counter,
-        )
+        self.llm = OpenAIClient(system_message=system_message)
     
     def infer_target_file_paths(self, description: str, dir_structure: str, user_query: str) -> list[str]:
         dir_info = ''

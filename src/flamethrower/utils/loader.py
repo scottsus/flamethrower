@@ -11,12 +11,14 @@ class Loader(BaseModel):
     class Config:
         arbitrary_types_allowed = True
     
+    loading_message: str
+    completion_message: str = ''
+    will_report_timing: bool = False
+    
     done: bool = False
     spinner: itertools.cycle = None
     start_time: float = 0.0
-    loading_message: str = ''
-    completion_message: str = ''
-    will_report_timing: bool = False
+    
 
     def __init__(self, **data):
         super().__init__(**data)

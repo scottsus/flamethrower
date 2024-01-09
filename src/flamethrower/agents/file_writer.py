@@ -3,7 +3,7 @@ import re
 from pydantic import BaseModel
 import flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
-from flamethrower.utils.token_counter import TokenCounter
+from flamethrower.models.openai_client import OpenAIClient
 
 system_message = """
 You are an extremely powerful programming assistant that can write flawless code.
@@ -11,20 +11,16 @@ You have a single, crucial task: Given an expert engineer's coding response and 
   1. Read the target file, if it exists
   2. Understand the expert engineer's response and extract the code
   3. Meaningfully incorporate the extracted code into the target file
-You are completely overwriting the existing target file, so it is imperative that 
-the code you write is both syntactically and semantically correct.
+
+You are completely overwriting the existing target file, so it is imperative that the code you write is both syntactically and semantically correct.
 """
 
 class FileWriter(BaseModel):
     llm: LLM = None
-    token_counter: TokenCounter = None
 
     def __init__(self, **data):
         super().__init__(**data)
-        self.llm = LLM(
-            system_message=system_message,
-            token_counter=self.token_counter,
-        )
+        self.llm = OpenAIClient(system_message=system_message)
     
     def write_code(self, target_path: str, assistant_implementation: str) -> None:
         old_contents = ''

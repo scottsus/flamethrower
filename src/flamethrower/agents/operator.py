@@ -2,92 +2,25 @@ import os
 import subprocess
 from pydantic import BaseModel
 import flamethrower.config.constants as config
-from flamethrower.models.llm import LLM
+from flamethrower.agents.driver import Driver
+from flamethrower.agents.interpreter import Interpreter
 from flamethrower.context.conv_manager import ConversationManager
 from flamethrower.agents.file_writer import FileWriter
-from flamethrower.utils.token_counter import TokenCounter
-from flamethrower.utils.diff import Diff
 from flamethrower.shell.printer import Printer
 
-json_schema = {
-    'type': 'object',
-    'properties': {
-        'actions': {
-            'type': 'array',
-            'items': {
-                'type': 'object',
-                'properties': {
-                    'action': {
-                        'type': 'string',
-                        'enum': ['run', 'write', 'debug', 'stuck', 'cleanup', 'completed']
-                    },
-                    'command': { 'type': 'string' },
-                    'file_paths': { 'type': 'string' }
-                },
-                'required': ['action'],
-                'allOf': [
-                    {
-                        'if': { 'properties': { 'action': { 'const': 'run' } } },
-                        'then': { 'required': ['command'] }
-                    },
-                    {
-                        'if': { 'properties': { 'action': { 'const': 'write' } } },
-                        'then': { 'required': ['file_paths'] }
-                    },
-                    {
-                        'if': { 'properties': { 'action': { 'const': 'debug' } } },
-                        'then': { 'required': ['file_paths'] }
-                    },
-                    {
-                        'if': { 'properties': { 'action': { 'const': 'cleanup' } } },
-                        'then': { 'required': ['file_paths'] }
-                    }
-                ]
-            }
-        },
-    },
-    'required': ['actions']
-}
-
-system_message = f"""
-You are an extremely powerful programming assistant that lives inside the unix terminal.
-You have a single, crucial task: to categorize LLM responses into a list of 5 possible actions:
-  1. Run a command on the terminal and observe its output
-  2. Rewrite code in a given target file
-  3. If you encountered an error, write print statements to the target file to debug for the next iteration.
-  4. Indicate that you are stuck and need help.
-  5. As best as possible, be extremely concise in code, and clean the file of print statements
-  6. Indicate that your job has been completed. **If so, don't recommend other tests or suggestions.**
-You **should choose multiple actions to perform**. For example:
-  - If you are writing to a file, you **must also return a `run` action to test what you wrote.**
-  - If you are debugging, you **must also follow it up with a `run` action and further `write` actions to identify the issue.**
-    - Once you tested the new code and realized you got a positive output, indicate your job is completed.
-It is crucial that you return a JSON object with the following JSON Schema:
-    {json_schema}
-"""
-
-class Executor(BaseModel):
+class Operator(BaseModel):
     max_retries: int = 8
-    nl_llm: LLM = None
-    json_llm: LLM = None
-    json_schema: dict = json_schema
-    conv_manager: ConversationManager = None
+    driver: Driver = None
+    interpreter: Interpreter = None
     file_writer: FileWriter = None
-    token_counter: TokenCounter = None
-    printer: Printer = None
-
+    conv_manager: ConversationManager
+    printer: Printer
+    
     def __init__(self, **data):
         super().__init__(**data)
-        self.nl_llm = LLM(
-            token_counter=self.token_counter
-        )
-        self.json_llm = LLM(
-            system_message=system_message,
-            token_counter=self.token_counter
-        )
-        self.file_writer = FileWriter(
-            token_counter=self.token_counter
-        )
+        self.driver = Driver()
+        self.interpreter = Interpreter()
+        self.file_writer = FileWriter()
 
     def execute_action(self, command: str) -> str:
         output = ''
@@ -115,13 +48,13 @@ class Executor(BaseModel):
         """
 
         # Initial understanding of the problem and generation of solution
-        stream = self.nl_llm.new_streaming_chat_request(messages=conv)
+        stream = self.driver.get_new_solution(conv)
         self.printer.print_llm_response(stream)
         
         action = ''
         for _ in range(self.max_retries):
             last_driver_res = self.get_last_assistant_response()
-            decision = self.make_decision_from(query, last_driver_res)
+            decision = self.interpreter.make_decision_from(query, last_driver_res)
             
             actions: list = decision['actions']
             for obj in actions:
@@ -199,36 +132,11 @@ class Executor(BaseModel):
                 'content': f'Remember to work towards the initial objective: [{query}]!',
                 'name': 'human'
             })
-            stream = self.nl_llm.new_streaming_chat_request(messages=conv)
+            stream = self.driver.get_next_step(conv)
             self.printer.print_llm_response(stream)
         
         # Max retries exceeded
         self.printer.print_red("\nToo many iterations, I'm going to need your help to debug this.", reset=True)
-
-    def make_decision_from(self, objective: str, latest_response: str) -> dict:
-        target_files = ''
-        try:
-            with open(config.get_current_files_path(), 'r') as f:
-                target_files = f.read().split('\n')
-        except FileNotFoundError:
-            pass
-        if target_files:
-            target_files = f'Currently you are working with the following files: {target_files}'
-        
-        query = (
-            f'This is the objective:\n{objective}'
-            f'This is the latest response:\n{latest_response}'
-            f'{target_files}'
-            'Given this objective and response, choose a possible action.'
-        )
-        self.printer.print_default('\n')
-        decision = self.json_llm.new_json_request(
-            query=query,
-            json_schema=self.json_schema,
-            loading_message='🤖 Determining next step...'
-        )
-
-        return decision
     
     def get_last_assistant_response(self) -> str:
         with open(config.get_last_response_path(), 'r') as f:

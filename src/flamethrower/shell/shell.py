@@ -10,7 +10,7 @@ import flamethrower.shell.setup as setup
 from flamethrower.shell.command_handler import CommandHandler
 from flamethrower.context.conv_manager import ConversationManager
 from flamethrower.context.prompt import PromptGenerator
-from flamethrower.agents.executor import Executor
+from flamethrower.agents.operator import Operator
 from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.shell.printer import Printer
 
@@ -25,12 +25,15 @@ class Shell(BaseModel):
     command_handler: CommandHandler = None
     conv_manager: ConversationManager = None
     prompt_generator: PromptGenerator = None
-    executor: Executor = None
+    operator: Operator = None
     token_counter: TokenCounter = None
     printer: Printer = None
 
     def run(self):
         env = setup.setup_zsh_env()
+        if not env:
+            return
+        
         self.leader_fd, self.follower_fd = pty.openpty()
         self.child_process = Popen(
             ['zsh'],
@@ -59,16 +62,15 @@ class Shell(BaseModel):
             token_counter=self.token_counter,
             printer=self.printer
         )
-        self.executor = Executor(
+        self.operator = Operator(
             conv_manager=self.conv_manager,
-            token_counter=self.token_counter,
             printer=self.printer
         )
         self.command_handler = CommandHandler(
             prompt_generator=self.prompt_generator,
             printer=self.printer,
             conv_manager=self.conv_manager,
-            executor=self.executor
+            operator=self.operator
         )
 
         setup.setup_dir_summary(self.token_counter)
@@ -103,6 +105,10 @@ class Shell(BaseModel):
             try:
                 termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
             except termios.error as e:
+                print(
+                    f'Unable to return pty to old settings due to error: {e}\n'
+                    'Please restart your terminal instance by pressing `exit`\n'
+                )
                 pass
 
             os.close(self.leader_fd)

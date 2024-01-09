@@ -13,9 +13,6 @@ from flamethrower.utils.special_keys import *
 from flamethrower.utils.colors import *
 
 class Printer(BaseModel):
-    class Config:
-        arbitrary_types_allowed = True
-    
     leader_fd: int = 0
     stdout_fd: int = 0
     tty_settings: list = []

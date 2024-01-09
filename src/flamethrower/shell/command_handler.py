@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from .printer import Printer
 from flamethrower.context.prompt import PromptGenerator
 from flamethrower.context.conv_manager import ConversationManager
-from flamethrower.agents.executor import Executor
+from flamethrower.agents.operator import Operator
 from flamethrower.utils.special_keys import *
 from flamethrower.utils.zsh_history import update_zsh_history
 
@@ -13,7 +13,7 @@ class CommandHandler(BaseModel):
     is_nl_query: bool = False # is natural language query
     prompt_generator: PromptGenerator = None
     conv_manager: ConversationManager = None
-    executor: Executor = None
+    operator: Operator = None
     printer: Printer = None
 
     # TODO: Windows support
@@ -97,7 +97,7 @@ class CommandHandler(BaseModel):
         messages = self.prompt_generator.construct_messages(query)
 
         start_time = time.time()
-        self.executor.new_implementation_run(query, messages)
+        self.operator.new_implementation_run(query, messages)
         end_time = time.time()
         
         def get_exec_time_message(start_time, end_time) -> str:
