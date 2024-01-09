@@ -38,7 +38,7 @@ class CommandHandler(BaseModel):
         else:
             if key.isupper():
                 self.is_nl_query = True
-                self.printer.print_light_green(key)
+                self.printer.print_orange(key)
             else:
                 self.is_nl_query = False
                 self.printer.write_leader(key)

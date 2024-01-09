@@ -75,6 +75,9 @@ class Printer(BaseModel):
     
     def print_light_magenta(self, data: bytes | str, reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_MAGENTA, reset=reset)
+    
+    def print_orange(self, data: bytes | str, reset: bool = False) -> None:
+        self.print_color(data, STDIN_ORANGE, reset=reset)
 
     def print_llm_response(self, stream) -> None:
         """

@@ -28,7 +28,7 @@ class PromptGenerator(BaseModel):
     
     def construct_greeting(self) -> str:
         green = STDIN_GREEN.decode('utf-8')
-        light_green = STDIN_LIGHT_GREEN.decode('utf-8')
+        orange = STDIN_ORANGE.decode('utf-8')
         default = STDIN_DEFAULT.decode('utf-8')
 
         return (
@@ -37,7 +37,7 @@ class PromptGenerator(BaseModel):
             f'- For now, feel free to use me as a regular shell for commands like {green}ls{default} or {green}cd{default}.\n'
             '- When you need my help, write your query in the terminal starting with a capital letter.\n'
             '- The command should turn light green, and I will have the necessary context from your workspace and stdout to assist you.\n'
-            f'- To try it out, type {light_green}"Refactor /path/to/file"{default} in the terminal.\n'
+            f'- To try it out, type {orange}"Refactor /path/to/file"{default} in the terminal.\n\n'
         )
 
     def construct_messages(self, query: str = '') -> list:

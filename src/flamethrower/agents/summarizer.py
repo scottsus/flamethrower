@@ -68,7 +68,8 @@ class Summarizer(BaseModel):
                     f'\n```\n{file_contents}\n```\n'
                     'Read it carefully and summarize what the project is about, and what technology stack is being used.\n'
                 )
-                return self.llm.new_chat_request(
+
+                summary = self.llm.new_chat_request(
                     messages=[{
                         'role': 'user',
                         'content': query,
