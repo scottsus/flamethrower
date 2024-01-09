@@ -17,7 +17,11 @@ def flamethrower_path(file_name: str) -> str:
         FLAMETHROWER_DIR, file_name
     )
 
+FLAMETHROWER_README_FILE_NAME = 'README.md'
 FLAMETHROWER_GITIGNORE_FILE_NAME = '.gitignore'
+
+def get_flamethrower_readme_path() -> str:
+    return flamethrower_path(FLAMETHROWER_README_FILE_NAME)
 
 def get_flamethrower_gitignore_path() -> str:
     return flamethrower_path(FLAMETHROWER_GITIGNORE_FILE_NAME)

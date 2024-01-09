@@ -31,15 +31,25 @@ def setup_zsh_env() -> dict | None:
         os.makedirs(FLAMETHROWER_ZSH_DIR, exist_ok=True)
         is_first_setup = True
 
-    zshrc_path = get_zsh_config_path()
-    if not os.path.exists(zshrc_path):
-        with resources.path(f'{FLAMETHROWER_PACKAGE_NAME}.data', '.sample.zshrc') as f:
-            shutil.copy(f, zshrc_path)
+    flamethrower_readme_path = get_flamethrower_readme_path()
+    if not os.path.exists(flamethrower_readme_path):
+        with resources.path(f'{FLAMETHROWER_PACKAGE_NAME}.data', 'README.md') as f:
+            shutil.copy(f, flamethrower_readme_path)
     
     flamethrower_gitignore_path = get_flamethrower_gitignore_path()
     if not os.path.exists(flamethrower_gitignore_path):
         with resources.path(f'{FLAMETHROWER_PACKAGE_NAME}.data', '.sample.gitignore') as f:
             shutil.copy(f, flamethrower_gitignore_path)
+    
+    zshrc_path = get_zsh_config_path()
+    if not os.path.exists(zshrc_path):
+        with resources.path(f'{FLAMETHROWER_PACKAGE_NAME}.data', '.sample.zshrc') as f:
+            shutil.copy(f, zshrc_path)
+
+    zsh_history_path = get_zsh_history_path()
+    if not os.path.exists(zsh_history_path):
+        with open(zsh_history_path, 'w') as f:
+            f.write('')
     
     zsh_autosuggestions_path = flamethrower_zsh_dir('zsh-autosuggestions')
     if not os.path.exists(zsh_autosuggestions_path):
@@ -48,11 +58,6 @@ def setup_zsh_env() -> dict | None:
     zsh_syntax_highlighting_path = flamethrower_zsh_dir('zsh-syntax-highlighting')
     if not os.path.exists(zsh_syntax_highlighting_path):
         Repo.clone_from('https://github.com/zsh-users/zsh-syntax-highlighting.git', zsh_syntax_highlighting_path)
-    
-    zsh_history_path = get_zsh_history_path()
-    if not os.path.exists(zsh_history_path):
-        with open(zsh_history_path, 'w') as f:
-            f.write('')
     
     env = os.environ.copy()
     env['ZDOTDIR'] = FLAMETHROWER_ZSH_DIR
