@@ -7,48 +7,31 @@ from typing import IO
 import flamethrower.config.constants as config
 from flamethrower.agents.summarizer import Summarizer
 from flamethrower.utils.loader import Loader
-from flamethrower.utils.token_counter import TokenCounter
-from flamethrower.context.sample_gitignore import sample_gitignore
 
 class DirectoryWalker(BaseModel):
     base_dir: str = os.getcwd()
     file_paths: dict = {}
     summarization_tasks: list = []
     summarizer: Summarizer = None
-    token_counter: TokenCounter = None
-    loader: Loader = None
 
     def __init__(self, **data):
         super().__init__(**data)
-        self.summarizer = Summarizer(
-            token_counter=self.token_counter
-        )
+        self.summarizer = Summarizer()
 
         try:
             with open(config.get_dir_dict_path(), 'r') as dir_dict_file:
                 self.file_paths = json.loads(dir_dict_file.read())
         except FileNotFoundError:
             pass
-    
-    def get_directory_tree(self) -> None:
-        with open(config.get_dir_tree_path(), 'r') as dir_tree_file:
-            return dir_tree_file.read()
 
     async def generate_directory_summary(self, start_path) -> None:
-        gitignore = None
-        if os.path.exists('.gitignore'):
-            with open('.gitignore', 'r') as gitignore_file:
-                gitignore = PathSpec.from_lines('gitwildmatch', gitignore_file.readlines())
-        else:
-            gitignore = PathSpec.from_lines('gitwildmatch', sample_gitignore.splitlines())
-
         with Loader(
-            loading_message='🔧  Performing workspace first time setup (should take about 30s)...',
+            loading_message='🔧 Performing workspace first time setup (should take about 30s)...',
             completion_message='📖 Workspace analyzed.',
             will_report_timing=True
         ).managed_loader():
             with open(config.get_dir_tree_path(), 'w') as dir_tree_file:
-                self.process_directory(start_path, dir_tree_file, gitignore=gitignore)
+                self.process_directory(start_path, dir_tree_file, gitignore=self.get_gitignore())
 
             await asyncio.gather(*self.summarization_tasks)
             with open(config.get_dir_dict_path(), 'w') as dir_dict_file:
@@ -56,11 +39,11 @@ class DirectoryWalker(BaseModel):
 
     def process_directory(self, dir_path: str, summary_file: str, prefix: IO[str] = '', gitignore: PathSpec = None) -> None:
         entries = os.listdir(dir_path)
-
+        
         if gitignore:
             entries = [
                 e for e in entries if (
-                    not gitignore.match_file(os.path.join(dir_path, e))
+                    not gitignore.match_file(e)
                     and e != '.git'
                     and e != '.flamethrower'
                 )
@@ -105,6 +88,24 @@ class DirectoryWalker(BaseModel):
     def write_file_entry(self, file_name: str, index: int, total: int, summary_file: IO[str], prefix: str) -> None:
         connector = '├──' if index < total - 1 else '└──'
         summary_file.write(f'{prefix}{connector} {file_name}\n')
+    
+    def get_directory_tree(self) -> None:
+        with open(config.get_dir_tree_path(), 'r') as dir_tree_file:
+            return dir_tree_file.read()
+    
+    def get_gitignore(self) -> PathSpec:
+        patterns = []
+        if os.path.exists('.gitignore'):
+            with open('.gitignore', 'r') as gitignore_file:
+                for line in gitignore_file:
+                    patterns.append(line.strip().lstrip('/').rstrip('/'))
+            return PathSpec.from_lines('gitwildmatch', patterns)
+        else:
+            sample_gitignore_path = os.path.join(
+                os.getcwd(), 'src', 'flamethrower', 'setup', 'src', '.sample.gitignore'
+            )
+            with open(sample_gitignore_path, 'r') as f:
+                return PathSpec.from_lines('gitwildmatch', f.read().splitlines())
 
     async def update_file_paths(self, file_path: str) -> None:
         relative_path = os.path.relpath(file_path, self.base_dir)
@@ -117,3 +118,9 @@ class DirectoryWalker(BaseModel):
         )
         
         self.file_paths[relative_path] = file_contents
+
+def setup_dir_summary() -> None:
+    dir_walker = DirectoryWalker()
+    asyncio.run(dir_walker.generate_directory_summary(
+        os.path.join(os.getcwd())
+    ))

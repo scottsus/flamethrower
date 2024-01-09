@@ -1,4 +1,7 @@
-sample_gitignore = """
+# 🔥 flamethrower
+/logs
+/zsh
+
 # VSCode
 .vscode/*
 !.vscode/settings.json
@@ -173,4 +176,3 @@ dmypy.json
  
 # Cython debug symbols
 cython_debug/
-"""

@@ -101,7 +101,7 @@ class Operator(BaseModel):
                     self.printer.print_yellow(success_message, reset=True)
                 
                 elif action == 'stuck':
-                    self.printer.print_red("\nI don't know how to solve this, need your help", reset=True)
+                    self.printer.print_red("\nI don't know how to solve this, need your help\n", reset=True)
                     return
 
                 elif action == 'cleanup':

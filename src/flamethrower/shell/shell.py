@@ -6,9 +6,10 @@ import termios
 from subprocess import Popen
 from select import select
 from pydantic import BaseModel
-import flamethrower.shell.setup as setup
+import flamethrower.setup.setup as setup
 from flamethrower.shell.command_handler import CommandHandler
 from flamethrower.context.conv_manager import ConversationManager
+from flamethrower.context.dir_walker import setup_dir_summary
 from flamethrower.context.prompt import PromptGenerator
 from flamethrower.agents.operator import Operator
 from flamethrower.utils.token_counter import TokenCounter
@@ -73,7 +74,7 @@ class Shell(BaseModel):
             operator=self.operator
         )
 
-        setup.setup_dir_summary(self.token_counter)
+        setup_dir_summary()
         self.printer.print_regular(self.prompt_generator.construct_greeting())
 
         try:

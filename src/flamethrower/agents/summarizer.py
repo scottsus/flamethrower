@@ -74,7 +74,6 @@ class Summarizer(BaseModel):
                         'content': query,
                     }],
                     loading_message=f'📚 Learning project...',
-                    system_message=system_message
                 )
         except FileNotFoundError:
             pass

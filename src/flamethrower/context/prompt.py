@@ -14,17 +14,15 @@ class PromptGenerator(BaseModel):
     greeting: str = ''
     description: str = ''
     dir_structure: str = ''
-    conv_manager: ConversationManager = None
-    token_counter: TokenCounter = None
     summarizer: Summarizer = None
-    printer: Printer = None
+    conv_manager: ConversationManager
+    token_counter: TokenCounter
+    printer: Printer
 
     def __init__(self, **data):
         super().__init__(**data)
         self.greeting = generate_greeting()
-        self.summarizer = Summarizer(
-            token_counter=self.token_counter
-        )
+        self.summarizer = Summarizer()
         self.description = self.summarizer.summarize_readme()
         self.dir_structure = get_dir_structure()
     

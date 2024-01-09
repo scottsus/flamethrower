@@ -54,7 +54,6 @@ class FileWriter(BaseModel):
                 'content': query,
             }],
             loading_message=f'✍️  Writing the changes to {strict_target_path}...',
-            system_message=system_message
         )
 
         new_contents = self.clean_backticks(llm_res)

@@ -1,19 +1,8 @@
 import os
-import asyncio
+import shutil
 from git import Repo
+from importlib import resources
 from flamethrower.config.constants import *
-from flamethrower.context.dir_walker import DirectoryWalker
-from flamethrower.utils.token_counter import TokenCounter
-
-zshrc_contents = """# basic zshrc for pty
-
-PS1='%B%F{red}%n:%f %F{white}%1~%f%b 🌊 '
-
-source $ZDOTDIR/zsh-autosuggestions/zsh-autosuggestions.zsh
-source $ZDOTDIR/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-
-setopt INC_APPEND_HISTORY
-"""
 
 original_welcome_screen = """
     ______                     __  __
@@ -37,19 +26,26 @@ def setup_zsh_env() -> dict | None:
     is_first_setup = False
 
     if not os.path.exists(FLAMETHROWER_DIR):
-        os.makedirs(FLAMETHROWER_DIR)
+        os.makedirs(FLAMETHROWER_DIR, exist_ok=True)
+        os.makedirs(FLAMETHROWER_LOG_DIR, exist_ok=True)
+        os.makedirs(FLAMETHROWER_ZSH_DIR, exist_ok=True)
         is_first_setup = True
-    
+
     zshrc_path = get_zsh_config_path()
     if not os.path.exists(zshrc_path):
-        with open(zshrc_path, 'w') as f:
-            f.write(zshrc_contents)
+        with resources.path(f'{FLAMETHROWER_PACKAGE_NAME}.data', '.sample.zshrc') as f:
+            shutil.copy(f, zshrc_path)
     
-    zsh_autosuggestions_path = flamethrower_path('zsh-autosuggestions')
+    flamethrower_gitignore_path = get_flamethrower_gitignore_path()
+    if not os.path.exists(flamethrower_gitignore_path):
+        with resources.path(f'{FLAMETHROWER_PACKAGE_NAME}.data', '.sample.gitignore') as f:
+            shutil.copy(f, flamethrower_gitignore_path)
+    
+    zsh_autosuggestions_path = flamethrower_zsh_dir('zsh-autosuggestions')
     if not os.path.exists(zsh_autosuggestions_path):
         Repo.clone_from('https://github.com/zsh-users/zsh-autosuggestions.git', zsh_autosuggestions_path)
 
-    zsh_syntax_highlighting_path = flamethrower_path('zsh-syntax-highlighting')
+    zsh_syntax_highlighting_path = flamethrower_zsh_dir('zsh-syntax-highlighting')
     if not os.path.exists(zsh_syntax_highlighting_path):
         Repo.clone_from('https://github.com/zsh-users/zsh-syntax-highlighting.git', zsh_syntax_highlighting_path)
     
@@ -58,11 +54,8 @@ def setup_zsh_env() -> dict | None:
         with open(zsh_history_path, 'w') as f:
             f.write('')
     
-    if not os.path.exists(FLAMETHROWER_LOG_DIR):
-        os.makedirs(FLAMETHROWER_LOG_DIR)
-    
     env = os.environ.copy()
-    env['ZDOTDIR'] = FLAMETHROWER_DIR
+    env['ZDOTDIR'] = FLAMETHROWER_ZSH_DIR
 
     # Basic check to see that OpenAI API Key exists
     openai_api_key = os.environ.get('OPENAI_API_KEY')
@@ -75,13 +68,6 @@ def setup_zsh_env() -> dict | None:
         return None
 
     if is_first_setup:
-        # Standard `print` is fine before pty is launched
         print(colored_welcome_screen)
 
     return env
-
-def setup_dir_summary(token_counter: TokenCounter) -> None:
-    dir_walker = DirectoryWalker(token_counter=token_counter)
-    asyncio.run(dir_walker.generate_directory_summary(
-        os.path.join(os.getcwd())
-    ))

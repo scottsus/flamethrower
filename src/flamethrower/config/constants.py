@@ -4,6 +4,8 @@ import os
 🔥 main directory
 """
 
+FLAMETHROWER_PACKAGE_NAME = 'flamethrower'
+
 FLAMETHROWER_DIR_NAME = '.flamethrower'
 
 FLAMETHROWER_DIR = os.path.join(
@@ -15,25 +17,38 @@ def flamethrower_path(file_name: str) -> str:
         FLAMETHROWER_DIR, file_name
     )
 
+FLAMETHROWER_GITIGNORE_FILE_NAME = '.gitignore'
+
+def get_flamethrower_gitignore_path() -> str:
+    return flamethrower_path(FLAMETHROWER_GITIGNORE_FILE_NAME)
+
 """
 🔧 zsh configs
 """
+
+FLAMETHROWER_ZSH_DIR_NAME = 'zsh'
+FLAMETHROWER_ZSH_DIR = flamethrower_path(FLAMETHROWER_ZSH_DIR_NAME)
+
+def flamethrower_zsh_dir(file_name: str) -> str:
+    return os.path.join(
+        FLAMETHROWER_ZSH_DIR, file_name
+    )
 
 ZSH_CONFIG_FILE_NAME = '.zshrc'
 ZSH_HISTORY_FILE_NAME = '.zsh_history'
 
 def get_zsh_config_path() -> str:
-    return flamethrower_path(ZSH_CONFIG_FILE_NAME)
+    return flamethrower_zsh_dir(ZSH_CONFIG_FILE_NAME)
 
 def get_zsh_history_path() -> str:
-    return flamethrower_path(ZSH_HISTORY_FILE_NAME)
+    return flamethrower_zsh_dir(ZSH_HISTORY_FILE_NAME)
 
 """
 🪵 flamethrower logs
 """
 
 FLAMETHROWER_LOG_DIR_NAME = 'logs'
-FLAMETHROWER_LOG_DIR = flamethrower_path('logs')
+FLAMETHROWER_LOG_DIR = flamethrower_path(FLAMETHROWER_LOG_DIR_NAME)
 
 def flamethrower_log_dir(file_name: str) -> str:
     return os.path.join(
