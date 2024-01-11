@@ -27,6 +27,7 @@ class Printer(BaseModel):
     def print_stdout(self, data: bytes | str) -> None:
         if self.stdout_fd:
             if isinstance(data, str):
+                self.set_cursor_to_start()
                 os.write(self.stdout_fd, data.encode('utf-8'))
             else:
                 os.write(self.stdout_fd, data)
@@ -185,8 +186,7 @@ class Printer(BaseModel):
 
         tty.setraw(sys.stdin)
         
-        # Double newlines as indication of next step
-        self.print_regular(message='\n', with_newline=True)
+        self.print_regular(with_newline=True)
     
     def print_code(self, code: str, language: str = 'bash') -> None:
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.tty_settings)

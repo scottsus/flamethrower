@@ -1,5 +1,6 @@
 import os
 import subprocess
+import enum
 from pydantic import BaseModel
 import questionary
 import flamethrower.config.constants as config
@@ -9,6 +10,11 @@ from flamethrower.context.conv_manager import ConversationManager
 from flamethrower.agents.file_writer import FileWriter
 from flamethrower.shell.printer import Printer
 from flamethrower.utils.timer import Timer
+
+class Choice(enum.Enum):
+    YES = 1
+    NO = 2
+    REVISE = 3
 
 class Operator(BaseModel):
     max_retries: int = 8
@@ -41,6 +47,24 @@ class Operator(BaseModel):
 
         return output
     
+    def get_user_choice(self) -> Choice:
+        user_choice = questionary.select(
+            "Do you want me to implement the solution and test it for you?",
+            choices=[
+                "Yes",
+                "Let me revise the response",
+                "I'll do it myself, thank you very much"
+            ]
+        ).ask()
+
+        if user_choice == "Let me revise the response":
+            return Choice.REVISE
+
+        if user_choice == "I'll do it myself, thank you very much":
+            return Choice.NO
+        
+        return Choice.YES
+    
     def new_implementation_run(self, query: str, conv: list) -> None:
         """
         To complete a debugging run, we need:
@@ -52,22 +76,6 @@ class Operator(BaseModel):
         # Initial understanding of the problem and generation of solution
         stream = self.driver.get_new_solution(conv)
         self.printer.print_llm_response(stream)
-
-        user_response = questionary.select(
-            "Do you want me to implement the solution and test it for you?",
-            choices=[
-                "Yes",
-                "Let me revise the response",
-                "I'll do it myself, thank you very much"
-            ]
-        ).ask()
-
-        if user_response == "Let me revise the response":
-            return
-
-        if user_response == "I'll do it myself, thank you very much":
-            self.printer.print_green(b'\nVery well then. Let me know if you need further assistance.\n')
-            return
         
         with Timer(printer=self.printer).get_execution_time():
             action = ''
@@ -78,6 +86,15 @@ class Operator(BaseModel):
                 actions: list = decision['actions']
                 for obj in actions:
                     action = obj['action']
+
+                    if action in ['run', 'write', 'debug', 'stuck']:
+                        self.printer.print_regular(with_newline=True)
+                        choice = self.get_user_choice()
+                        if choice == Choice.REVISE:
+                            return
+                        if choice == Choice.NO:
+                            self.printer.print_green(b'\nVery well then. Let me know if you need further assistance.\n')
+                            return
                     
                     if action == 'run':
                         command = obj['command']
@@ -160,4 +177,3 @@ class Operator(BaseModel):
     def get_last_assistant_response(self) -> str:
         with open(config.get_last_response_path(), 'r') as f:
             return f.read()
-    
