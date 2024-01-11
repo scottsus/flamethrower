@@ -9,6 +9,7 @@ from flamethrower.models.llm import LLM
 from flamethrower.models.models import OPENAI_GPT_4_TURBO
 from flamethrower.utils.token_counter import TokenCounter, token_counter
 from flamethrower.utils.loader import Loader
+from flamethrower.utils.colors import STDIN_RED, STDIN_DEFAULT
 
 class OpenAIClient(LLM):
     system_message: str
@@ -43,10 +44,10 @@ class OpenAIClient(LLM):
             raise
     
     def new_streaming_chat_request(self, messages: list) -> Iterator[Optional[str]]:
-        stream = self.new_basic_chat_request(messages, is_streaming=True)
-        self.token_counter.add_streaming_input_tokens(str(messages))
-
         try:
+            stream = self.new_basic_chat_request(messages, is_streaming=True)
+            self.token_counter.add_streaming_input_tokens(str(messages))
+            
             for chunk in stream:
                 token = chunk.choices[0].delta.content or ''
                 yield token
@@ -54,7 +55,7 @@ class OpenAIClient(LLM):
             # End of stream
             pass
         except Exception:
-            yield '\n\nEncountered some error'
+            yield f'\n\n{STDIN_RED.decode("utf-8")}Encountered some error{STDIN_DEFAULT.decode("utf-8")}'
         finally:
             yield None
     
