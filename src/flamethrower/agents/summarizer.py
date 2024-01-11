@@ -12,7 +12,9 @@ Given:
   1. A description of what the entire project is about
   2. A single file in the project
 You have a single, crucial objective: **Summarize the function/content of the file as part of the larger project in 2-3 sentences.**
-Start every file by saying "This file is about..."
+Start every file by saying:
+  - If it's a README file, say "This folder is about...", describing the general function of the folder.
+  - Otherwise, say "This file is about...", describing the specific function of the file.
 """
 
 class Summarizer(BaseModel):
@@ -55,6 +57,7 @@ class Summarizer(BaseModel):
                     'This is the repository main readme file.\n'
                     f'\n```\n{file_contents}\n```\n'
                     'Read it carefully and summarize what the project is about, and what technology stack is being used.\n'
+                    'Start the summary by saying "This project is about..."\n'
                 )
 
                 summary = self.llm.new_chat_request(

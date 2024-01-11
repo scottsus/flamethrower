@@ -14,6 +14,7 @@ class DirectoryWalker(BaseModel):
     
     base_dir: str = os.getcwd()
     file_paths: dict = {}
+    workspace_summary: str = ''
     summarization_tasks: list = []
     semaphore: asyncio.Semaphore = None
     summarizer: Summarizer = None
@@ -26,6 +27,12 @@ class DirectoryWalker(BaseModel):
         try:
             with open(config.get_dir_dict_path(), 'r') as dir_dict_file:
                 self.file_paths = json.loads(dir_dict_file.read())
+        except FileNotFoundError:
+            pass
+        
+        try:
+            with open(config.get_workspace_summary_path(), 'r') as workspace_summary_file:
+                self.workspace_summary = workspace_summary_file.read()
         except FileNotFoundError:
             pass
 
@@ -120,8 +127,7 @@ class DirectoryWalker(BaseModel):
                 try:
                     file_contents = f.read()
                     file_summary = await self.summarizer.summarize_file(
-                        # TODO: FILL THIS OUT
-                        main_project_description='',
+                        main_project_description=self.workspace_summary,
                         file_contents=file_contents
                     )
                     
