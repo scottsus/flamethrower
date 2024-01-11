@@ -35,12 +35,13 @@ class Printer(BaseModel):
     def print_err(self, err: str) -> None:
         self.print_red(err.encode('utf-8'), reset=True)
 
-    def print_color(self, data: bytes, color: bytes, reset: bool = False) -> None:
-        if self.stdout_fd:
-            os.write(self.stdout_fd, color)
-            self.print_stdout(data)
+    def print_color(self, data: bytes | str, color: bytes, reset: bool = False) -> None:
+        os.write(self.stdout_fd, color)
+        self.print_stdout(data)
+        
         if reset:
             os.write(self.stdout_fd, STDIN_DEFAULT)
+            self.set_cursor_to_start(with_newline=True)
 
     def print_default(self, data: bytes | str) -> None:
         self.print_color(data, STDIN_DEFAULT)
@@ -208,9 +209,9 @@ class Printer(BaseModel):
     
     def set_cursor_to_start(self, with_newline: bool = False) -> None:
         if with_newline:
-            self.print_default(ENTER_KEY + CLEAR_FROM_START + CLEAR_TO_END + CURSOR_TO_START)
+            self.print_stdout(ENTER_KEY + CLEAR_FROM_START + CLEAR_TO_END + CURSOR_TO_START)
         else:
-            self.print_default(CLEAR_FROM_START + CLEAR_TO_END + CURSOR_TO_START)
+            self.print_stdout(CLEAR_FROM_START + CLEAR_TO_END + CURSOR_TO_START)
 
     def print_regular(self, message: str = '', with_newline: bool = False) -> None:
         with self.cooked_mode(with_newline):

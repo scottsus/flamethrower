@@ -29,41 +29,6 @@ class Operator(BaseModel):
         self.driver = Driver()
         self.interpreter = Interpreter()
         self.file_writer = FileWriter()
-
-    def execute_action(self, command: str) -> str:
-        output = ''
-        try:
-            completed_process = subprocess.run(
-                command, 
-                shell=True,
-                check=True,
-                text=True, 
-                stdout=subprocess.PIPE, 
-                stderr=subprocess.STDOUT
-            )
-            output = completed_process.stdout
-        except subprocess.CalledProcessError as e:
-            output = f'Error: {e.output}'
-
-        return output
-    
-    def get_user_choice(self) -> Choice:
-        user_choice = questionary.select(
-            "Do you want me to implement the solution and test it for you?",
-            choices=[
-                "Yes",
-                "Let me revise the response",
-                "I'll do it myself, thank you very much"
-            ]
-        ).ask()
-
-        if user_choice == "Let me revise the response":
-            return Choice.REVISE
-
-        if user_choice == "I'll do it myself, thank you very much":
-            return Choice.NO
-        
-        return Choice.YES
     
     def new_implementation_run(self, query: str, conv: list) -> None:
         """
@@ -102,60 +67,20 @@ class Operator(BaseModel):
                         is_first_time_asking_for_permission = False
                     
                     if action == 'run':
-                        command = obj['command']
-                        self.printer.print_code(command)
-                        output = self.execute_action(command)
-                        self.printer.print_regular(output)
-                        self.conv_manager.append_conv(
-                            role='user',
-                            content=f'{os.getcwd()} $ {command}',
-                            name='human',
-                        )
-                        self.conv_manager.append_conv(
-                            role='user',
-                            content=output,
-                            name='stdout',
-                        )
+                        self.handle_action_run(obj)
                     
                     elif action == 'write':
-                        file_paths = obj['file_paths']
-                        self.file_writer.write_code(file_paths, last_driver_res)
-                        
-                        success_message = f'Successfully updated {file_paths}\n'
-                        self.conv_manager.append_conv(
-                            role='user',
-                            content=success_message,
-                            name='human',
-                        )
-                        self.printer.print_green(success_message, reset=True)
+                        self.handle_action_write(obj, last_driver_res)
                     
                     elif action == 'debug':
-                        file_paths = obj['file_paths']
-                        self.file_writer.write_code(file_paths, last_driver_res)
-
-                        success_message = f'Wrote debugging statements for future testing in file: {file_paths}\n'
-                        self.conv_manager.append_conv(
-                            role='user',
-                            content=success_message,
-                            name='human'
-                        )
-                        self.printer.print_yellow(success_message, reset=True)
+                        self.handle_action_debug(obj, last_driver_res)
                     
                     elif action == 'stuck':
-                        self.printer.print_red("\nI don't know how to solve this, need your help\n", reset=True)
+                        self.handle_action_stuck()
                         return
 
                     elif action == 'cleanup':
-                        file_paths = obj['file_paths']
-                        self.file_writer.write_code(file_paths, last_driver_res)
-
-                        success_message = f'Cleaned up file: {file_paths}\n'
-                        self.conv_manager.append_conv(
-                            role='user',
-                            content=success_message,
-                            name='human'
-                        )
-                        self.printer.print_green(success_message, reset=True)
+                        self.handle_action_cleanup(obj, last_driver_res)
 
                     elif action == 'completed':
                         # diffs = Diff(printer=self.printer).get_diffs()
@@ -164,9 +89,10 @@ class Operator(BaseModel):
                         return
                     
                     else:
-                        raise Exception('Invalid action')
+                        self.printer.print_red(b'\nInternal error, please try again.\n', reset=True)
+                        return
 
-                # Subsequent implementations of the solution
+                # Subsequent iterations of implementation
                 conv = self.conv_manager.get_conv()
                 conv.append({
                     'role': 'user',
@@ -177,8 +103,100 @@ class Operator(BaseModel):
                 self.printer.print_llm_response(stream)
             
             # Max retries exceeded
-            self.printer.print_red("\nToo many iterations, I'm going to need your help to debug this.", reset=True)
+            self.printer.print_red(b'\nToo many iterations, need your help to debug.\n', reset=True)
     
+    def handle_action_run(self, json: dict) -> None:
+        command = json['command']
+        self.printer.print_code(command)
+
+        def execute_action(command: str) -> str:
+            output = ''
+            try:
+                completed_process = subprocess.run(
+                    command, 
+                    shell=True,
+                    check=True,
+                    text=True, 
+                    stdout=subprocess.PIPE, 
+                    stderr=subprocess.STDOUT
+                )
+                output = completed_process.stdout
+            except subprocess.CalledProcessError as e:
+                output = f'Error: {e.output}'
+
+            return output
+
+        output = execute_action(command)
+        self.printer.print_regular(output)
+
+        self.conv_manager.append_conv(
+            role='user',
+            content=f'{os.getcwd()} $ {command}',
+            name='human',
+        )
+        self.conv_manager.append_conv(
+            role='user',
+            content=output,
+            name='stdout',
+        )
+
+    def handle_action_write(self, json: dict, driver_res: str) -> None:
+        file_paths = json['file_paths']
+        self.file_writer.write_code(file_paths, driver_res)
+
+        success_message = f'Successfully updated {file_paths}\n'
+        self.conv_manager.append_conv(
+            role='user',
+            content=success_message,
+            name='human',
+        )
+        self.printer.print_green(success_message, reset=True)
+    
+    def handle_action_debug(self, json: dict, driver_res: str) -> None:
+        file_paths = json['file_paths']
+        self.file_writer.write_code(file_paths, driver_res)
+
+        debug_message = f'Wrote debugging statements for future testing in file: {file_paths}\n'
+        self.conv_manager.append_conv(
+            role='user',
+            content=debug_message,
+            name='human'
+        )
+        self.printer.print_yellow(debug_message, reset=True)
+    
+    def handle_action_stuck(self) -> None:
+        self.printer.print_red(b"\nI don't know how to solve this, need your help\n", reset=True)
+    
+    def handle_action_cleanup(self, json: dict, driver_res: str) -> None:
+        file_paths = json['file_paths']
+        self.file_writer.write_code(file_paths, driver_res)
+
+        cleanup_message = f'🧹 Cleaned up files: {file_paths}\n'
+        self.conv_manager.append_conv(
+            role='user',
+            content=cleanup_message,
+            name='human'
+        )
+        self.printer.print_green(cleanup_message, reset=True)
+    
+    def get_user_choice(self) -> Choice:
+        user_choice = questionary.select(
+            "Do you want me to implement the solution and test it for you?",
+            choices=[
+                "Yes",
+                "Let me revise the response",
+                "I'll do it myself, thank you very much"
+            ]
+        ).ask()
+
+        if user_choice == "Let me revise the response":
+            return Choice.REVISE
+
+        if user_choice == "I'll do it myself, thank you very much":
+            return Choice.NO
+        
+        return Choice.YES
+
     def get_last_assistant_response(self) -> str:
         with open(config.get_last_response_path(), 'r') as f:
             return f.read()
