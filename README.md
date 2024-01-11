@@ -19,7 +19,11 @@ https://github.com/scottsus/flamethrower/assets/88414565/93195176-c124-4528-b3c2
 
 ## Quick Start
 
-Whether or not you installed it before:
+```
+pip install flamethrower
+```
+
+Or, if you're looking to upgrade to the latest version
 
 ```
 pip install --upgrade flamethrower
