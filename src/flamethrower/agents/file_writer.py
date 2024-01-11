@@ -35,11 +35,7 @@ class FileWriter(BaseModel):
         except FileNotFoundError:
             pass
 
-        context = ''
-        if not old_contents:
-            context = 'You are writing to a new file.'
-        else:
-            context = f'This is the starting code: {old_contents}\n'
+        context = f'This is the starting code: {old_contents}\n' if old_contents else 'You are writing to a new file'
 
         query = (
             f'{context}'
@@ -48,18 +44,21 @@ class FileWriter(BaseModel):
             'Do not add explanations, and ensure that the code you write is both syntactically and semantically correct.\n'
         )
 
-        llm_res = self.llm.new_chat_request(
-            messages=[{
-                'role': 'user',
-                'content': query,
-            }],
-            loading_message=f'✍️  Writing the changes to {strict_target_path}...',
-        )
+        try:
+            llm_res = self.llm.new_chat_request(
+                messages=[{
+                    'role': 'user',
+                    'content': query,
+                }],
+                loading_message=f'✍️  Writing the changes to {strict_target_path}...',
+            )
 
-        new_contents = self.clean_backticks(llm_res)
-        
-        with open(complete_target_path, 'w') as f:
-            f.write(new_contents)
+            new_contents = self.clean_backticks(llm_res)
+            
+            with open(complete_target_path, 'w') as f:
+                f.write(new_contents)
+        except Exception:
+            raise
     
     def choose_file_path(self, given_file_path: str) -> str:
         with open(config.get_current_files_path(), 'r') as f:

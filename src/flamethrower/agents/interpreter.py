@@ -80,12 +80,15 @@ class Interpreter(BaseModel):
             'Given this objective and response, choose a possible action.'
         )
 
-        return self.llm.new_json_request(
-            query=query,
-            json_schema=self.json_schema,
-            loading_message='🤖 Determining next step...',
-            completion_message='🤖 Next step chosen.\n'
-        )
+        try:
+            return self.llm.new_json_request(
+                query=query,
+                json_schema=self.json_schema,
+                loading_message='🤖 Determining next step...',
+                completion_message='🤖 Next step chosen.\n'
+            )
+        except Exception:
+            return None
 
     def get_target_files(self) -> list:
         try:

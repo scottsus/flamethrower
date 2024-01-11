@@ -1,8 +1,9 @@
 import os
 import subprocess
 import enum
-from pydantic import BaseModel
 import questionary
+from pydantic import BaseModel
+from openai import RateLimitError
 import flamethrower.config.constants as config
 from flamethrower.agents.driver import Driver
 from flamethrower.agents.interpreter import Interpreter
@@ -42,30 +43,33 @@ class Operator(BaseModel):
         stream = self.driver.get_new_solution(conv)
         self.printer.print_llm_response(stream)
         
-        with Timer(printer=self.printer).get_execution_time():
-            action = ''
-            is_first_time_asking_for_permission = True
+        action = ''
+        is_first_time_asking_for_permission = True
+        
+        for _ in range(self.max_retries):
+            last_driver_res = self.get_last_assistant_response()
+            decision = self.interpreter.make_decision_from(query, last_driver_res)
+            if decision is None:
+                self.printer.print_err('\nInterpreter unable to make decision. Marking as complete.')
+                return
             
-            for _ in range(self.max_retries):
-                last_driver_res = self.get_last_assistant_response()
-                decision = self.interpreter.make_decision_from(query, last_driver_res)
+            actions: list = decision['actions']
+            for obj in actions:
+                action = obj['action']
                 
-                actions: list = decision['actions']
-                for obj in actions:
-                    action = obj['action']
-                    
-                    if is_first_time_asking_for_permission and action in ['run', 'write', 'debug', 'stuck']:
-                        self.printer.print_regular(with_newline=True)
+                if is_first_time_asking_for_permission and action in ['run', 'write', 'debug', 'stuck']:
+                    self.printer.print_regular(with_newline=True)
 
-                        choice = self.get_user_choice()
-                        if choice == Choice.REVISE:
-                            return
-                        if choice == Choice.NO:
-                            self.printer.print_green(b'\nVery well then. Let me know if you need further assistance.\n')
-                            return
-                        
-                        is_first_time_asking_for_permission = False
+                    choice = self.get_user_choice()
+                    if choice == Choice.REVISE:
+                        return
+                    if choice == Choice.NO:
+                        self.printer.print_green(b'\nVery well then. Let me know if you need further assistance.\n')
+                        return
                     
+                    is_first_time_asking_for_permission = False
+                
+                try:
                     if action == 'run':
                         self.handle_action_run(obj)
                     
@@ -89,21 +93,33 @@ class Operator(BaseModel):
                         return
                     
                     else:
-                        self.printer.print_red(b'\nInternal error, please try again.\n', reset=True)
-                        return
+                        # Impossible, since obj is validated by json schema, but just in case
+                        raise ValueError('Foreign JSON')
+                
+                except RateLimitError:
+                    error_message = (
+                        '\n'
+                        'You might have exceeded your current quota for OpenAI.\n'
+                        "We're working hard to setup a 🔥 flamethrower LLM server for your usage\n"
+                        'Please try again soon!\n'
+                    )
+                    self.printer.print_err(error_message.encode('utf-8'))
+                except Exception:
+                    self.printer.print_err(b'\nInternal error, please try again.\n')
+                    return
 
-                # Subsequent iterations of implementation
-                conv = self.conv_manager.get_conv()
-                conv.append({
-                    'role': 'user',
-                    'content': f'Remember to work towards the initial objective: [{query}]!',
-                    'name': 'human'
-                })
-                stream = self.driver.get_next_step(conv)
-                self.printer.print_llm_response(stream)
-            
-            # Max retries exceeded
-            self.printer.print_red(b'\nToo many iterations, need your help to debug.\n', reset=True)
+            # Subsequent iterations of implementation
+            conv = self.conv_manager.get_conv()
+            conv.append({
+                'role': 'user',
+                'content': f'Remember to work towards the initial objective: [{query}]!',
+                'name': 'human'
+            })
+            stream = self.driver.get_next_step(conv)
+            self.printer.print_llm_response(stream)
+        
+        # Max retries exceeded
+        self.printer.print_red(b'\nToo many iterations, need your help to debug.\n', reset=True)
     
     def handle_action_run(self, json: dict) -> None:
         command = json['command']
@@ -141,43 +157,79 @@ class Operator(BaseModel):
         )
 
     def handle_action_write(self, json: dict, driver_res: str) -> None:
-        file_paths = json['file_paths']
-        self.file_writer.write_code(file_paths, driver_res)
+        try:
+            file_paths = json['file_paths']
+            self.file_writer.write_code(file_paths, driver_res)
 
-        success_message = f'Successfully updated {file_paths}\n'
-        self.conv_manager.append_conv(
-            role='user',
-            content=success_message,
-            name='human',
-        )
-        self.printer.print_green(success_message, reset=True)
+            success_message = f'Successfully updated {file_paths}\n'
+            self.conv_manager.append_conv(
+                role='user',
+                content=success_message,
+                name='human',
+            )
+            self.printer.print_green(success_message, reset=True)
+        
+        except Exception:
+            failed_message = f'Failed to update {file_paths}\n'
+            self.conv_manager.append_conv(
+                role='user',
+                content=failed_message,
+                name='human'
+            )
+            self.printer.print_err(failed_message, reset=True)
+
+            raise
     
     def handle_action_debug(self, json: dict, driver_res: str) -> None:
-        file_paths = json['file_paths']
-        self.file_writer.write_code(file_paths, driver_res)
+        try:
+            file_paths = json['file_paths']
+            self.file_writer.write_code(file_paths, driver_res)
 
-        debug_message = f'Wrote debugging statements for future testing in file: {file_paths}\n'
-        self.conv_manager.append_conv(
-            role='user',
-            content=debug_message,
-            name='human'
-        )
-        self.printer.print_yellow(debug_message, reset=True)
+            debug_message = f'Wrote debugging statements for future testing in file: {file_paths}\n'
+            self.conv_manager.append_conv(
+                role='user',
+                content=debug_message,
+                name='human'
+            )
+            self.printer.print_yellow(debug_message, reset=True)
+        
+        except Exception:
+            failed_message = f'Failed to update {file_paths}\n'
+            self.conv_manager.append_conv(
+                role='user',
+                content=failed_message,
+                name='human'
+            )
+            self.printer.print_err(failed_message, reset=True)
+
+            raise
     
     def handle_action_stuck(self) -> None:
         self.printer.print_red(b"\nI don't know how to solve this, need your help\n", reset=True)
     
     def handle_action_cleanup(self, json: dict, driver_res: str) -> None:
-        file_paths = json['file_paths']
-        self.file_writer.write_code(file_paths, driver_res)
+        try:
+            file_paths = json['file_paths']
+            self.file_writer.write_code(file_paths, driver_res)
 
-        cleanup_message = f'✨ Cleaned up files: {file_paths}\n'
-        self.conv_manager.append_conv(
-            role='user',
-            content=cleanup_message,
-            name='human'
-        )
-        self.printer.print_green(cleanup_message, reset=True)
+            cleanup_message = f'✨ Cleaned up files: {file_paths}\n'
+            self.conv_manager.append_conv(
+                role='user',
+                content=cleanup_message,
+                name='human'
+            )
+            self.printer.print_green(cleanup_message, reset=True)
+        
+        except Exception:
+            failed_message = f'Failed to cleanup {file_paths}\n'
+            self.conv_manager.append_conv(
+                role='user',
+                content=failed_message,
+                name='human'
+            )
+            self.printer.print_err(failed_message, reset=True)
+
+            raise
     
     def get_user_choice(self) -> Choice:
         user_choice = questionary.select(

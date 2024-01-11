@@ -47,7 +47,7 @@ class Summarizer(BaseModel):
             with open(summary_path, 'r') as summary_file:
                 return summary_file.read()
         
-        summary = 'This project does not have a README. Infer from other files the purpose of this project.'
+        summary = ''
         try:
             with open(os.path.join(os.getcwd(), 'README.md'), 'r') as readme_file:
                 file_contents = readme_file.read()
@@ -65,7 +65,9 @@ class Summarizer(BaseModel):
                     loading_message=f'📚 Learning project...',
                 )
         except FileNotFoundError:
-            pass
+            summary = 'This project does not have a README. Infer from other files the purpose of this project.'
+        except Exception:
+            summary = 'Unable to summarize README.'
         finally:
             with open(summary_path, 'w') as summary_file:
                     summary_file.write(summary)

@@ -53,6 +53,8 @@ class OpenAIClient(LLM):
         except AttributeError:
             # End of stream
             pass
+        except Exception:
+            yield '\n\nEncountered some error'
         finally:
             yield None
     
@@ -85,6 +87,8 @@ class OpenAIClient(LLM):
                 except jsonschema.exceptions.ValidationError:
                     # Just retry and hope for the best
                     pass
+                except Exception:
+                    raise
     
     @backoff.on_exception(
         backoff.expo,
@@ -114,6 +118,16 @@ class OpenAIClient(LLM):
                 response_format={ 'type': 'json_object' if is_json else 'text' }
             )
         
+        # TODO: Proper handling of each one
+        except (
+            openai.APIConnectionError,
+            openai.APITimeoutError,
+            openai.RateLimitError,
+            openai.InternalServerError,
+            openai.UnprocessableEntityError
+        ):
+            # These are OpenAI server/API issues
+            raise
         except (
             openai.AuthenticationError,
             openai.PermissionDeniedError
@@ -148,6 +162,16 @@ class OpenAIClient(LLM):
                 stream=False
             )
         
+        # TODO: Proper handling of each one
+        except (
+            openai.APIConnectionError,
+            openai.APITimeoutError,
+            openai.RateLimitError,
+            openai.InternalServerError,
+            openai.UnprocessableEntityError
+        ):
+            # These are OpenAI server/API issues
+            raise
         except (
             openai.AuthenticationError,
             openai.PermissionDeniedError
