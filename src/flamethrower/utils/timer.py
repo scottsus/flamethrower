@@ -15,7 +15,7 @@ class Timer(BaseModel):
             end_time = time.time()
             exec_time_message = self.format_exec_time_message(start_time, end_time)
             
-            self.printer.print_default(exec_time_message, reset=True)
+            self.printer.print_default(exec_time_message)
 
     def format_exec_time_message(self, start_time: float, end_time: float) -> str:
         exec_time = end_time - start_time

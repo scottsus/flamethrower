@@ -79,6 +79,8 @@ class Operator(BaseModel):
         
         with Timer(printer=self.printer).get_execution_time():
             action = ''
+            is_first_time_asking_for_permission = True
+            
             for _ in range(self.max_retries):
                 last_driver_res = self.get_last_assistant_response()
                 decision = self.interpreter.make_decision_from(query, last_driver_res)
@@ -86,15 +88,18 @@ class Operator(BaseModel):
                 actions: list = decision['actions']
                 for obj in actions:
                     action = obj['action']
-
-                    if action in ['run', 'write', 'debug', 'stuck']:
+                    
+                    if is_first_time_asking_for_permission and action in ['run', 'write', 'debug', 'stuck']:
                         self.printer.print_regular(with_newline=True)
+
                         choice = self.get_user_choice()
                         if choice == Choice.REVISE:
                             return
                         if choice == Choice.NO:
                             self.printer.print_green(b'\nVery well then. Let me know if you need further assistance.\n')
                             return
+                        
+                        is_first_time_asking_for_permission = False
                     
                     if action == 'run':
                         command = obj['command']
