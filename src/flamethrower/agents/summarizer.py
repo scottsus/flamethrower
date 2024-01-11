@@ -22,36 +22,24 @@ class Summarizer(BaseModel):
         super().__init__(**data)
         self.llm = OpenAIClient(system_message=system_message)
     
-    async def summarize_file(self, main_project_description: str, file_name: str) -> str:
-        with open(os.path.join(os.getcwd(), file_name)) as f:
-            try:
-                file_contents = f.read()
-                if not file_contents:
-                    return ''
+    async def summarize_file(self, main_project_description: str, file_contents: str) -> str:
+        try:
+            query = (
+                f'This project is about {main_project_description}.\n'
+                'This is the file to summarize:'
+                f'\n```\n{file_contents}\n```\n'
+                'Summarize this file as part of the larger project.'
+            )
 
-                query = (
-                    f'This project is about {main_project_description}.\n'
-                    'This is the file to summarize:'
-                    f'\n```\n{file_contents}\n```\n'
-                    'Summarize this file as part of the larger project.'
-                )
-
-                return await self.llm.new_async_chat_request(
-                    messages=[{
-                        'role': 'user',
-                        'content': query,
-                    }],
-                )
-            
-            except FileNotFoundError:
-                # TODO: log this error
-                return ''
-            except UnicodeDecodeError:
-                # Don't summarize files like .mov
-                pass
-            except Exception:
-                # Other exceptions from the LLM
-                return 'Encountered error summarizing this file'
+            return await self.llm.new_async_chat_request(
+                messages=[{
+                    'role': 'user',
+                    'content': query,
+                }],
+            )
+        except Exception:
+            # Other exceptions from the LLM
+            return 'Encountered error summarizing this file'
     
     def summarize_readme(self) -> str:
         summary_path = config.get_workspace_summary_path()

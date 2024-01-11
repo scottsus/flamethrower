@@ -9,13 +9,18 @@ from flamethrower.agents.summarizer import Summarizer
 from flamethrower.utils.loader import Loader
 
 class DirectoryWalker(BaseModel):
+    class Config:
+        arbitrary_types_allowed = True
+    
     base_dir: str = os.getcwd()
     file_paths: dict = {}
     summarization_tasks: list = []
+    semaphore: asyncio.Semaphore = None
     summarizer: Summarizer = None
 
     def __init__(self, **data):
         super().__init__(**data)
+        self.semaphore = asyncio.Semaphore(10)
         self.summarizer = Summarizer()
 
         try:
@@ -110,12 +115,21 @@ class DirectoryWalker(BaseModel):
         if relative_path in self.file_paths:
             return
         
-        file_contents = await self.summarizer.summarize_file(
-            main_project_description='',
-            file_name=file_path
-        )
-        
-        self.file_paths[relative_path] = file_contents
+        async with self.semaphore:
+            with open(file_path) as f:
+                try:
+                    file_contents = f.read()
+                    file_summary = await self.summarizer.summarize_file(
+                        # TODO: FILL THIS OUT
+                        main_project_description='',
+                        file_contents=file_contents
+                    )
+                    
+                    self.file_paths[relative_path] = file_summary
+                except FileNotFoundError:
+                    pass
+                except UnicodeDecodeError:
+                    pass
 
 def setup_dir_summary() -> None:
     dir_walker = DirectoryWalker()
