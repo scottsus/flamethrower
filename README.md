@@ -5,7 +5,7 @@ No bugs can survive the test of <span style='color: orange'>fire</span>; not eve
 [![GitHub Repo](https://img.shields.io/badge/scottsus-flamethrower-red?&logo=github)](https://github.com/scottsus/flamethrower)
 ![PyPI](https://img.shields.io/pypi/v/flamethrower.svg)
 ![Code Size](https://img.shields.io/github/languages/code-size/scottsus/flamethrower.svg)
-[![Discord](https://img.shields.io/discord/XP4vVUQKPf.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.XP4vVUQKPf)
+[![Discord](https://img.shields.io/discord/XP4vVUQKPf.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/XP4vVUQKPf)
 ![License](https://img.shields.io/github/license/scottsus/flamethrower.svg)
 [![Twitter](https://img.shields.io/twitter/follow/susantoscott.svg)](https://twitter.com/susantoscott)
 
