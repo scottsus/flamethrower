@@ -83,7 +83,8 @@ class Interpreter(BaseModel):
         return self.llm.new_json_request(
             query=query,
             json_schema=self.json_schema,
-            loading_message='🤖 Determining next step...'
+            loading_message='🤖 Determining next step...',
+            completion_message='🤖 Next step chosen.\n'
         )
 
     def get_target_files(self) -> list:

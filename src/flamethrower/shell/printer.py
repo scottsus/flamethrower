@@ -2,6 +2,7 @@ import os
 import sys
 import tty
 import termios
+from contextlib import contextmanager
 from pydantic import BaseModel
 from rich.console import Console
 from rich.syntax import Syntax
@@ -78,6 +79,15 @@ class Printer(BaseModel):
     
     def print_orange(self, data: bytes | str, reset: bool = False) -> None:
         self.print_color(data, STDIN_ORANGE, reset=reset)
+    
+    @contextmanager
+    def cooked_mode(self, with_newline: bool = False):
+        try:
+            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.tty_settings)
+            self.set_cursor_to_start(with_newline)
+            yield
+        finally:
+            tty.setraw(sys.stdin)
 
     def print_llm_response(self, stream) -> None:
         """
@@ -174,20 +184,35 @@ class Printer(BaseModel):
             log_last_response(complete_content)
 
         tty.setraw(sys.stdin)
+        
+        # Double newlines as indication of next step
+        self.print_regular(message='\n', with_newline=True)
     
-    def print_diffs(self, diffs: list) -> None:
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.tty_settings)
-        for line in diffs:
-            if line.startswith('+'):
-                self.print_green(line + '\n', reset=True)
-            elif line.startswith('-'):
-                self.print_red(line + '\n', reset=True)
-            else:
-                self.print_default(line + '\n')
-        tty.setraw(sys.stdin)
-
-    def print_regular(self, message: str):
+    def print_code(self, code: str, language: str = 'bash') -> None:
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.tty_settings)
         self.print_default(ENTER_KEY + CLEAR_FROM_START + CURSOR_TO_START)
-        self.print_stdout(message)
+        syntax = Syntax(f'\n🔥 {code}\n', language, theme='monokai')
+        console = Console()
+        console.print(syntax)
         tty.setraw(sys.stdin)
+    
+    def print_diffs(self, diffs: list) -> None:
+        with self.cooked_mode(with_newline=True):
+            for line in diffs:
+                if line.startswith('+'):
+                    self.print_green(line + '\n', reset=True)
+                elif line.startswith('-'):
+                    self.print_red(line + '\n', reset=True)
+                else:
+                    self.print_default(line + '\n')
+    
+    def set_cursor_to_start(self, with_newline: bool = False) -> None:
+        if with_newline:
+            self.print_default(ENTER_KEY + CLEAR_FROM_START + CLEAR_TO_END + CURSOR_TO_START)
+        else:
+            self.print_default(CLEAR_FROM_START + CLEAR_TO_END + CURSOR_TO_START)
+
+    def print_regular(self, message: str = '', with_newline: bool = False) -> None:
+        with self.cooked_mode(with_newline):
+            self.print_stdout(message)
+    

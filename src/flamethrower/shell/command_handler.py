@@ -1,4 +1,3 @@
-import time
 from pydantic import BaseModel
 from .printer import Printer
 from flamethrower.context.prompt import PromptGenerator
@@ -86,6 +85,7 @@ class CommandHandler(BaseModel):
         self.pos = 0
         self.buffer = ''
         self.printer.write_leader(key)
+        self.printer.print_regular(with_newline=True)
         
         update_zsh_history(query)
         self.conv_manager.append_conv(
@@ -95,19 +95,7 @@ class CommandHandler(BaseModel):
         )
 
         messages = self.prompt_generator.construct_messages(query)
-
-        start_time = time.time()
         self.operator.new_implementation_run(query, messages)
-        end_time = time.time()
-        
-        def get_exec_time_message(start_time, end_time) -> str:
-            exec_time = end_time - start_time
-            num_mins = f'{int(exec_time // 60)}m' if exec_time >= 60 else ''
-            num_secs = f'{exec_time % 60:.1f}s' if exec_time < 60 else f'{int(exec_time % 60)}s'
-            
-            return f'This run took {num_mins} {num_secs} 🚀'
-
-        self.printer.print_green(get_exec_time_message(start_time, end_time), reset=True)
 
     def handle_nl_backspace_key(self, key: bytes) -> None:
         if self.pos > 0:

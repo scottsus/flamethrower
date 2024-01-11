@@ -27,8 +27,6 @@ class DirectoryWalker(BaseModel):
     async def generate_directory_summary(self, start_path) -> None:
         with Loader(
             loading_message='🔧 Performing workspace first time setup (should take about 30s)...',
-            completion_message='📖 Workspace analyzed.',
-            will_report_timing=True
         ).managed_loader():
             with open(config.get_dir_tree_path(), 'w') as dir_tree_file:
                 self.process_directory(start_path, dir_tree_file, gitignore=self.get_gitignore())

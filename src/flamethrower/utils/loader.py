@@ -30,9 +30,8 @@ class Loader(BaseModel):
     def spin(self) -> None:
         sys.stdout.write('\n')
         while not self.done:
-            elapsed = time.time() - self.start_time
-            speed = 0.1 if elapsed < 3 else 0.05
-            sys.stdout.write(f'{STDIN_YELLOW.decode("utf-8")}\r{self.loading_message} {next(self.spinner)}{STDIN_DEFAULT.decode("utf-8")}')
+            speed = 0.1
+            sys.stdout.write(f'{STDIN_YELLOW.decode("utf-8")}\r{next(self.spinner)} {self.loading_message}{STDIN_DEFAULT.decode("utf-8")}')
             sys.stdout.flush()
             time.sleep(speed)
 
