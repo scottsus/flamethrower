@@ -171,7 +171,7 @@ class Operator(BaseModel):
         file_paths = json['file_paths']
         self.file_writer.write_code(file_paths, driver_res)
 
-        cleanup_message = f'🧹 Cleaned up files: {file_paths}\n'
+        cleanup_message = f'✨ Cleaned up files: {file_paths}\n'
         self.conv_manager.append_conv(
             role='user',
             content=cleanup_message,

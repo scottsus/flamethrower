@@ -49,13 +49,13 @@ class TokenCounter(BaseModel):
         # TODO: no hardcoded models
         num_input_tokens = self.calc_token_usage(complete_input_text)
 
-        self.total_input_tokens += num_input_tokens
+        self.add_input_tokens(num_input_tokens)
     
     def add_streaming_output_tokens(self, complete_output_text: str) -> None:
         # TODO: no hardcoded models
         num_output_tokens = self.calc_token_usage(complete_output_text)
 
-        self.total_output_tokens += num_output_tokens
+        self.add_output_tokens(num_output_tokens)
         
     def return_cost_analysis(self, model: str = OPENAI_GPT_4_TURBO) -> str:
         input_cost = (

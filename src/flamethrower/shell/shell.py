@@ -12,7 +12,7 @@ from flamethrower.context.conv_manager import ConversationManager
 from flamethrower.context.dir_walker import setup_dir_summary
 from flamethrower.context.prompt import PromptGenerator
 from flamethrower.agents.operator import Operator
-from flamethrower.utils.token_counter import TokenCounter
+from flamethrower.utils.token_counter import TokenCounter, token_counter
 from flamethrower.shell.printer import Printer
 
 class Shell(BaseModel):
@@ -50,7 +50,7 @@ class Shell(BaseModel):
 
         # Instantiate other classes
         self.conv_manager = ConversationManager()
-        self.token_counter = TokenCounter()
+        self.token_counter = token_counter
         self.printer = Printer(
             leader_fd=self.leader_fd,
             stdout_fd=sys.stdout.fileno(),
