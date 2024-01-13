@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "flamethrower"
 packages = [{ from = "src", include = "flamethrower" }]
-version = "0.1.28"
+version = "0.1.30"
 description = "The ultimate debugging experience 🦠🔥"
 authors = ["Scott Susanto <scottsus@usc.edu>"]
 license = "MIT"
@@ -12,7 +12,7 @@ flamethrower = "flamethrower.shell:shell.run"
 ft = "flamethrower.shell:shell.run"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.08"
 pydantic = "^2.5.3"
 pathspec = "^0.12.1"
 openai = "^1.6.1"
