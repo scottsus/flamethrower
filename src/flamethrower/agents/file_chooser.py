@@ -54,10 +54,10 @@ class FileChooser(BaseModel):
         
         try:
             query = (
-                f'This workspace is about [{description}].'
+                f'{description}.\n'
                 f'The directory structure is given as:\n{dir_structure}\n'
-                f'Each file in the workspace has its own function summarized, and is given as a json object:\n{dir_info}\n' if dir_info else ''
-                f'Here are the most recent stdout logs {stdout_logs}\n' if stdout_logs else ''
+                f'Each file in the workspace has its own function summarized, and is given as a json object:\n{dir_info}\n'
+                f'Here are the most recent stdout logs {stdout_logs}\n'
                 f'Given the logs and the coding job [{user_query}], return a list of `file_paths` that are **relevant to the user query**.'
             )
 

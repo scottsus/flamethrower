@@ -7,7 +7,7 @@ import jsonschema
 from typing import Iterator, Optional
 from flamethrower.models.llm import LLM
 from flamethrower.models.models import OPENAI_GPT_4_TURBO
-from flamethrower.utils.token_counter import TokenCounter, token_counter
+from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.utils.loader import Loader
 from flamethrower.utils.colors import STDIN_RED, STDIN_DEFAULT
 
@@ -22,7 +22,9 @@ class OpenAIClient(LLM):
         super().__init__(**data)
         self.client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
         self.async_client = AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-        self.token_counter = token_counter
+
+        from flamethrower.containers.container import container
+        self.token_counter = container.token_counter()
 
     def new_chat_request(self, messages: list, loading_message: str) -> Optional[str]:
         with Loader(loading_message=loading_message).managed_loader():
@@ -31,6 +33,8 @@ class OpenAIClient(LLM):
                 self.update_token_usage(res)
 
                 return res.choices[0].message.content
+            except KeyboardInterrupt:
+                raise
             except Exception:
                 raise
     
@@ -40,6 +44,8 @@ class OpenAIClient(LLM):
             self.update_token_usage(res)
 
             return res.choices[0].message.content
+        except KeyboardInterrupt:
+            raise
         except Exception:
             raise
     
@@ -93,8 +99,9 @@ class OpenAIClient(LLM):
                 except jsonschema.exceptions.ValidationError:
                     # Just retry and hope for the best
                     pass
+                except KeyboardInterrupt:
+                    raise
                 except Exception:
-                    print('new_json_req')
                     raise
     
     @backoff.on_exception(
@@ -127,7 +134,6 @@ class OpenAIClient(LLM):
         
         # TODO: Proper handling of each one
         except KeyboardInterrupt:
-            print('new_basic_chat_req')
             raise
         except (
             openai.APIConnectionError,
@@ -205,21 +211,3 @@ class OpenAIClient(LLM):
 
         self.token_counter.add_input_tokens(prompt_tokens)
         self.token_counter.add_output_tokens(completion_tokens)
-
-# try:
-#     cli = OpenAIClient(system_message='')
-#     query = "Give a weather report for a fictional city. Return a json object."
-#     json_schema = {
-#         "type": "object",
-#         "properties": {
-#             "temperature": { "type": "number" },
-#             "condition": { "type": "string" }
-#         },
-#         "required": ["temperature", "condition"]
-#     }
-#     loading_message = "Fetching weather data..."
-
-#     weather_data = cli.new_json_request(query, json_schema, loading_message)
-#     print(weather_data)
-# except KeyboardInterrupt:
-#     print('Interrupted')

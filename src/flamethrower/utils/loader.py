@@ -4,6 +4,7 @@ import threading
 import itertools
 from contextlib import contextmanager
 from pydantic import BaseModel
+from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.utils.special_keys import CLEAR_FROM_START, CLEAR_TO_END, CURSOR_TO_START
 from flamethrower.utils.colors import STDIN_YELLOW, STDIN_DEFAULT
 
@@ -14,6 +15,7 @@ class Loader(BaseModel):
     loading_message: str
     completion_message: str = ''
     will_report_timing: bool = False
+    shell_manager: ShellManager = None
     
     done: bool = False
     spinner: itertools.cycle = None
@@ -26,6 +28,9 @@ class Loader(BaseModel):
         self.start_time = time.time()
         if data.get('loading_message') == '':
             self.loading_message = '🧠 Thinking...'
+        
+        from flamethrower.containers.container import container
+        self.shell_manager = container.shell_manager()
 
     def spin(self) -> None:
         sys.stdout.write('\n')
@@ -46,7 +51,10 @@ class Loader(BaseModel):
         loader_thread.start()
         try:
             record_start_time = time.time()
-            yield
+            with self.shell_manager.cooked_mode():
+                yield
+        except (KeyboardInterrupt, Exception):
+            raise
         finally:
             record_end_time = time.time()
             self.stop()

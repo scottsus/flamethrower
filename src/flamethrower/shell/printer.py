@@ -1,24 +1,21 @@
 import os
-import sys
-import tty
-import termios
-from contextlib import contextmanager
 from pydantic import BaseModel
 from rich.console import Console
 from rich.syntax import Syntax
 from rich.live import Live
 import flamethrower.config.constants as config
 from flamethrower.context.conv_manager import ConversationManager
+from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.utils.special_keys import *
 from flamethrower.utils.colors import *
 
 class Printer(BaseModel):
-    leader_fd: int = 0
-    stdout_fd: int = 0
-    tty_settings: list = []
-    conv_manager: ConversationManager = None
-    token_counter: TokenCounter = None
+    leader_fd: int
+    stdout_fd: int
+    conv_manager: ConversationManager
+    shell_manager: ShellManager
+    token_counter: TokenCounter
 
     def write_leader(self, data: bytes) -> None:
         if self.leader_fd:
@@ -82,17 +79,6 @@ class Printer(BaseModel):
     def print_orange(self, data: bytes | str, reset: bool = False) -> None:
         self.print_color(data, STDIN_ORANGE, reset=reset)
     
-    @contextmanager
-    def cooked_mode(self, with_newline: bool = False):
-        try:
-            termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.tty_settings)
-            self.set_cursor_to_start(with_newline)
-            yield
-        finally:
-            try:
-                tty.setraw(sys.stdin)
-            except KeyboardInterrupt:
-                pass
 
     def print_llm_response(self, stream) -> None:
         """
@@ -119,90 +105,89 @@ class Printer(BaseModel):
             ]
             return name in programming_languages
 
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.tty_settings)
-        self.print_default(ENTER_KEY + CLEAR_FROM_START + CURSOR_TO_START)
+        with self.shell_manager.cooked_mode():
+            self.set_cursor_to_start(with_newline=True)
 
-        def append_conv(content: str) -> None:
-            self.conv_manager.append_conv(
-                role='assistant',
-                content=content,
-            )
-        
-        def log_last_response(content: str) -> None:
-            with open(config.get_last_response_path(), 'w') as f:
-                f.write(content)
+            def append_conv(content: str) -> None:
+                self.conv_manager.append_conv(
+                    role='assistant',
+                    content=content,
+                )
+            
+            def log_last_response(content: str) -> None:
+                with open(config.get_last_response_path(), 'w') as f:
+                    f.write(content)
 
-        nl_content, code_content, complete_content = '', '', ''
-        try:
-            while True:
-                # Natural language responses
-                prev = ''
-                for token in stream:
-                    if token == '```':
-                        break
-                    elif prev == '``' and token.startswith('`'):
-                        break
-                    prev = token or ''
-                    
-                    self.print_stdout(token.encode('utf-8'))
-                    nl_content += token or ''
-                
-                complete_content += nl_content
-                nl_content = ''
-                    
-                # Coding responses
-                console, lang = Console(), 'python'
-                with Live(console=console, refresh_per_second=10) as live:
-                    is_first = True
-                    for token in stream:                        
-                        if is_first:
-                            is_first = False
-                            if is_programming_language(token):
-                                lang = token
-                                continue
-                        
+            nl_content, code_content, complete_content = '', '', ''
+            try:
+                while True:
+                    # Natural language responses
+                    prev = ''
+                    for token in stream:
                         if token == '```':
                             break
                         elif prev == '``' and token.startswith('`'):
                             break
                         prev = token or ''
-                        if token == '``':
-                            continue
                         
-                        code_content += token or ''
-                        syntax = Syntax(code_content, lang, theme='monokai', line_numbers=False)
-                        live.update(syntax, refresh=True)
+                        self.print_stdout(token.encode('utf-8'))
+                        nl_content += token or ''
                     
-                    complete_content += f'\n```{code_content}\n```\n'
-                    code_content = ''
-        except AttributeError:
-            # that means EOF was reached
-            pass
-        except KeyboardInterrupt:
-            raise
-        finally:
-            if nl_content:
-                complete_content += nl_content
-            if code_content:
-                complete_content += f'```{code_content}\n```\n'
+                    complete_content += nl_content
+                    nl_content = ''
+                        
+                    # Coding responses
+                    console, lang = Console(), 'python'
+                    with Live(console=console, refresh_per_second=10) as live:
+                        is_first = True
+                        for token in stream:                        
+                            if is_first:
+                                is_first = False
+                                if is_programming_language(token):
+                                    lang = token
+                                    continue
+                            
+                            if token == '```':
+                                break
+                            elif prev == '``' and token.startswith('`'):
+                                break
+                            prev = token or ''
+                            if token == '``':
+                                continue
+                            
+                            code_content += token or ''
+                            syntax = Syntax(code_content, lang, theme='monokai', line_numbers=False)
+                            live.update(syntax, refresh=True)
+                        
+                        complete_content += f'\n```{code_content}\n```\n'
+                        code_content = ''
+            except AttributeError:
+                # that means EOF was reached
+                pass
+            except KeyboardInterrupt:
+                raise
+            finally:
+                if nl_content:
+                    complete_content += nl_content
+                if code_content:
+                    complete_content += f'```{code_content}\n```\n'
 
-            self.token_counter.add_streaming_output_tokens(complete_content)
-            append_conv(complete_content)
-            log_last_response(complete_content)
-            self.print_regular(with_newline=True)
+                self.token_counter.add_streaming_output_tokens(complete_content)
+                append_conv(complete_content)
+                log_last_response(complete_content)
+                self.print_regular(with_newline=True)
 
-            tty.setraw(sys.stdin)
     
     def print_code(self, code: str, language: str = 'bash') -> None:
-        termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.tty_settings)
-        self.print_default(ENTER_KEY + CLEAR_FROM_START + CURSOR_TO_START)
-        syntax = Syntax(f'\n🔥 {code}\n', language, theme='monokai')
-        console = Console()
-        console.print(syntax)
-        tty.setraw(sys.stdin)
+        with self.shell_manager.cooked_mode():
+            self.set_cursor_to_start(with_newline=True)
+            syntax = Syntax(f'\n🔥 {code}\n', language, theme='monokai')
+            console = Console()
+            console.print(syntax)
     
     def print_diffs(self, diffs: list) -> None:
-        with self.cooked_mode(with_newline=True):
+        with self.shell_manager.cooked_mode():
+            self.set_cursor_to_start(with_newline=True)
             for line in diffs:
                 if line.startswith('+'):
                     self.print_green(line + '\n', reset=True)
@@ -218,6 +203,7 @@ class Printer(BaseModel):
             self.print_stdout(CLEAR_FROM_START + CLEAR_TO_END + CURSOR_TO_START)
 
     def print_regular(self, message: str = '', with_newline: bool = False) -> None:
-        with self.cooked_mode(with_newline):
+        with self.shell_manager.cooked_mode():
+            self.set_cursor_to_start(with_newline)
             self.print_stdout(message)
     

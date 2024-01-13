@@ -3,17 +3,12 @@ import sys
 import pty
 import tty
 import termios
+from pydantic import BaseModel
 from subprocess import Popen
 from select import select
-from pydantic import BaseModel
 import flamethrower.setup.setup as setup
-from flamethrower.shell.command_handler import CommandHandler
-from flamethrower.context.conv_manager import ConversationManager
+from flamethrower.containers.container import container
 from flamethrower.context.dir_walker import setup_dir_summary
-from flamethrower.context.prompt import PromptGenerator
-from flamethrower.agents.operator import Operator
-from flamethrower.utils.token_counter import TokenCounter, token_counter
-from flamethrower.shell.printer import Printer
 
 class Shell(BaseModel):
     class Config:
@@ -23,12 +18,6 @@ class Shell(BaseModel):
     leader_fd: int = 0
     follower_fd: int = 0
     child_process: Popen[bytes] = None
-    command_handler: CommandHandler = None
-    conv_manager: ConversationManager = None
-    prompt_generator: PromptGenerator = None
-    operator: Operator = None
-    token_counter: TokenCounter = None
-    printer: Printer = None
 
     def run(self):
         env = setup.setup_zsh_env()
@@ -48,34 +37,20 @@ class Shell(BaseModel):
         old_settings = termios.tcgetattr(sys.stdin)
         tty.setraw(sys.stdin)
 
-        # Instantiate other classes
-        self.conv_manager = ConversationManager()
-        self.token_counter = token_counter
-        self.printer = Printer(
-            leader_fd=self.leader_fd,
-            stdout_fd=sys.stdout.fileno(),
-            tty_settings=old_settings,
-            conv_manager=self.conv_manager,
-            token_counter=self.token_counter
-        )
-        self.prompt_generator = PromptGenerator(
-            conv_manager=self.conv_manager,
-            token_counter=self.token_counter,
-            printer=self.printer
-        )
-        self.operator = Operator(
-            conv_manager=self.conv_manager,
-            printer=self.printer
-        )
-        self.command_handler = CommandHandler(
-            prompt_generator=self.prompt_generator,
-            printer=self.printer,
-            conv_manager=self.conv_manager,
-            operator=self.operator
-        )
+        # Container dependencies
+        container.tty_settings.override(old_settings)
+        container.leader_fd.override(self.leader_fd)
+        container.wire(modules=[__name__])
+
+        # Container singletons
+        command_handler = container.command_handler()
+        conv_manager = container.conv_manager()
+        prompt_generator = container.prompt_generator()
+        token_counter = container.token_counter()
+        printer = container.printer()
 
         setup_dir_summary()
-        self.printer.print_regular(self.prompt_generator.construct_greeting())
+        printer.print_regular(prompt_generator.construct_greeting())
 
         try:
             while True:
@@ -90,18 +65,19 @@ class Shell(BaseModel):
 
                     # Write to stdout and to logfile
                     os.write(sys.stdout.fileno(), data)
-                    self.conv_manager.update_conv_from_stdout(data)
+                    conv_manager.update_conv_from_stdout(data)
                 
                 # From user input
                 if sys.stdin in r:
                     key = os.read(sys.stdin.fileno(), self.block_size)
                     if not key:
                         break
-                    self.command_handler.handle(key)
+                    command_handler.handle(key)
                 
                 if self.child_process.poll() is not None:
                     break
-                    
+        except Exception as e:
+            self.printer.print_err(e)
         finally:
             try:
                 termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
@@ -122,5 +98,5 @@ class Shell(BaseModel):
             Outside the pty, these should be the only `print` statements
             that do not use the Printer class.
             """
-            print(self.token_counter.return_cost_analysis())
+            print(token_counter.return_cost_analysis())
             print('\n👋 Goodbye!')

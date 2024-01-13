@@ -10,10 +10,10 @@ class CommandHandler(BaseModel):
     pos: int = 0
     buffer: str = ''
     is_nl_query: bool = False # is natural language query
-    prompt_generator: PromptGenerator = None
-    conv_manager: ConversationManager = None
-    operator: Operator = None
-    printer: Printer = None
+    conv_manager: ConversationManager
+    prompt_generator: PromptGenerator
+    operator: Operator
+    printer: Printer
 
     # TODO: Windows support
 
@@ -97,8 +97,10 @@ class CommandHandler(BaseModel):
         try:
             messages = self.prompt_generator.construct_messages(query)
             self.operator.new_implementation_run(query, messages)
-        except Exception:
+        except KeyboardInterrupt:
             pass
+        except Exception:
+            raise
 
     def handle_nl_backspace_key(self, key: bytes) -> None:
         if self.pos > 0:

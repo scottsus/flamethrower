@@ -10,7 +10,6 @@ from flamethrower.agents.interpreter import Interpreter
 from flamethrower.context.conv_manager import ConversationManager
 from flamethrower.agents.file_writer import FileWriter
 from flamethrower.shell.printer import Printer
-from flamethrower.utils.timer import Timer
 
 class Choice(enum.Enum):
     YES = 1
@@ -122,7 +121,10 @@ class Operator(BaseModel):
             self.printer.print_red(b'\nToo many iterations, need your help to debug.\n', reset=True)
         
         except KeyboardInterrupt:
+            self.printer.print_orange('^C', reset=True)
             return
+        except Exception:
+            raise
     
     def handle_action_run(self, json: dict) -> None:
         command = json['command']
@@ -210,30 +212,29 @@ class Operator(BaseModel):
     def handle_action_need_context(self, json: dict) -> None:
         try:
             file_paths = json['file_paths']
-            for target_path in file_paths:
-                complete_target_path = os.path.join(os.getcwd(), target_path)
+            complete_target_path = os.path.join(os.getcwd(), file_paths)
 
-                try:
-                    with open(complete_target_path, 'r') as f:
-                        file_contents = f.read()
-                        new_message = (
-                            f'# {target_path}:\n'
-                            f'```\n{file_contents}\n```\n'
-                        )
-                        self.conv_manager.append_conv(
-                            role='user',
-                            content=new_message,
-                            name='human'
-                        )
-                        self.printer.print_green(f'Context obtained for {target_path}')
-                except FileNotFoundError:
-                    not_found_message = f'Unable to locate {target_path}'
+            try:
+                with open(complete_target_path, 'r') as f:
+                    file_contents = f.read()
+                    new_message = (
+                        f'# {file_paths}:\n'
+                        f'```\n{file_contents}\n```\n'
+                    )
                     self.conv_manager.append_conv(
                         role='user',
-                        content=not_found_message,
+                        content=new_message,
                         name='human'
                     )
-                    self.printer.print_err(not_found_message)
+                    self.printer.print_green(f'Context obtained for {file_paths}')
+            except FileNotFoundError:
+                not_found_message = f'Unable to locate {file_paths}'
+                self.conv_manager.append_conv(
+                    role='user',
+                    content=not_found_message,
+                    name='human'
+                )
+                self.printer.print_err(not_found_message)
             
         except Exception:
             failed_message = f'Failed to draw context for {file_paths}\n'
