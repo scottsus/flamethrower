@@ -38,87 +38,91 @@ class Operator(BaseModel):
           3. A series of steps to complete the objective
         """
 
-        # Initial understanding of the problem and generation of solution
-        stream = self.driver.get_new_solution(conv)
-        self.printer.print_llm_response(stream)
-        
-        action = ''
-        is_first_time_asking_for_permission = True
-        
-        for _ in range(self.max_retries):
-            last_driver_res = self.get_last_assistant_response()
-            decision = self.interpreter.make_decision_from(query, last_driver_res)
-            if decision is None:
-                self.printer.print_err('\nInterpreter unable to make decision. Marking as complete.')
-                return
-            
-            actions: list = decision['actions']
-            for obj in actions:
-                action = obj['action']
-                
-                if is_first_time_asking_for_permission and action in ['run', 'write', 'debug', 'stuck']:
-                    self.printer.print_regular(with_newline=True)
-
-                    choice = self.get_user_choice()
-                    if choice == Choice.NO:
-                        return
-                    
-                    is_first_time_asking_for_permission = False
-                
-                try:
-                    if action == 'run':
-                        self.handle_action_run(obj)
-                    
-                    elif action == 'write':
-                        self.handle_action_write(obj, last_driver_res)
-                    
-                    elif action == 'debug':
-                        self.handle_action_debug(obj, last_driver_res)
-                    
-                    elif action == 'need_context':
-                        self.handle_action_need_context(obj)
-                    
-                    elif action == 'stuck':
-                        self.handle_action_stuck()
-                        return
-
-                    elif action == 'cleanup':
-                        self.handle_action_cleanup(obj, last_driver_res)
-
-                    elif action == 'completed':
-                        # diffs = Diff(printer=self.printer).get_diffs()
-                        # TODO: diffs for just that 1 file?
-                        # self.printer.print_diffs(diffs)
-                        return
-                    
-                    else:
-                        # Impossible, since obj is validated by json schema, but just in case
-                        raise ValueError('Foreign JSON')
-                
-                except RateLimitError:
-                    error_message = (
-                        '\n'
-                        'You might have exceeded your current quota for OpenAI.\n'
-                        "We're working hard to setup a 🔥 flamethrower LLM server for your usage\n"
-                        'Please try again soon!\n'
-                    )
-                    self.printer.print_err(error_message.encode('utf-8'))
-                except Exception:
-                    self.printer.print_err(b'\nInternal error, please try again.\n')
-                    return
-
-            # Subsequent iterations of implementation
-            conv = self.conv_manager.get_conv()
-            conv.append({
-                'role': 'user',
-                'content': f'Remember to work towards the initial objective: [{query}]!',
-                'name': 'human'
-            })
-            stream = self.driver.get_next_step(conv)
+        try:
+            # Initial understanding of the problem and generation of solution
+            stream = self.driver.get_new_solution(conv)
             self.printer.print_llm_response(stream)
+            
+            action = ''
+            is_first_time_asking_for_permission = True
+            
+            for _ in range(self.max_retries):
+                last_driver_res = self.get_last_assistant_response()
+                decision = self.interpreter.make_decision_from(query, last_driver_res)
+                if decision is None:
+                    self.printer.print_err('\nInterpreter unable to make decision. Marking as complete.')
+                    return
+                
+                actions: list = decision['actions']
+                for obj in actions:
+                    action = obj['action']
+                    
+                    if is_first_time_asking_for_permission and action in ['run', 'write', 'debug', 'stuck']:
+                        self.printer.print_regular(with_newline=True)
+
+                        choice = self.get_user_choice()
+                        if choice == Choice.NO:
+                            return
+                        
+                        is_first_time_asking_for_permission = False
+                    
+                    try:
+                        if action == 'run':
+                            self.handle_action_run(obj)
+                        
+                        elif action == 'write':
+                            self.handle_action_write(obj, last_driver_res)
+                        
+                        elif action == 'debug':
+                            self.handle_action_debug(obj, last_driver_res)
+                        
+                        elif action == 'need_context':
+                            self.handle_action_need_context(obj)
+                        
+                        elif action == 'stuck':
+                            self.handle_action_stuck()
+                            return
+
+                        elif action == 'cleanup':
+                            self.handle_action_cleanup(obj, last_driver_res)
+
+                        elif action == 'completed':
+                            # diffs = Diff(printer=self.printer).get_diffs()
+                            # TODO: diffs for just that 1 file?
+                            # self.printer.print_diffs(diffs)
+                            return
+                        
+                        else:
+                            # Impossible, since obj is validated by json schema, but just in case
+                            raise ValueError('Foreign JSON')
+                    
+                    except RateLimitError:
+                        error_message = (
+                            '\n'
+                            'You might have exceeded your current quota for OpenAI.\n'
+                            "We're working hard to setup a 🔥 flamethrower LLM server for your usage\n"
+                            'Please try again soon!\n'
+                        )
+                        self.printer.print_err(error_message.encode('utf-8'))
+                    except Exception:
+                        self.printer.print_err(b'\nInternal error, please try again.\n')
+                        return
+
+                # Subsequent iterations of implementation
+                conv = self.conv_manager.get_conv()
+                conv.append({
+                    'role': 'user',
+                    'content': f'Remember to work towards the initial objective: [{query}]!',
+                    'name': 'human'
+                })
+                stream = self.driver.get_next_step(conv)
+                self.printer.print_llm_response(stream)
+            
+            # Max retries exceeded
+            self.printer.print_red(b'\nToo many iterations, need your help to debug.\n', reset=True)
         
-        # Max retries exceeded
-        self.printer.print_red(b'\nToo many iterations, need your help to debug.\n', reset=True)
+        except KeyboardInterrupt:
+            return
     
     def handle_action_run(self, json: dict) -> None:
         command = json['command']

@@ -43,35 +43,37 @@ class FileChooser(BaseModel):
             with open(config.get_dir_dict_path(), 'r') as f:
                 dir_info = f.read()
         except FileNotFoundError:
-            print('Workspace has not been analyzed. Please restart flamethrower.')
             pass
         
+        stdout_logs = ''
         try:
             with open(config.get_pretty_conversation_path(), 'r') as f:
                 stdout_logs = f.read()
-                stdout_logs = f'Here are the most recent stdout logs {stdout_logs}' if stdout_logs else ''
-            
-                query = (
-                    f'This workspace is about [{description}].'
-                    f'The directory structure is given as:\n{dir_structure}\n'
-                    f'Each file in the workspace has its own function summarized, and is given as a json object:\n{dir_info}'
-                    f'{stdout_logs}'
-                    f'Given the logs and the coding job [{user_query}], return a list of `file_paths` that are **relevant to the user query**.'
-                )
-
-                res = self.llm.new_json_request(
-                    query=query,
-                    json_schema=json_schema,
-                    loading_message='🗃️  Choosing relevant files...', # 2 whitespaces to render properly
-                )
-                
-                # TODO: allow user to select which files
-                file_paths = res['file_paths'][:self.max_files_used]
-                self.write_to_current_files(file_paths)
-                
-                return file_paths
         except FileNotFoundError:
-            pass
+                pass
+        
+        try:
+            query = (
+                f'This workspace is about [{description}].'
+                f'The directory structure is given as:\n{dir_structure}\n'
+                f'Each file in the workspace has its own function summarized, and is given as a json object:\n{dir_info}\n' if dir_info else ''
+                f'Here are the most recent stdout logs {stdout_logs}\n' if stdout_logs else ''
+                f'Given the logs and the coding job [{user_query}], return a list of `file_paths` that are **relevant to the user query**.'
+            )
+
+            res = self.llm.new_json_request(
+                query=query,
+                json_schema=json_schema,
+                loading_message='🗃️  Choosing relevant files...', # 2 whitespaces to render properly
+            )
+            
+            # TODO: allow user to select which files
+            file_paths = res['file_paths'][:self.max_files_used]
+            self.write_to_current_files(file_paths)
+            
+            return file_paths
+        except KeyboardInterrupt:
+            raise
         except Exception:
             return []
 

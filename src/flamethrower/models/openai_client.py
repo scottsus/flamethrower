@@ -27,7 +27,7 @@ class OpenAIClient(LLM):
     def new_chat_request(self, messages: list, loading_message: str) -> Optional[str]:
         with Loader(loading_message=loading_message).managed_loader():
             try:
-                res = self.new_basic_chat_request(messages)
+                res = self.new_basic_chat_request(messages)                
                 self.update_token_usage(res)
 
                 return res.choices[0].message.content
@@ -44,6 +44,7 @@ class OpenAIClient(LLM):
             raise
     
     def new_streaming_chat_request(self, messages: list) -> Iterator[Optional[str]]:
+        interrupted = None
         try:
             stream = self.new_basic_chat_request(messages, is_streaming=True)
             self.token_counter.add_streaming_input_tokens(str(messages))
@@ -54,9 +55,13 @@ class OpenAIClient(LLM):
         except AttributeError:
             # End of stream
             pass
+        except KeyboardInterrupt as e:
+            interrupted = e
         except Exception:
             yield f'\n\n{STDIN_RED.decode("utf-8")}Encountered some error{STDIN_DEFAULT.decode("utf-8")}'
         finally:
+            if interrupted:
+                raise interrupted
             yield None
     
     def new_json_request(self, query: str, json_schema: dict, loading_message: str, completion_message: str = '') -> Optional[dict]:
@@ -89,6 +94,7 @@ class OpenAIClient(LLM):
                     # Just retry and hope for the best
                     pass
                 except Exception:
+                    print('new_json_req')
                     raise
     
     @backoff.on_exception(
@@ -120,6 +126,9 @@ class OpenAIClient(LLM):
             )
         
         # TODO: Proper handling of each one
+        except KeyboardInterrupt:
+            print('new_basic_chat_req')
+            raise
         except (
             openai.APIConnectionError,
             openai.APITimeoutError,
@@ -164,6 +173,8 @@ class OpenAIClient(LLM):
             )
         
         # TODO: Proper handling of each one
+        except KeyboardInterrupt:
+            raise
         except (
             openai.APIConnectionError,
             openai.APITimeoutError,
@@ -194,3 +205,21 @@ class OpenAIClient(LLM):
 
         self.token_counter.add_input_tokens(prompt_tokens)
         self.token_counter.add_output_tokens(completion_tokens)
+
+# try:
+#     cli = OpenAIClient(system_message='')
+#     query = "Give a weather report for a fictional city. Return a json object."
+#     json_schema = {
+#         "type": "object",
+#         "properties": {
+#             "temperature": { "type": "number" },
+#             "condition": { "type": "string" }
+#         },
+#         "required": ["temperature", "condition"]
+#     }
+#     loading_message = "Fetching weather data..."
+
+#     weather_data = cli.new_json_request(query, json_schema, loading_message)
+#     print(weather_data)
+# except KeyboardInterrupt:
+#     print('Interrupted')

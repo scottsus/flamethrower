@@ -89,7 +89,10 @@ class Printer(BaseModel):
             self.set_cursor_to_start(with_newline)
             yield
         finally:
-            tty.setraw(sys.stdin)
+            try:
+                tty.setraw(sys.stdin)
+            except KeyboardInterrupt:
+                pass
 
     def print_llm_response(self, stream) -> None:
         """
@@ -175,6 +178,8 @@ class Printer(BaseModel):
         except AttributeError:
             # that means EOF was reached
             pass
+        except KeyboardInterrupt:
+            raise
         finally:
             if nl_content:
                 complete_content += nl_content
@@ -184,10 +189,9 @@ class Printer(BaseModel):
             self.token_counter.add_streaming_output_tokens(complete_content)
             append_conv(complete_content)
             log_last_response(complete_content)
+            self.print_regular(with_newline=True)
 
-        tty.setraw(sys.stdin)
-        
-        self.print_regular(with_newline=True)
+            tty.setraw(sys.stdin)
     
     def print_code(self, code: str, language: str = 'bash') -> None:
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.tty_settings)

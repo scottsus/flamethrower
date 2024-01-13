@@ -62,12 +62,15 @@ class PromptGenerator(BaseModel):
                 name='human'
             )
 
-        target_file_names = FileChooser(token_counter=self.token_counter).infer_target_file_paths(
-            self.description,
-            self.dir_structure,
-            query
-        )
-        self.printer.print_regular(f'👀 Focusing on the following files: {target_file_names}\n')
+        try:
+            target_file_names = FileChooser().infer_target_file_paths(
+                self.description,
+                self.dir_structure,
+                query
+            )
+            self.printer.print_regular(f'🔭 Focusing on the following files: {target_file_names}\n')
+        except KeyboardInterrupt:
+            raise
 
         target_file_contents = ''
         for file_name in target_file_names:

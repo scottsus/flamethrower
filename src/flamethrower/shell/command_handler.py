@@ -94,8 +94,11 @@ class CommandHandler(BaseModel):
             name='human'
         )
 
-        messages = self.prompt_generator.construct_messages(query)
-        self.operator.new_implementation_run(query, messages)
+        try:
+            messages = self.prompt_generator.construct_messages(query)
+            self.operator.new_implementation_run(query, messages)
+        except Exception:
+            pass
 
     def handle_nl_backspace_key(self, key: bytes) -> None:
         if self.pos > 0:
