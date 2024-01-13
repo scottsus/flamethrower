@@ -13,7 +13,7 @@ json_schema = {
                 'properties': {
                     'action': {
                         'type': 'string',
-                        'enum': ['run', 'write', 'debug', 'stuck', 'cleanup', 'completed']
+                        'enum': ['run', 'write', 'debug', 'need_context', 'stuck', 'cleanup', 'completed']
                     },
                     'command': { 'type': 'string' },
                     'file_paths': { 'type': 'string' }
@@ -33,9 +33,13 @@ json_schema = {
                         'then': { 'required': ['file_paths'] }
                     },
                     {
+                        'if': { 'properties': { 'action': { 'const': 'need_context' } } },
+                        'then': { 'required': ['file_paths'] }
+                    },
+                    {
                         'if': { 'properties': { 'action': { 'const': 'cleanup' } } },
                         'then': { 'required': ['file_paths'] }
-                    }
+                    },
                 ]
             }
         },
@@ -45,13 +49,14 @@ json_schema = {
 
 system_message = f"""
 You are an extremely powerful programming assistant that lives inside the unix terminal.
-You have a single, crucial task: to categorize LLM responses into a list of 6 possible actions:
+You have a single, crucial task: to categorize LLM responses into a list of 7 possible actions:
   1. Run a command on the terminal and observe its output
   2. Rewrite code in a given target file
   3. If you encounter an error, write print statements to the target file to debug for the next iteration.
-  4. Indicate that you are stuck and need help.
-  5. As best as possible, be extremely concise in code, and clean the file of print statements
-  6. Indicate that your job has been completed. **If so, don't recommend other tests or suggestions.**
+  4. Indicate that you require more context from a file present in the repo.
+  5. Indicate that you are stuck and need help.
+  6. As best as possible, be extremely concise in code, and clean the file of print statements
+  7. Indicate that your job has been completed. **If so, don't recommend other tests or suggestions.**
 
 You **should choose multiple actions to perform**. For example:
 - If you are writing to a file, you **must also return a `run` action to test what you wrote.**

@@ -15,7 +15,6 @@ from flamethrower.utils.timer import Timer
 class Choice(enum.Enum):
     YES = 1
     NO = 2
-    REVISE = 3
 
 class Operator(BaseModel):
     max_retries: int = 8
@@ -61,10 +60,7 @@ class Operator(BaseModel):
                     self.printer.print_regular(with_newline=True)
 
                     choice = self.get_user_choice()
-                    if choice == Choice.REVISE:
-                        return
                     if choice == Choice.NO:
-                        self.printer.print_green(b'\nVery well then. Let me know if you need further assistance.\n')
                         return
                     
                     is_first_time_asking_for_permission = False
@@ -78,6 +74,9 @@ class Operator(BaseModel):
                     
                     elif action == 'debug':
                         self.handle_action_debug(obj, last_driver_res)
+                    
+                    elif action == 'need_context':
+                        self.handle_action_need_context(obj)
                     
                     elif action == 'stuck':
                         self.handle_action_stuck()
@@ -204,6 +203,46 @@ class Operator(BaseModel):
 
             raise
     
+    def handle_action_need_context(self, json: dict) -> None:
+        try:
+            file_paths = json['file_paths']
+            for target_path in file_paths:
+                complete_target_path = os.path.join(os.getcwd(), target_path)
+
+                try:
+                    with open(complete_target_path, 'r') as f:
+                        file_contents = f.read()
+                        new_message = (
+                            f'# {target_path}:\n'
+                            f'```\n{file_contents}\n```\n'
+                        )
+                        self.conv_manager.append_conv(
+                            role='user',
+                            content=new_message,
+                            name='human'
+                        )
+                        self.printer.print_green(f'Context obtained for {target_path}')
+                except FileNotFoundError:
+                    not_found_message = f'Unable to locate {target_path}'
+                    self.conv_manager.append_conv(
+                        role='user',
+                        content=not_found_message,
+                        name='human'
+                    )
+                    self.printer.print_err(not_found_message)
+            
+        except Exception:
+            failed_message = f'Failed to draw context for {file_paths}\n'
+            self.conv_manager.append_conv(
+                role='user',
+                content=failed_message,
+                name='human'
+            )
+            self.printer.print_err(failed_message, reset=True)
+
+            raise
+
+    
     def handle_action_stuck(self) -> None:
         self.printer.print_red(b"\nI don't know how to solve this, need your help\n", reset=True)
     
@@ -236,15 +275,11 @@ class Operator(BaseModel):
             "Do you want me to implement the solution and test it for you?",
             choices=[
                 "Yes",
-                "Let me revise the response",
-                "I'll do it myself, thank you very much"
+                "No",
             ]
         ).ask()
 
-        if user_choice == "Let me revise the response":
-            return Choice.REVISE
-
-        if user_choice == "I'll do it myself, thank you very much":
+        if user_choice == "No":
             return Choice.NO
         
         return Choice.YES

@@ -4,8 +4,8 @@ import threading
 import itertools
 from contextlib import contextmanager
 from pydantic import BaseModel
-from .special_keys import CLEAR_FROM_START, CLEAR_TO_END, CURSOR_TO_START
-from .colors import STDIN_YELLOW, STDIN_DEFAULT
+from flamethrower.utils.special_keys import CLEAR_FROM_START, CLEAR_TO_END, CURSOR_TO_START
+from flamethrower.utils.colors import STDIN_YELLOW, STDIN_DEFAULT
 
 class Loader(BaseModel):
     class Config:
