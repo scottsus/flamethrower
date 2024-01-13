@@ -57,6 +57,25 @@ Wtf???? 🤬 # Literally type this in the terminal
 
 An implementation run is initiated with a natural language query that begins with an `uppercase letter`.
 
+## Features
+
+### 💤 AFK Debugging
+
+If you say 'Yes', 🔥 flamethrower will debug in the background while you focus on other tasks at hand. It acts similarly to any other human engineer: adding `print` statements to find the root cause of the issue (which, as we know is the most annoying part). We find this pattern strikingly effective, and is where we believe LAMs have the strongest use case.
+
+If it looks like 🔥 flamethrower is obviously headed in the direction of doom, simply press `CTRL+C` and give it more suggestions or context.
+
+### 🎙️ Conversation History
+
+As long as any shell command or natural language query happens within the context of 🔥 flamethrower, then it is by default captured in the conversation history. That means you can:
+
+- ask about an error that just happened, or happened 2 dialogues ago
+- follow up on a previous response provided by 🔥 flamethrower
+
+### 🏄‍♀️ Real Time File Tracking
+
+Everytime you send a query, the latest version of your files are sent over, meaning 🔥 flamethrower understands that you changed your files, and are ready to process those changes.
+
 ## Motivation for 🔥 flamethrower
 
 ### 👩‍✈️ GitHub Copilot
