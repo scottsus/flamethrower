@@ -82,7 +82,7 @@ As long as any shell command or natural language query happens within the contex
 - ask about an error that just happened, or happened 2 dialogues ago
 - follow up on a previous response provided by 🔥 flamethrower
 
-### Prompt Transparency
+### 🔍 Prompt Transparency
 
 Prompts sent to LLM are transparent and easy to observe. All 🔥 flamethrower metadata are neatly kept in a `.flamethrower` subdirectory, including prompts, conversations, logs, directory info, summaries, and other metadata.
 
