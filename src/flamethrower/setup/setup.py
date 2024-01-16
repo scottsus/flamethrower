@@ -54,7 +54,8 @@ def setup_zsh_env() -> dict | None:
     
     with Loader(
         loading_message='🐚 Setting up shell environment...',
-        requires_cooked_mode=False
+        requires_cooked_mode=False,
+        with_newline=False,
     ).managed_loader():
         zsh_autosuggestions_path = flamethrower_zsh_dir('zsh-autosuggestions')
         if not os.path.exists(zsh_autosuggestions_path):

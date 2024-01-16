@@ -14,14 +14,14 @@ class Loader(BaseModel):
     
     loading_message: str
     completion_message: str = ''
+    with_newline: bool = True
     will_report_timing: bool = False
-    shell_manager: ShellManager = None
     requires_cooked_mode: bool = True
+    shell_manager: ShellManager = None
     
     done: bool = False
     spinner: itertools.cycle = None
     start_time: float = 0.0
-    
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -35,7 +35,8 @@ class Loader(BaseModel):
             self.shell_manager = container.shell_manager()
 
     def spin(self) -> None:
-        sys.stdout.write('\n')
+        if self.with_newline:
+            sys.stdout.write('\n')
         while not self.done:
             speed = 0.1
             sys.stdout.write(f'{STDIN_YELLOW.decode("utf-8")}\r{next(self.spinner)} {self.loading_message}{STDIN_DEFAULT.decode("utf-8")}')
