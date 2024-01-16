@@ -198,8 +198,15 @@ class Printer(BaseModel):
                     self.print_cyan(f'  - Write to: {file_paths}\n')
                 elif action == 'debug':
                     self.print_cyan(f'  - Add debugging statements to: {file_paths}\n')
+                elif action == 'stuck':
+                    # This is handled in operator.py
+                    pass
                 elif action == 'cleanup':
                     self.print_cyan(f'  - Cleanup: {file_paths}\n')
+                elif action == 'completed':
+                    self.print_cyan('  - Done')
+                else:
+                    self.print_err('Unknown action')
     
     def print_diffs(self, diffs: list) -> None:
         with self.shell_manager.cooked_mode():

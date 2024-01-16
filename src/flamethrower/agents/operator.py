@@ -8,6 +8,7 @@ import flamethrower.config.constants as config
 from flamethrower.agents.driver import Driver
 from flamethrower.agents.interpreter import Interpreter
 from flamethrower.context.conv_manager import ConversationManager
+from flamethrower.context.prompt import PromptGenerator
 from flamethrower.agents.file_writer import FileWriter
 from flamethrower.shell.printer import Printer
 from flamethrower.exceptions.exceptions import *
@@ -24,6 +25,7 @@ class Operator(BaseModel):
     interpreter: Interpreter = None
     file_writer: FileWriter = None
     conv_manager: ConversationManager
+    prompt_generator: PromptGenerator
     printer: Printer
     
     def __init__(self, **data):
@@ -59,8 +61,7 @@ class Operator(BaseModel):
                 for i in range (len(actions)):
                     obj = actions[i]
                     action = obj['action']
-                    if action in ['run', 'write', 'debug', 'cleanup']:
-                        self.printer.print_actions(actions[i:])
+                    self.printer.print_actions(actions[i:])
                     
                     if is_first_time_asking_for_permission and action in ['run', 'write', 'debug']:
                         self.printer.print_regular(with_newline=True)
@@ -108,18 +109,13 @@ class Operator(BaseModel):
                             'Please try again soon!\n'
                         )
                         self.printer.print_err(error_message.encode('utf-8'))
-                    except Exception:
-                        self.printer.print_err(b'Internal error, please try again.')
+                    except Exception as e:
+                        self.printer.print_err(f'Error: {str(e)}\nPlease try again.')
                         return
 
                 # Subsequent iterations of implementation
-                conv = self.conv_manager.get_conv()
-                conv.append({
-                    'role': 'user',
-                    'content': f'Remember to work towards the initial objective: [{query}]!',
-                    'name': 'human'
-                })
-                stream = self.driver.get_next_step(conv)
+                messages = self.prompt_generator.construct_messages(query)
+                stream = self.driver.get_next_step(messages)
                 self.printer.print_llm_response(stream)
             
             # Max retries exceeded

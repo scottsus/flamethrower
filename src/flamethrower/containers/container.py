@@ -41,6 +41,7 @@ class Container(containers.DeclarativeContainer):
         Operator,
         base_dir=base_dir,
         conv_manager=conv_manager,
+        prompt_generator=prompt_generator,
         printer=printer
     )
 

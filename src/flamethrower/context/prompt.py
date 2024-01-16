@@ -41,26 +41,25 @@ class PromptGenerator(BaseModel):
         )
 
     def construct_messages(self, query: str = '') -> list:
-        # For later
-        conv = self.load_pretty_conv()
+        """
+        Think of this as the `headers` for the LLM that will be attached to every new query.
+        """
 
-        description_line = ''
-        if self.description:
-            description_line = f'This project is about {self.description}. '
-            self.conv_manager.append_conv(
-                role='user',
-                content=description_line,
-                name='human'
-            )
+        meta_information = []
+
+        def append_meta_information(role: str, content: str, name: str = 'human') -> None:
+            new_message = { 'role': role, 'content': content, 'name': name }
+            meta_information.append(new_message)
+
+        append_meta_information(
+            role='user',
+            content=f'This project is about {self.description}.\n' if self.description else ''
+        )
         
-        dir_structure_line = ''
-        if self.dir_structure:
-            dir_structure_line = f'The directory structure looks like:\n{self.dir_structure}\n'
-            self.conv_manager.append_conv(
-                role='user',
-                content=dir_structure_line,
-                name='human'
-            )
+        append_meta_information(
+            role='user',
+            content=f'Here is the directory structure:\n{self.dir_structure}\n' if self.dir_structure else ''
+        )
 
         try:
             target_file_names = FileChooser().infer_target_file_paths(
@@ -88,45 +87,31 @@ class PromptGenerator(BaseModel):
                 pass
             except FileNotFoundError:
                 pass
-        if target_file_contents:
-            target_file_contents = f'Currently you are working with these files:\n{target_file_contents}\n'
-            self.conv_manager.append_conv(
-                role='user',
-                content=target_file_contents,
-                name='human'
-            )
-
-        # Use the `conv` var from above
-        self.conv_manager.append_conv(
+        
+        append_meta_information(
             role='user',
-            content='Here is the most recent conversation between the human, stdout logs, and assistant:\n',
-            name='human'
-        )
-        self.conv_manager.append_conv(
-            role='user',
-            content=f'```\n{conv}```\n',
-            name='stdout'
+            content=f'Currently you are working with these files:\n{target_file_contents}\n' if target_file_contents else ''
         )
 
-        query_line = ''
-        if query:
-            query_line = (
+        conv = self.load_pretty_conv()
+        append_meta_information(
+            role='user',
+            content=f'Here are the most recent conversations between the human, stdout logs, and assistant:\n{conv}\n' if conv else ''
+        )
+
+        append_meta_information(
+            role='user',
+            content=(
                 f'Given the context, here is your **crucial task: {query}**\n'
                 'If it is a coding problem, write code to achieve the crucial task above.\n'
                 'Otherwise, just reply in a straightforward fashion.'
             )
-            self.conv_manager.append_conv(
-                role='user',
-                content=query_line,
-                name='human'
-            )
+        )
 
-        # TODO: 2 `conv`'s?
-        messages = self.conv_manager.get_conv()
         with open(config.get_last_prompt_path(), 'w') as f:
-            f.write(pretty_print(messages))
+            f.write(pretty_print(meta_information))
 
-        return messages
+        return meta_information
     
     def load_pretty_conv(self) -> str:
         with open(config.get_conversation_path(), 'r') as f:
