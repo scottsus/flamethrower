@@ -16,6 +16,7 @@ class Loader(BaseModel):
     completion_message: str = ''
     will_report_timing: bool = False
     shell_manager: ShellManager = None
+    requires_cooked_mode: bool = True
     
     done: bool = False
     spinner: itertools.cycle = None
@@ -29,8 +30,9 @@ class Loader(BaseModel):
         if data.get('loading_message') == '':
             self.loading_message = '🧠 Thinking...'
         
-        from flamethrower.containers.container import container
-        self.shell_manager = container.shell_manager()
+        if self.requires_cooked_mode:
+            from flamethrower.containers.container import container
+            self.shell_manager = container.shell_manager()
 
     def spin(self) -> None:
         sys.stdout.write('\n')
@@ -51,7 +53,10 @@ class Loader(BaseModel):
         loader_thread.start()
         try:
             record_start_time = time.time()
-            with self.shell_manager.cooked_mode():
+            if self.requires_cooked_mode:
+                with self.shell_manager.cooked_mode():
+                    yield
+            else:
                 yield
         except (KeyboardInterrupt, Exception):
             raise
