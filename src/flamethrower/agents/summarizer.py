@@ -40,7 +40,6 @@ class Summarizer(BaseModel):
                 }],
             )
         except Exception:
-            # Other exceptions from the LLM
             return 'Encountered error summarizing this file'
     
     def summarize_readme(self) -> str:

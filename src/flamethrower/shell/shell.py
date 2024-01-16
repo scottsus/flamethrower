@@ -49,7 +49,7 @@ class Shell(BaseModel):
         token_counter = container.token_counter()
         printer = container.printer()
 
-        setup_dir_summary()
+        setup_dir_summary(printer=printer)
         printer.print_regular(prompt_generator.construct_greeting())
 
         try:

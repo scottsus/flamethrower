@@ -17,6 +17,16 @@ No bugs can survive the test of <span style='color: orange'>fire</span>; not eve
 
 https://github.com/scottsus/flamethrower/assets/88414565/2b8a71e6-a36c-4d1c-9bfc-3c487d1540f2
 
+## Usecases
+
+### Understanding error logs
+
+TODO
+
+### Debugging the previous error
+
+TODO
+
 ## Quick Start
 
 ```

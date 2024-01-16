@@ -4,9 +4,57 @@ import asyncio
 from pathspec import PathSpec
 from pydantic import BaseModel
 from typing import IO
+from rich.progress import Progress
 import flamethrower.config.constants as config
 from flamethrower.agents.summarizer import Summarizer
-from flamethrower.utils.loader import Loader
+from flamethrower.shell.printer import Printer
+
+class SummaryManager(BaseModel):
+    summarization_tasks: list = []
+    summarization_tasks_copy: list = []
+    timeout: float = 0.2
+
+    async def get_summarizations_with_timeout(self):
+        try:
+            res_list = await asyncio.wait_for(asyncio.gather(*self.summarization_tasks_copy), timeout=self.timeout)
+            await self.cancel_summarization_tasks(self.summarization_tasks)
+        except asyncio.TimeoutError:
+            with Progress() as progress:
+                task_id = progress.add_task("[cyan]🏗️  Learning workspace...", total=len(self.summarization_tasks))
+                summarization_tasks_with_progress = [
+                    self.perform_async_task(summarization_task, progress, task_id)
+                    for summarization_task in self.summarization_tasks
+                ]
+                res_list = await asyncio.gather(*summarization_tasks_with_progress)
+            await self.cancel_summarization_tasks(self.summarization_tasks_copy)
+        
+        return res_list
+    
+    async def perform_async_task(self, task: None, progress: Progress, task_id: int, step: int = 1):
+        res = await task
+        progress.update(task_id, advance=step)
+
+        return res
+    
+    async def cancel_summarization_tasks(self, task_list: list) -> None:
+        for task in task_list:
+            try:
+                task.cancel()
+            except AttributeError:
+                # coroutine was already cancelled
+                pass
+        for task in task_list:
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+            except RuntimeError:
+                # coroutine was already used
+                pass
+    
+    def add_summarization_task(self, task: None, task_copy: None) -> None:
+        self.summarization_tasks.append(task)
+        self.summarization_tasks_copy.append(task_copy)
 
 class DirectoryWalker(BaseModel):
     class Config:
@@ -15,14 +63,16 @@ class DirectoryWalker(BaseModel):
     base_dir: str = os.getcwd()
     file_paths: dict = {}
     workspace_summary: str = ''
-    summarization_tasks: list = []
     semaphore: asyncio.Semaphore = None
     summarizer: Summarizer = None
+    summary_manager: SummaryManager = None
+    printer: Printer
 
     def __init__(self, **data):
         super().__init__(**data)
         self.semaphore = asyncio.Semaphore(10)
         self.summarizer = Summarizer()
+        self.summary_manager = SummaryManager()
 
         try:
             with open(config.get_dir_dict_path(), 'r') as dir_dict_file:
@@ -37,15 +87,16 @@ class DirectoryWalker(BaseModel):
             pass
 
     async def generate_directory_summary(self, start_path) -> None:
-        with Loader(
-            loading_message='🔧 Performing workspace first time setup (should take about 30s)...',
-        ).managed_loader():
-            with open(config.get_dir_tree_path(), 'w') as dir_tree_file:
-                self.process_directory(start_path, dir_tree_file, gitignore=self.get_gitignore())
+        with open(config.get_dir_tree_path(), 'w') as dir_tree_file:
+            self.process_directory(start_path, dir_tree_file, gitignore=self.get_gitignore())
+        
+        self.printer.print_regular(with_newline=True)
+        num_tasks_completed = sum(await self.summary_manager.get_summarizations_with_timeout())
+        if num_tasks_completed > 0:
+            self.printer.print_default(f'🏗️  Learned {num_tasks_completed} new files.\n\n')
 
-            await asyncio.gather(*self.summarization_tasks)
-            with open(config.get_dir_dict_path(), 'w') as dir_dict_file:
-                dir_dict_file.write(json.dumps(self.file_paths, indent=2))
+        with open(config.get_dir_dict_path(), 'w') as dir_dict_file:
+            dir_dict_file.write(json.dumps(self.file_paths, indent=2))
 
     def process_directory(self, dir_path: str, summary_file: str, prefix: IO[str] = '', gitignore: PathSpec = None) -> None:
         entries = os.listdir(dir_path)
@@ -86,7 +137,7 @@ class DirectoryWalker(BaseModel):
                 self.process_subdirectory(path, i, len(sorted_entries), summary_file, prefix, gitignore)
             else:
                 self.write_file_entry(entry, i, len(sorted_entries), summary_file, prefix)
-                self.summarization_tasks.append(self.update_file_paths(path))
+                self.summary_manager.add_summarization_task(self.update_file_paths(path), self.update_file_paths(path))
 
     def process_subdirectory(self, path: str, index: int, total: int, summary_file: IO[str], prefix: str, gitignore: PathSpec) -> None:
         connector = '├──' if index < total - 1 else '└──'
@@ -117,10 +168,10 @@ class DirectoryWalker(BaseModel):
             with open(sample_gitignore_path, 'r') as f:
                 return PathSpec.from_lines('gitwildmatch', f.read().splitlines())
 
-    async def update_file_paths(self, file_path: str) -> None:
+    async def update_file_paths(self, file_path: str) -> int:
         relative_path = os.path.relpath(file_path, self.base_dir)
         if relative_path in self.file_paths:
-            return
+            return 0
         
         async with self.semaphore:
             with open(file_path) as f:
@@ -132,13 +183,14 @@ class DirectoryWalker(BaseModel):
                     )
                     
                     self.file_paths[relative_path] = file_summary
+                    return 1
                 except FileNotFoundError:
-                    pass
+                    return 0
                 except UnicodeDecodeError:
-                    pass
+                    return 0
 
-def setup_dir_summary() -> None:
-    dir_walker = DirectoryWalker()
+def setup_dir_summary(printer: Printer) -> None:
+    dir_walker = DirectoryWalker(printer=printer)
     asyncio.run(dir_walker.generate_directory_summary(
         os.path.join(os.getcwd())
     ))
