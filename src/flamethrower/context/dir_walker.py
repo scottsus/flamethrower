@@ -2,13 +2,14 @@ import os
 import json
 import asyncio
 from pathspec import PathSpec
+from importlib import resources
 from pydantic import BaseModel
 from typing import IO
 from rich.progress import Progress
 import flamethrower.config.constants as config
 from flamethrower.agents.summarizer import Summarizer
-from flamethrower.shell.printer import Printer
 from flamethrower.shell.shell_manager import ShellManager
+from flamethrower.shell.printer import Printer
 from flamethrower.utils.colors import *
 
 class SummaryManager(BaseModel):
@@ -75,6 +76,7 @@ class DirectoryWalker(BaseModel):
     base_dir: str
     file_paths: dict = {}
     workspace_summary: str = ''
+    lock: asyncio.Lock = None
     semaphore: asyncio.Semaphore = None
     summarizer: Summarizer = None
     summary_manager: SummaryManager = None
@@ -82,6 +84,7 @@ class DirectoryWalker(BaseModel):
 
     def __init__(self, **data):
         super().__init__(**data)
+        self.lock = asyncio.Lock()
         self.semaphore = asyncio.Semaphore(10)
         self.summarizer = Summarizer()
         self.summary_manager = SummaryManager()
@@ -175,18 +178,19 @@ class DirectoryWalker(BaseModel):
             return dir_tree_file.read()
     
     def get_gitignore(self) -> PathSpec:
-        patterns = []
+        patterns = set()
+        
         if os.path.exists('.gitignore'):
             with open('.gitignore', 'r') as gitignore_file:
                 for line in gitignore_file:
-                    patterns.append(line.strip().lstrip('/').rstrip('/'))
-            return PathSpec.from_lines('gitwildmatch', patterns)
-        else:
-            sample_gitignore_path = os.path.join(
-                os.getcwd(), 'src', 'flamethrower', 'setup', 'src', '.sample.gitignore'
-            )
-            with open(sample_gitignore_path, 'r') as f:
-                return PathSpec.from_lines('gitwildmatch', f.read().splitlines())
+                    patterns.add(line.strip().lstrip('/').rstrip('/'))
+        
+        with resources.path(f'{config.FLAMETHROWER_PACKAGE_NAME}.data', '.sample.gitignore') as sample_gitignore_file_path:
+            with open(sample_gitignore_file_path, 'r') as sample_gitignore_file:
+                for line in sample_gitignore_file:
+                    patterns.add(line.strip().lstrip('/').rstrip('/'))
+        
+        return PathSpec.from_lines('gitwildmatch', list(patterns))
 
     async def update_file_paths(self, file_path: str) -> int:
         relative_path = os.path.relpath(file_path, self.base_dir)
@@ -202,11 +206,14 @@ class DirectoryWalker(BaseModel):
                         file_contents=file_contents
                     )
                     
-                    self.file_paths[relative_path] = file_summary
+                    async with self.lock:
+                        self.file_paths[relative_path] = file_summary
                     return 1
                 except FileNotFoundError:
                     return 0
                 except UnicodeDecodeError:
+                    return 0
+                except Exception:
                     return 0
 
 def setup_dir_summary(base_dir: str, printer: Printer, shell_manager: ShellManager) -> None:

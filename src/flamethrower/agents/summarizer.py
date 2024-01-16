@@ -39,8 +39,8 @@ class Summarizer(BaseModel):
                     'content': query,
                 }],
             )
-        except Exception:
-            return 'Encountered error summarizing this file'
+        except Exception as e:
+            return f'Error: {str(e)}'
     
     def summarize_readme(self) -> str:
         summary_path = config.get_workspace_summary_path()

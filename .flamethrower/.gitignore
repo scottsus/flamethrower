@@ -2,6 +2,27 @@
 /logs
 /zsh
 
+# 🔐 Common lock files
+package-lock.json
+yarn.lock
+composer.lock
+Gemfile.lock
+Pipfile.lock
+poetry.lock
+Cargo.lock
+mix.lock
+Podfile.lock
+Berksfile.lock
+Cartfile.resolved
+Gopkg.lock
+build.gradle.lockfile
+stack.yaml.lock
+shrinkwrap.yaml
+renv.lock
+bower-locker.bower.json
+pubspec.lock
+conan.lock
+
 # VSCode
 .vscode/*
 !.vscode/settings.json
@@ -33,10 +54,8 @@ creds.js
 *.tsv.gz
 *.xlsx
  
- 
 # Mac/OSX
 .DS_Store
- 
  
 # Byte-compiled / optimized / DLL files
 __pycache__/
