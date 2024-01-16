@@ -113,6 +113,8 @@ class DirectoryWalker(BaseModel):
 
             with open(config.get_dir_dict_path(), 'w') as dir_dict_file:
                 dir_dict_file.write(json.dumps(self.file_paths, indent=2))
+        except KeyboardInterrupt:
+            raise
         except Exception:
             raise
 
@@ -213,6 +215,9 @@ def setup_dir_summary(base_dir: str, printer: Printer, shell_manager: ShellManag
         printer=printer
     )
     try:
-        asyncio.run(dir_walker.generate_directory_summary())
+        with shell_manager.cooked_mode():
+            asyncio.run(dir_walker.generate_directory_summary())
+    except KeyboardInterrupt:
+        printer.print_yellow('\nLearning process interrupted. Workspace knowledge may be incomplete.\n', reset=True)
     except Exception:
         raise
