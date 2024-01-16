@@ -10,6 +10,8 @@ from flamethrower.agents.interpreter import Interpreter
 from flamethrower.context.conv_manager import ConversationManager
 from flamethrower.agents.file_writer import FileWriter
 from flamethrower.shell.printer import Printer
+from flamethrower.exceptions.exceptions import *
+from flamethrower.exceptions.handlers import *
 
 class Choice(enum.Enum):
     YES = 1
@@ -126,6 +128,8 @@ class Operator(BaseModel):
         except KeyboardInterrupt:
             self.printer.print_orange('^C', reset=True)
             return
+        except QuotaExceededException:
+            self.printer.print_err(get_quota_exceeded_message())
         except Exception:
             raise
     

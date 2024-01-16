@@ -4,6 +4,8 @@ from flamethrower.context.prompt import PromptGenerator
 from flamethrower.context.conv_manager import ConversationManager
 from flamethrower.agents.operator import Operator
 from flamethrower.utils.special_keys import *
+from flamethrower.exceptions.exceptions import *
+from flamethrower.exceptions.handlers import *
 from flamethrower.utils.zsh_history import update_zsh_history
 
 class CommandHandler(BaseModel):
@@ -99,6 +101,8 @@ class CommandHandler(BaseModel):
             self.operator.new_implementation_run(query, messages)
         except KeyboardInterrupt:
             pass
+        except QuotaExceededException:
+            self.printer.print_err(get_quota_exceeded_message())
         except Exception:
             raise
 

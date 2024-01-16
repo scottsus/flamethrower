@@ -9,6 +9,7 @@ from flamethrower.models.llm import LLM
 from flamethrower.models.models import OPENAI_GPT_4_TURBO
 from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.utils.loader import Loader
+from flamethrower.exceptions.exceptions import *
 from flamethrower.utils.colors import STDIN_RED, STDIN_DEFAULT
 
 class OpenAIClient(LLM):
@@ -62,6 +63,8 @@ class OpenAIClient(LLM):
             # End of stream
             pass
         except KeyboardInterrupt as e:
+            interrupted = e
+        except QuotaExceededException as e:
             interrupted = e
         except Exception:
             yield f'\n\n{STDIN_RED.decode("utf-8")}Encountered some error{STDIN_DEFAULT.decode("utf-8")}'
@@ -135,10 +138,13 @@ class OpenAIClient(LLM):
         # TODO: Proper handling of each one
         except KeyboardInterrupt:
             raise
+        except openai.RateLimitError as e:
+            if e.code == 'insufficient_quota':
+                raise QuotaExceededException()
+            raise
         except (
             openai.APIConnectionError,
             openai.APITimeoutError,
-            openai.RateLimitError,
             openai.InternalServerError,
             openai.UnprocessableEntityError
         ):
@@ -181,10 +187,13 @@ class OpenAIClient(LLM):
         # TODO: Proper handling of each one
         except KeyboardInterrupt:
             raise
+        except openai.RateLimitError as e:
+            if e.code == 'insufficient_quota':
+                raise QuotaExceededException()
+            raise
         except (
             openai.APIConnectionError,
             openai.APITimeoutError,
-            openai.RateLimitError,
             openai.InternalServerError,
             openai.UnprocessableEntityError
         ):

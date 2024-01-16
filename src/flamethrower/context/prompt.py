@@ -72,6 +72,8 @@ class PromptGenerator(BaseModel):
                 self.printer.print_regular(f'🔭 Focusing on the following files: {target_file_names}\n')
         except KeyboardInterrupt:
             raise
+        except Exception:
+            raise
 
         target_file_contents = ''
         for file_name in target_file_names:

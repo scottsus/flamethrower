@@ -2,6 +2,7 @@ from pydantic import BaseModel
 import  flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
 from flamethrower.models.openai_client import OpenAIClient
+from flamethrower.exceptions.exceptions import *
 
 json_schema = {
     'type': 'object',
@@ -73,6 +74,8 @@ class FileChooser(BaseModel):
             
             return file_paths
         except KeyboardInterrupt:
+            raise
+        except QuotaExceededException:
             raise
         except Exception:
             return []
