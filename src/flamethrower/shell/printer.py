@@ -30,7 +30,7 @@ class Printer(BaseModel):
                 os.write(self.stdout_fd, data)
     
     def print_err(self, err: str) -> None:
-        self.print_red(err, reset=True)
+        self.print_red(f'\n{err}\n', reset=True)
 
     def print_color(self, data: bytes | str, color: bytes, reset: bool = False) -> None:
         os.write(self.stdout_fd, color)

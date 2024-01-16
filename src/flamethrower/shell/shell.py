@@ -20,6 +20,15 @@ class Shell(BaseModel):
     child_process: Popen[bytes] = None
 
     def run(self):
+        if len(sys.argv) > 2:
+            print('Usage: `flamethrower` or `flamethrower ./more/specific/directory`')
+            return
+
+        if (len(sys.argv) == 2):
+            base_dir = os.path.abspath(sys.argv[1])
+        else:
+            base_dir = os.getcwd()
+
         env = setup.setup_zsh_env()
         if not env:
             return
@@ -40,6 +49,7 @@ class Shell(BaseModel):
         # Container dependencies
         container.tty_settings.override(old_settings)
         container.leader_fd.override(self.leader_fd)
+        container.base_dir.override(base_dir)
         container.wire(modules=[__name__])
 
         # Container singletons
@@ -49,10 +59,11 @@ class Shell(BaseModel):
         token_counter = container.token_counter()
         printer = container.printer()
 
-        setup_dir_summary(printer=printer)
-        printer.print_regular(prompt_generator.construct_greeting())
-
+        error = None
         try:
+            setup_dir_summary(base_dir=base_dir, printer=printer)
+            printer.print_regular(prompt_generator.construct_greeting())
+
             while True:
                 timeout = 0.5 # seconds
                 r, w, e = select([self.leader_fd, sys.stdin], [], [], timeout)
@@ -77,7 +88,7 @@ class Shell(BaseModel):
                 if self.child_process.poll() is not None:
                     break
         except Exception as e:
-            self.printer.print_err(e)
+            error = e
         finally:
             try:
                 termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
@@ -87,16 +98,15 @@ class Shell(BaseModel):
                     'Please restart your terminal instance by pressing `exit`\n'
                 )
                 pass
-
+            
             os.close(self.leader_fd)
             os.close(self.follower_fd)
 
             if self.child_process:
                 self.child_process.terminate()
             
-            """
-            Outside the pty, these should be the only `print` statements
-            that do not use the Printer class.
-            """
-            print(token_counter.return_cost_analysis())
-            print('\n👋 Goodbye!')
+            if error:
+                printer.print_err(f'Error: {str(error)}')
+            else:
+                print(token_counter.return_cost_analysis())
+                print('\n👋 Goodbye!')

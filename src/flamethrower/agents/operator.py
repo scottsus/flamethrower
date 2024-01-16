@@ -17,6 +17,7 @@ class Choice(enum.Enum):
 
 class Operator(BaseModel):
     max_retries: int = 8
+    base_dir: str
     driver: Driver = None
     interpreter: Interpreter = None
     file_writer: FileWriter = None
@@ -25,7 +26,7 @@ class Operator(BaseModel):
     
     def __init__(self, **data):
         super().__init__(**data)
-        self.driver = Driver()
+        self.driver = Driver(base_dir=self.base_dir)
         self.interpreter = Interpreter()
         self.file_writer = FileWriter()
     
@@ -49,7 +50,7 @@ class Operator(BaseModel):
                 last_driver_res = self.get_last_assistant_response()
                 decision = self.interpreter.make_decision_from(query, last_driver_res)
                 if decision is None:
-                    self.printer.print_err('\nInterpreter unable to make decision. Marking as complete.')
+                    self.printer.print_err('Interpreter unable to make decision. Marking as complete.')
                     return
                 
                 actions: list = decision['actions']
@@ -97,14 +98,13 @@ class Operator(BaseModel):
                     
                     except RateLimitError:
                         error_message = (
-                            '\n'
                             'You might have exceeded your current quota for OpenAI.\n'
                             "We're working hard to setup a 🔥 flamethrower LLM server for your usage\n"
                             'Please try again soon!\n'
                         )
                         self.printer.print_err(error_message.encode('utf-8'))
                     except Exception:
-                        self.printer.print_err(b'\nInternal error, please try again.\n')
+                        self.printer.print_err(b'Internal error, please try again.')
                         return
 
                 # Subsequent iterations of implementation
@@ -175,7 +175,7 @@ class Operator(BaseModel):
             self.printer.print_green(success_message, reset=True)
         
         except Exception:
-            failed_message = f'Failed to update {file_paths}\n'
+            failed_message = f'Failed to update {file_paths}'
             self.conv_manager.append_conv(
                 role='user',
                 content=failed_message,
@@ -199,7 +199,7 @@ class Operator(BaseModel):
             self.printer.print_yellow(debug_message, reset=True)
         
         except Exception:
-            failed_message = f'Failed to update {file_paths}\n'
+            failed_message = f'Failed to update {file_paths}'
             self.conv_manager.append_conv(
                 role='user',
                 content=failed_message,
@@ -237,7 +237,7 @@ class Operator(BaseModel):
                 self.printer.print_err(not_found_message)
             
         except Exception:
-            failed_message = f'Failed to draw context for {file_paths}\n'
+            failed_message = f'Failed to draw context for {file_paths}'
             self.conv_manager.append_conv(
                 role='user',
                 content=failed_message,
@@ -265,7 +265,7 @@ class Operator(BaseModel):
             self.printer.print_green(cleanup_message, reset=True)
         
         except Exception:
-            failed_message = f'Failed to cleanup {file_paths}\n'
+            failed_message = f'Failed to cleanup {file_paths}'
             self.conv_manager.append_conv(
                 role='user',
                 content=failed_message,

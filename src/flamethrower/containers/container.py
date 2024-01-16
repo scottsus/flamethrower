@@ -36,8 +36,10 @@ class Container(containers.DeclarativeContainer):
         printer=printer
     )
 
+    base_dir = providers.Dependency()
     operator = providers.Singleton(
         Operator,
+        base_dir=base_dir,
         conv_manager=conv_manager,
         printer=printer
     )

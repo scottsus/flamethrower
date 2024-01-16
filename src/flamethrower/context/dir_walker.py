@@ -8,13 +8,27 @@ from rich.progress import Progress
 import flamethrower.config.constants as config
 from flamethrower.agents.summarizer import Summarizer
 from flamethrower.shell.printer import Printer
+from flamethrower.utils.colors import *
 
 class SummaryManager(BaseModel):
+    max_summarization_tasks: int = 100
     summarization_tasks: list = []
     summarization_tasks_copy: list = []
     timeout: float = 0.2
 
-    async def get_summarizations_with_timeout(self):
+    async def get_summarizations_with_timeout(self) -> list:
+        if len(self.summarization_tasks) > self.max_summarization_tasks:
+            await self.cancel_summarization_tasks(self.summarization_tasks)
+            await self.cancel_summarization_tasks(self.summarization_tasks_copy)
+            error_message = (
+                '📚 Workspace too large. '
+                f'{STDIN_DEFAULT.decode("utf-8")}Please consider narrowing your workspace by using\n\n'
+                f'  $ `{STDIN_GREEN.decode("utf-8")}flamethrower{STDIN_DEFAULT.decode("utf-8")} '
+                f'{STDIN_UNDERLINE.decode("utf-8")}./more/specific/folder`{STDIN_DEFAULT.decode("utf-8")}\n\n'
+                'Otherwise, consider adding some folders to your `.gitignore` file.\n'
+            )
+            raise Exception(error_message)
+
         try:
             res_list = await asyncio.wait_for(asyncio.gather(*self.summarization_tasks_copy), timeout=self.timeout)
             await self.cancel_summarization_tasks(self.summarization_tasks)
@@ -60,7 +74,7 @@ class DirectoryWalker(BaseModel):
     class Config:
         arbitrary_types_allowed = True
     
-    base_dir: str = os.getcwd()
+    base_dir: str
     file_paths: dict = {}
     workspace_summary: str = ''
     semaphore: asyncio.Semaphore = None
@@ -86,17 +100,23 @@ class DirectoryWalker(BaseModel):
         except FileNotFoundError:
             pass
 
-    async def generate_directory_summary(self, start_path) -> None:
-        with open(config.get_dir_tree_path(), 'w') as dir_tree_file:
-            self.process_directory(start_path, dir_tree_file, gitignore=self.get_gitignore())
+    async def generate_directory_summary(self) -> None:
+        try:
+            with open(config.get_dir_tree_path(), 'w') as dir_tree_file:
+                self.process_directory(self.base_dir, dir_tree_file, gitignore=self.get_gitignore())
+        except FileNotFoundError:
+            raise Exception(f'The given subdirectory {self.base_dir} does not exist.')
         
-        self.printer.print_regular(with_newline=True)
-        num_tasks_completed = sum(await self.summary_manager.get_summarizations_with_timeout())
-        if num_tasks_completed > 0:
-            self.printer.print_default(f'🏗️  Learned {num_tasks_completed} new files.\n\n')
+        try:
+            self.printer.print_regular(with_newline=True)
+            num_tasks_completed = sum(await self.summary_manager.get_summarizations_with_timeout())
+            if num_tasks_completed > 0:
+                self.printer.print_default(f'🏗️  Learned {num_tasks_completed} new files.\n\n')
 
-        with open(config.get_dir_dict_path(), 'w') as dir_dict_file:
-            dir_dict_file.write(json.dumps(self.file_paths, indent=2))
+            with open(config.get_dir_dict_path(), 'w') as dir_dict_file:
+                dir_dict_file.write(json.dumps(self.file_paths, indent=2))
+        except Exception:
+            raise
 
     def process_directory(self, dir_path: str, summary_file: str, prefix: IO[str] = '', gitignore: PathSpec = None) -> None:
         entries = os.listdir(dir_path)
@@ -189,8 +209,12 @@ class DirectoryWalker(BaseModel):
                 except UnicodeDecodeError:
                     return 0
 
-def setup_dir_summary(printer: Printer) -> None:
-    dir_walker = DirectoryWalker(printer=printer)
-    asyncio.run(dir_walker.generate_directory_summary(
-        os.path.join(os.getcwd())
-    ))
+def setup_dir_summary(base_dir: str, printer: Printer) -> None:
+    dir_walker = DirectoryWalker(
+        base_dir=os.path.join(os.getcwd(), base_dir),
+        printer=printer
+    )
+    try:
+        asyncio.run(dir_walker.generate_directory_summary())
+    except Exception:
+        raise
