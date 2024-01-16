@@ -2,6 +2,7 @@ import os
 from pydantic import BaseModel
 import flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
+from flamethrower.models.models import OPENAI_GPT_3_TURBO
 from flamethrower.models.openai_client import OpenAIClient
 
 system_message = """
@@ -19,12 +20,15 @@ Start every file by saying:
 
 class Summarizer(BaseModel):
     llm: LLM = None
+    max_file_len: int = 30_000 # TODO: count actual tokens and cut accordingly
 
     def __init__(self, **data):
         super().__init__(**data)
-        self.llm = OpenAIClient(system_message=system_message)
+        self.llm = OpenAIClient(system_message=system_message, model=OPENAI_GPT_3_TURBO)
     
     async def summarize_file(self, main_project_description: str, file_contents: str) -> str:
+        file_contents = file_contents[:self.max_file_len]
+
         try:
             query = (
                 f'This project is about {main_project_description}.\n'

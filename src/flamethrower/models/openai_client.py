@@ -54,7 +54,7 @@ class OpenAIClient(LLM):
         interrupted = None
         try:
             stream = self.new_basic_chat_request(messages, is_streaming=True)
-            self.token_counter.add_streaming_input_tokens(str(messages))
+            self.token_counter.add_streaming_input_tokens(str(messages), self.model)
             
             for chunk in stream:
                 token = chunk.choices[0].delta.content or ''
@@ -218,5 +218,5 @@ class OpenAIClient(LLM):
         prompt_tokens = chat_completion.usage.prompt_tokens
         completion_tokens = chat_completion.usage.completion_tokens
 
-        self.token_counter.add_input_tokens(prompt_tokens)
-        self.token_counter.add_output_tokens(completion_tokens)
+        self.token_counter.add_input_tokens(prompt_tokens, self.model)
+        self.token_counter.add_output_tokens(completion_tokens, self.model)

@@ -7,6 +7,7 @@ import flamethrower.config.constants as config
 from flamethrower.context.conv_manager import ConversationManager
 from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.utils.token_counter import TokenCounter
+from flamethrower.models.models import OPENAI_GPT_4_TURBO
 from flamethrower.utils.special_keys import *
 from flamethrower.utils.colors import *
 
@@ -172,7 +173,7 @@ class Printer(BaseModel):
                 if code_content:
                     complete_content += f'```{code_content}\n```\n'
 
-                self.token_counter.add_streaming_output_tokens(complete_content)
+                self.token_counter.add_streaming_output_tokens(complete_content, model=OPENAI_GPT_4_TURBO)
                 append_conv(complete_content)
                 log_last_response(complete_content)
                 self.print_regular(with_newline=True)
