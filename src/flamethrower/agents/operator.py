@@ -28,7 +28,7 @@ class Operator(BaseModel):
         super().__init__(**data)
         self.driver = Driver(base_dir=self.base_dir)
         self.interpreter = Interpreter()
-        self.file_writer = FileWriter()
+        self.file_writer = FileWriter(base_dir=self.base_dir)
     
     def new_implementation_run(self, query: str, conv: list) -> None:
         """
@@ -54,10 +54,13 @@ class Operator(BaseModel):
                     return
                 
                 actions: list = decision['actions']
-                for obj in actions:
+                for i in range (len(actions)):
+                    obj = actions[i]
                     action = obj['action']
+                    if action in ['run', 'write', 'debug', 'cleanup']:
+                        self.printer.print_actions(actions[i:])
                     
-                    if is_first_time_asking_for_permission and action in ['run', 'write', 'debug', 'stuck']:
+                    if is_first_time_asking_for_permission and action in ['run', 'write', 'debug']:
                         self.printer.print_regular(with_newline=True)
 
                         choice = self.get_user_choice()
@@ -118,7 +121,7 @@ class Operator(BaseModel):
                 self.printer.print_llm_response(stream)
             
             # Max retries exceeded
-            self.printer.print_red(b'\nToo many iterations, need your help to debug.\n', reset=True)
+            self.printer.print_err(b'Too many iterations, need your help to debug.', reset=True)
         
         except KeyboardInterrupt:
             self.printer.print_orange('^C', reset=True)
@@ -249,7 +252,7 @@ class Operator(BaseModel):
 
     
     def handle_action_stuck(self) -> None:
-        self.printer.print_red(b"\nI don't know how to solve this, need your help\n", reset=True)
+        self.printer.print_err(b"I don't know how to solve this, need your help", reset=True)
     
     def handle_action_cleanup(self, json: dict, driver_res: str) -> None:
         try:

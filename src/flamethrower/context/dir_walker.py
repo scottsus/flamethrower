@@ -8,6 +8,7 @@ from rich.progress import Progress
 import flamethrower.config.constants as config
 from flamethrower.agents.summarizer import Summarizer
 from flamethrower.shell.printer import Printer
+from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.utils.colors import *
 
 class SummaryManager(BaseModel):
@@ -21,7 +22,7 @@ class SummaryManager(BaseModel):
             await self.cancel_summarization_tasks(self.summarization_tasks)
             await self.cancel_summarization_tasks(self.summarization_tasks_copy)
             error_message = (
-                '📚 Workspace too large. '
+                f'📚 Workspace too large ({len(self.summarization_tasks)}/100). '
                 f'{STDIN_DEFAULT.decode("utf-8")}Please consider narrowing your workspace by using\n\n'
                 f'  $ `{STDIN_GREEN.decode("utf-8")}flamethrower{STDIN_DEFAULT.decode("utf-8")} '
                 f'{STDIN_UNDERLINE.decode("utf-8")}./more/specific/folder`{STDIN_DEFAULT.decode("utf-8")}\n\n'
@@ -51,20 +52,17 @@ class SummaryManager(BaseModel):
         return res
     
     async def cancel_summarization_tasks(self, task_list: list) -> None:
-        for task in task_list:
-            try:
+        tasks = [
+            asyncio.create_task(t) 
+            if not isinstance(t, asyncio.Task)
+            else t for t in task_list
+        ]
+
+        for task in tasks:
+            if not task.done():
                 task.cancel()
-            except AttributeError:
-                # coroutine was already cancelled
-                pass
-        for task in task_list:
-            try:
-                await task
-            except asyncio.CancelledError:
-                pass
-            except RuntimeError:
-                # coroutine was already used
-                pass
+        
+        await asyncio.gather(*tasks, return_exceptions=True)
     
     def add_summarization_task(self, task: None, task_copy: None) -> None:
         self.summarization_tasks.append(task)
@@ -209,7 +207,7 @@ class DirectoryWalker(BaseModel):
                 except UnicodeDecodeError:
                     return 0
 
-def setup_dir_summary(base_dir: str, printer: Printer) -> None:
+def setup_dir_summary(base_dir: str, printer: Printer, shell_manager: ShellManager) -> None:
     dir_walker = DirectoryWalker(
         base_dir=os.path.join(os.getcwd(), base_dir),
         printer=printer

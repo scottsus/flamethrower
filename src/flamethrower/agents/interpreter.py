@@ -50,7 +50,7 @@ You have a single, crucial task: to categorize LLM responses into a list of 6 po
   1. Run a command on the terminal and observe its output
   2. Rewrite code in a given target file
   3. If you encounter an error, write print statements to the target file to debug for the next iteration.
-  4. Indicate that you are stuck and need help.
+  4. If you have been trying for awhile with no success, indicate that you are stuck and need help.
   5. As best as possible, be extremely concise in code, and clean the file of print statements
   6. Indicate that your job has been completed. **If so, don't recommend other tests or suggestions.**
 
@@ -58,6 +58,11 @@ You **should choose multiple actions to perform**. For example:
 - If you are writing to a file, you **must also return a `run` action to test what you wrote.**
 - If you are debugging, you **must also follow it up with a `run` action and further `write` actions to identify the issue.**
   - Once you tested the new code and realized you got a positive output, indicate your job is completed.
+
+Importantly, **you are lazy**. If a job appears to be completed, mark it as completed, and don't recommend other tests or suggestions.
+Other notes:
+  - Favor running python3 versus python, and pip3 versus pip.
+
 It is crucial that you return a JSON object with the following JSON Schema:
     {json_schema}
 """
@@ -86,7 +91,6 @@ class Interpreter(BaseModel):
                 query=query,
                 json_schema=self.json_schema,
                 loading_message='🤖 Determining next step...',
-                completion_message='🤖 Next step chosen.\n'
             )
         except KeyboardInterrupt:
             raise

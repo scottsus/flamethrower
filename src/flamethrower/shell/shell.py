@@ -57,11 +57,16 @@ class Shell(BaseModel):
         conv_manager = container.conv_manager()
         prompt_generator = container.prompt_generator()
         token_counter = container.token_counter()
+        shell_manager = container.shell_manager()
         printer = container.printer()
 
         error = None
         try:
-            setup_dir_summary(base_dir=base_dir, printer=printer)
+            setup_dir_summary(
+                base_dir=base_dir,
+                printer=printer,
+                shell_manager=shell_manager
+            )
             printer.print_regular(prompt_generator.construct_greeting())
 
             while True:

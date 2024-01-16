@@ -68,7 +68,8 @@ class PromptGenerator(BaseModel):
                 self.dir_structure,
                 query
             )
-            self.printer.print_regular(f'🔭 Focusing on the following files: {target_file_names}\n')
+            if target_file_names:
+                self.printer.print_regular(f'🔭 Focusing on the following files: {target_file_names}\n')
         except KeyboardInterrupt:
             raise
 

@@ -64,7 +64,7 @@ class FileChooser(BaseModel):
             res = self.llm.new_json_request(
                 query=query,
                 json_schema=json_schema,
-                loading_message='🗃️  Choosing relevant files...', # 2 whitespaces to render properly
+                loading_message='🗃️  Drawing context...', # 2 whitespaces to render properly
             )
             
             # TODO: allow user to select which files

@@ -185,6 +185,21 @@ class Printer(BaseModel):
             console = Console()
             console.print(syntax)
     
+    def print_actions(self, actions: list) -> None:
+        with self.shell_manager.cooked_mode():
+            self.set_cursor_to_start()
+            self.print_cyan('Next actions:\n')
+            for obj in actions:
+                action, command, file_paths = obj.get('action'), obj.get('command'), obj.get('file_paths')
+                if action == 'run':
+                    self.print_cyan(f'  - Run command: {command}\n')
+                elif action == 'write':
+                    self.print_cyan(f'  - Write to: {file_paths}\n')
+                elif action == 'debug':
+                    self.print_cyan(f'  - Add debugging statements to: {file_paths}\n')
+                elif action == 'cleanup':
+                    self.print_cyan(f'  - Cleanup: {file_paths}\n')
+    
     def print_diffs(self, diffs: list) -> None:
         with self.shell_manager.cooked_mode():
             self.set_cursor_to_start(with_newline=True)

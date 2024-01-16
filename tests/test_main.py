@@ -1,9 +1,3 @@
-"""
-The main test, automating some basic keystrokes.
-TODO: Somehow the tests don't really render well, even if it works on manual ☹️
-TODO: Add more robust testing
-"""
-
 import pyautogui
 import subprocess
 import time

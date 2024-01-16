@@ -16,6 +16,7 @@ You are completely overwriting the existing target file, so it is imperative tha
 """
 
 class FileWriter(BaseModel):
+    base_dir: str
     llm: LLM = None
 
     def __init__(self, **data):
@@ -25,7 +26,7 @@ class FileWriter(BaseModel):
     def write_code(self, target_path: str, assistant_implementation: str) -> None:
         old_contents = ''
         strict_target_path = self.choose_file_path(target_path)
-        complete_target_path = os.path.join(os.getcwd(), strict_target_path)
+        complete_target_path = os.path.join(self.base_dir, strict_target_path)
         dir_path = os.path.dirname(complete_target_path)
         
         try:
