@@ -1,6 +1,7 @@
 import os
 import subprocess
 import enum
+import time
 import questionary
 from pydantic import BaseModel
 from openai import RateLimitError
@@ -150,6 +151,7 @@ class Operator(BaseModel):
 
             return output
 
+        time.sleep(1) # Give user time to read
         output = execute_action(command)
         self.printer.print_regular(output)
 
@@ -176,6 +178,7 @@ class Operator(BaseModel):
                 name='human',
             )
             self.printer.print_green(success_message, reset=True)
+            time.sleep(1) # Give user time to read
         
         except Exception:
             failed_message = f'Failed to update {file_paths}'
@@ -184,7 +187,7 @@ class Operator(BaseModel):
                 content=failed_message,
                 name='human'
             )
-            self.printer.print_err(failed_message, reset=True)
+            self.printer.print_err(failed_message)
 
             raise
     
@@ -208,7 +211,7 @@ class Operator(BaseModel):
                 content=failed_message,
                 name='human'
             )
-            self.printer.print_err(failed_message, reset=True)
+            self.printer.print_err(failed_message)
 
             raise
     
@@ -246,7 +249,7 @@ class Operator(BaseModel):
                 content=failed_message,
                 name='human'
             )
-            self.printer.print_err(failed_message, reset=True)
+            self.printer.print_err(failed_message)
 
             raise
 
@@ -274,7 +277,7 @@ class Operator(BaseModel):
                 content=failed_message,
                 name='human'
             )
-            self.printer.print_err(failed_message, reset=True)
+            self.printer.print_err(failed_message)
 
             raise
     

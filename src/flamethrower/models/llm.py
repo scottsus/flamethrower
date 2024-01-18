@@ -19,5 +19,5 @@ class LLM(ABC, BaseModel):
         pass
 
     @abstractmethod
-    def new_json_request(self, messages: list) -> Optional[dict]:
+    def new_json_request(self, query: str, json_schema: dict, loading_message: str, completion_message: str = '') -> Optional[dict]:
         pass

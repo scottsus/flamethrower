@@ -64,6 +64,7 @@ Importantly, **you are lazy**. If a job appears to be completed, mark it as comp
 Other notes:
   - If you obtained a code snippet, it is likely code you would need to implement and write to a file.
   - Favor running python3 versus python, and pip3 versus pip.
+  - Favor running the file itself with python3, versus testing the file with pytest or other testing frameworks.
 
 It is crucial that you return a JSON object with the following JSON Schema:
     {json_schema}

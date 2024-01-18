@@ -3,16 +3,44 @@ import re
 from pydantic import BaseModel
 import flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
+from flamethrower.models.models import OPENAI_GPT_3_TURBO
 from flamethrower.models.openai_client import OpenAIClient
 
-system_message = """
-You are an extremely powerful programming assistant that can write flawless code.
-You have a single, crucial task: Given an expert engineer's coding response and a target file:
-  1. Read the target file, if it exists
-  2. Understand the expert engineer's response and extract the code
-  3. Meaningfully incorporate the extracted code into the target file
+json_schema = {
+    'type': 'object',
+    'properties': {
+        'needs_editing': {
+            'type': 'boolean',
+        },
+        'edited_code': {
+            'type': 'string',
+        },
+    },
+    'required': ['needs_editing'],
+    'allOf': [
+        {
+            'if': { 'properties': { 'needs_editing': { 'const': True } } },
+            'then': { 'required': ['edited_code'] }
+        },
+    ]
+}
 
-You are completely overwriting the existing target file, so it is imperative that the code you write is both syntactically and semantically correct.
+system_message = f"""
+You are an incredible software engineer but terribly lazy.
+You have the **talent to write amazing quality code, but if someone else has already done it, you'd rather just copy and paste it**.
+You have a single, crucial task: Given a current working file and another engineer's suggestions on how to fix this current file (which contains code) you must:
+  1. Understand the suggestion carefully
+  2. Look at the new code
+  3. If the code snippet is a complete solution that completes the current working file, then simply indicate that needs_editing is false.
+     Someone else will copy and paste the code for you, and your job is done. Hooray!
+  4. Otherwise, if the code snippet is a partial solution, then you must indicate needs_editing is true.
+     Not only that, you must completely rewrite the current working file, implementing the new code snippet into the current working file.
+
+Remember, speed is of the essence. You want to get off work ASAP, so you don't want to do any extra work.
+At the same time, if you simply copy & paste and the file doesn't even compile, then you'll be in huge trouble.
+
+It is crucial that you return a JSON object with the following schema:
+    {json_schema}
 """
 
 class FileWriter(BaseModel):
@@ -21,7 +49,7 @@ class FileWriter(BaseModel):
 
     def __init__(self, **data):
         super().__init__(**data)
-        self.llm = OpenAIClient(system_message=system_message)
+        self.llm = OpenAIClient(system_message=system_message, model=OPENAI_GPT_3_TURBO)
     
     def write_code(self, target_path: str, assistant_implementation: str) -> None:
         old_contents = ''
@@ -46,15 +74,19 @@ class FileWriter(BaseModel):
         )
 
         try:
-            llm_res = self.llm.new_chat_request(
-                messages=[{
-                    'role': 'user',
-                    'content': query,
-                }],
-                loading_message=f'✍️  Writing the changes to {strict_target_path}...',
+            decision = self.llm.new_json_request(
+                query=query,
+                json_schema=json_schema,
+                loading_message=f'✍️  Writing the changes to {strict_target_path}...'
             )
-
-            new_contents = self.clean_backticks(llm_res)
+            if decision is None:
+                raise Exception('FileWriter unable to write code. You may need to implement suggestions yourself.')
+            
+            new_contents = ''
+            if not decision['needs_editing']:
+                new_contents = self.clean_backticks(assistant_implementation)
+            else:
+                new_contents = self.clean_backticks(decision['edited_code'])
             
             with open(complete_target_path, 'w') as f:
                 f.write(new_contents)
