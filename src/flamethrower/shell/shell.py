@@ -24,7 +24,7 @@ class Shell(BaseModel):
             return
 
         if (len(sys.argv) == 2):
-            base_dir = os.path.abspath(sys.argv[1])
+            self.base_dir = os.path.abspath(sys.argv[1])
 
         env = setup.setup_zsh_env()
         if not env:
@@ -48,7 +48,7 @@ class Shell(BaseModel):
 
         container.tty_settings.override(old_settings)
         container.leader_fd.override(self.leader_fd)
-        container.base_dir.override(base_dir)
+        container.base_dir.override(self.base_dir)
         container.wire(modules=[__name__])
 
         # Container singletons
@@ -62,7 +62,7 @@ class Shell(BaseModel):
         error = None
         try:
             setup_dir_summary(
-                base_dir=base_dir,
+                base_dir=self.base_dir,
                 printer=printer,
                 shell_manager=shell_manager
             )

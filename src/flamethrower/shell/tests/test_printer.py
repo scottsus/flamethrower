@@ -1,11 +1,13 @@
 import sys
 import pytest
 from unittest.mock import patch, call
+
 from flamethrower.shell.printer import Printer
 from flamethrower.context.conv_manager import ConversationManager
 from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.utils.colors import *
+
 from flamethrower.tests.mocks.mock_conv_manager import mock_conv_manager
 from flamethrower.tests.mocks.mock_shell_manager import mock_shell_manager
 from flamethrower.tests.mocks.mock_token_counter import mock_token_counter

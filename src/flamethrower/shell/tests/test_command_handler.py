@@ -1,9 +1,11 @@
 import pytest
+
 from flamethrower.shell.command_handler import CommandHandler
 from flamethrower.context.conv_manager import ConversationManager
 from flamethrower.context.prompt import PromptGenerator
 from flamethrower.agents.operator import Operator
 from flamethrower.shell.printer import Printer
+
 from flamethrower.tests.mocks.mock_conv_manager import mock_conv_manager
 from flamethrower.tests.mocks.mock_prompt_generator import mock_prompt_generator
 from flamethrower.tests.mocks.mock_operator import mock_operator

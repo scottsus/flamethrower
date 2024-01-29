@@ -1,4 +1,5 @@
 import pytest
+
 from unittest.mock import MagicMock
 from flamethrower.containers.container import Container
 from flamethrower.context.conv_manager import ConversationManager
@@ -8,6 +9,7 @@ from flamethrower.shell.printer import Printer
 from flamethrower.context.prompt import PromptGenerator
 from flamethrower.agents.operator import Operator
 from flamethrower.shell.command_handler import CommandHandler
+
 from flamethrower.tests.mocks.mock_conv_manager import mock_conv_manager
 from flamethrower.tests.mocks.mock_token_counter import mock_token_counter
 from flamethrower.tests.mocks.mock_shell_manager import mock_shell_manager

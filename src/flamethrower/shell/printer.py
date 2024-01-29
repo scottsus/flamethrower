@@ -22,7 +22,12 @@ class Printer(BaseModel):
         if self.leader_fd:
             os.write(self.leader_fd, data)
 
-    def print_stdout(self, data: bytes | str) -> None:
+    """
+    The following data can be of type bytes or str
+    But I don't want to use the | operator to be Python 3.08 compatible
+    """
+
+    def print_stdout(self, data: bytes) -> None:
         if self.stdout_fd:
             if isinstance(data, str):
                 with self.shell_manager.cooked_mode():
@@ -33,7 +38,7 @@ class Printer(BaseModel):
     def print_err(self, err: str) -> None:
         self.print_red(f'\n{err}\n', reset=True)
 
-    def print_color(self, data: bytes | str, color: bytes, reset: bool = False) -> None:
+    def print_color(self, data: bytes, color: bytes, reset: bool = False) -> None:
         os.write(self.stdout_fd, color)
         self.print_stdout(data)
         
@@ -41,43 +46,43 @@ class Printer(BaseModel):
             os.write(self.stdout_fd, STDIN_DEFAULT)
             self.set_cursor_to_start(with_newline=True)
 
-    def print_default(self, data: bytes | str) -> None:
+    def print_default(self, data: bytes) -> None:
         self.print_color(data, STDIN_DEFAULT)
     
-    def print_red(self, data: bytes | str, reset: bool = False) -> None:
+    def print_red(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_RED, reset=reset)
     
-    def print_yellow(self, data: bytes | str, reset: bool = False) -> None:
+    def print_yellow(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_YELLOW, reset=reset)
     
-    def print_green(self, data: bytes | str, reset: bool = False) -> None:
+    def print_green(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_GREEN, reset=reset)
     
-    def print_blue(self, data: bytes | str, reset: bool = False) -> None:
+    def print_blue(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_BLUE, reset=reset)
     
-    def print_cyan(self, data: bytes | str, reset: bool = False) -> None:
+    def print_cyan(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_CYAN, reset=reset)
     
-    def print_gray(self, data: bytes | str, reset: bool = False) -> None:
+    def print_gray(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_GRAY, reset=reset)
 
-    def print_white(self, data: bytes | str, reset: bool = False) -> None:
+    def print_white(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_WHITE, reset=reset)
 
-    def print_light_green(self, data: bytes | str, reset: bool = False) -> None:
+    def print_light_green(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_GREEN, reset=reset)
     
-    def print_light_blue(self, data: bytes | str, reset: bool = False) -> None:
+    def print_light_blue(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_BLUE, reset=reset)
 
-    def print_light_cyan(self, data: bytes | str, reset: bool = False) -> None:
+    def print_light_cyan(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_CYAN, reset=reset)
     
-    def print_light_magenta(self, data: bytes | str, reset: bool = False) -> None:
+    def print_light_magenta(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_MAGENTA, reset=reset)
     
-    def print_orange(self, data: bytes | str, reset: bool = False) -> None:
+    def print_orange(self, data: bytes, reset: bool = False) -> None:
         self.print_color(data, STDIN_ORANGE, reset=reset)
     
 

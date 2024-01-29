@@ -2,9 +2,11 @@ import os
 import pytest
 from unittest import mock
 from unittest.mock import patch, mock_open
+
 import flamethrower.config.constants as config
 from flamethrower.context.prompt import PromptGenerator
 from flamethrower.agents.summarizer import Summarizer
+
 from flamethrower.tests.mocks.mock_conv_manager import mock_conv_manager
 from flamethrower.tests.mocks.mock_shell_manager import mock_shell_manager
 from flamethrower.tests.mocks.mock_token_counter import mock_token_counter

@@ -123,7 +123,7 @@ class OpenAIClient(LLM):
         messages: list,
         is_json: bool = False,
         is_streaming: bool = False
-    ) -> Optional[dict] | Iterator[Optional[dict]]:
+    ) -> Iterator[Optional[dict]]:
         try:
             return self.client.chat.completions.create(
                 model=self.model,

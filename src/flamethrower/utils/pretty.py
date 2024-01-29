@@ -1,6 +1,6 @@
 import json
 
-def pretty_print(conv: list|str) -> str:
+def pretty_print(conv: list) -> str:
     if isinstance(conv, str):
         conv = json.loads(conv)
     
