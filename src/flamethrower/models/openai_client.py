@@ -8,7 +8,7 @@ from typing import Iterator, Optional
 from flamethrower.models.llm import LLM
 from flamethrower.models.models import OPENAI_GPT_4_TURBO
 from flamethrower.utils.token_counter import TokenCounter
-from flamethrower.utils.loader import Loader
+# from flamethrower.utils.loader import Loader
 from flamethrower.exceptions.exceptions import *
 from flamethrower.utils.colors import STDIN_RED, STDIN_DEFAULT
 

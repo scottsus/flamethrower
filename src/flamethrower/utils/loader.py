@@ -3,14 +3,13 @@ import time
 import threading
 import itertools
 from contextlib import contextmanager
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.utils.special_keys import CLEAR_FROM_START, CLEAR_TO_END, CURSOR_TO_START
 from flamethrower.utils.colors import STDIN_YELLOW, STDIN_DEFAULT
 
 class Loader(BaseModel):
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     
     loading_message: str
     completion_message: str = ''

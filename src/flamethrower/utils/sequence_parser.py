@@ -1,3 +1,6 @@
+"""
+A bunch of helper functions for the shell.
+"""
 
 def is_capitalized(text: str) -> bool:
     if not text:

@@ -1,11 +1,10 @@
 import os
 import git
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from flamethrower.shell.printer import Printer
 
 class Diff(BaseModel):
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     
     base_path: str = os.getcwd()
     repo: git.Repo = None

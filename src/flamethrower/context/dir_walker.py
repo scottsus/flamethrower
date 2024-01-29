@@ -3,7 +3,7 @@ import json
 import asyncio
 from pathspec import PathSpec
 from importlib import resources
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import IO
 from rich.progress import Progress
 import flamethrower.config.constants as config
@@ -70,8 +70,7 @@ class SummaryManager(BaseModel):
         self.summarization_tasks_copy.append(task_copy)
 
 class DirectoryWalker(BaseModel):
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     
     base_dir: str
     file_paths: dict = {}

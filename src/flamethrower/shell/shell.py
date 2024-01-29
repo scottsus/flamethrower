@@ -3,18 +3,17 @@ import sys
 import pty
 import tty
 import termios
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from subprocess import Popen
 from select import select
 import flamethrower.setup.setup as setup
-from flamethrower.containers.container import container
 from flamethrower.context.dir_walker import setup_dir_summary
 
 class Shell(BaseModel):
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     
     block_size: int = 1024
+    base_dir: str = os.getcwd()
     leader_fd: int = 0
     follower_fd: int = 0
     child_process: Popen[bytes] = None
@@ -26,8 +25,6 @@ class Shell(BaseModel):
 
         if (len(sys.argv) == 2):
             base_dir = os.path.abspath(sys.argv[1])
-        else:
-            base_dir = os.getcwd()
 
         env = setup.setup_zsh_env()
         if not env:
@@ -47,6 +44,8 @@ class Shell(BaseModel):
         tty.setraw(sys.stdin)
 
         # Container dependencies
+        from flamethrower.containers.container import container
+
         container.tty_settings.override(old_settings)
         container.leader_fd.override(self.leader_fd)
         container.base_dir.override(base_dir)
