@@ -38,7 +38,7 @@ class FileChooser(BaseModel):
         super().__init__(**data)
         self.llm = OpenAIClient(system_message=system_message)
     
-    def infer_target_file_paths(self, description: str, dir_structure: str, user_query: str) -> list[str]:
+    def infer_target_file_paths(self, description: str, dir_structure: str, user_query: str) -> list:
         dir_info = ''
         try:
             with open(config.get_dir_dict_path(), 'r') as f:

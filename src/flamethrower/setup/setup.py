@@ -3,7 +3,6 @@ import shutil
 from git import Repo
 from importlib import resources
 from flamethrower.config.constants import *
-# from flamethrower.utils.loader import Loader
 
 original_welcome_screen = """
     ______                     __  __
@@ -23,7 +22,7 @@ colored_welcome_screen = (
     "\033[34m/_/ /_/\\__,_/_/ /_/ /_/\\___/\\__/_/ /_/_/   \\____/|__/|__/\\___/_/\033[0m"
 )
 
-def setup_zsh_env() -> dict | None:
+def setup_zsh_env() -> dict:
     is_first_setup = False
 
     if not os.path.exists(FLAMETHROWER_DIR):
@@ -52,11 +51,6 @@ def setup_zsh_env() -> dict | None:
         with open(zsh_history_path, 'w') as f:
             f.write('')
     
-    # with Loader(
-    #     loading_message='🐚 Setting up shell environment...',
-    #     requires_cooked_mode=False,
-    #     with_newline=False,
-    # ).managed_loader():
     zsh_autosuggestions_path = flamethrower_zsh_dir('zsh-autosuggestions')
     if not os.path.exists(zsh_autosuggestions_path):
         Repo.clone_from('https://github.com/zsh-users/zsh-autosuggestions.git', zsh_autosuggestions_path)

@@ -16,7 +16,7 @@ class Shell(BaseModel):
     base_dir: str = os.getcwd()
     leader_fd: int = 0
     follower_fd: int = 0
-    child_process: Popen[bytes] = None
+    child_process: Popen = None
 
     def run(self):
         if len(sys.argv) > 2:
@@ -25,7 +25,7 @@ class Shell(BaseModel):
 
         if (len(sys.argv) == 2):
             self.base_dir = os.path.abspath(sys.argv[1])
-
+        
         env = setup.setup_zsh_env()
         if not env:
             return

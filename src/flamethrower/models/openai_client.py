@@ -8,7 +8,7 @@ from typing import Iterator, Optional
 from flamethrower.models.llm import LLM
 from flamethrower.models.models import OPENAI_GPT_4_TURBO
 from flamethrower.utils.token_counter import TokenCounter
-# from flamethrower.utils.loader import Loader
+from flamethrower.utils.loader import Loader
 from flamethrower.exceptions.exceptions import *
 from flamethrower.utils.colors import STDIN_RED, STDIN_DEFAULT
 
@@ -27,7 +27,7 @@ class OpenAIClient(LLM):
         from flamethrower.containers.container import container
         self.token_counter = container.token_counter()
 
-    def new_chat_request(self, messages: list, loading_message: str) -> Optional[str]:
+    def new_chat_request(self, messages: list, loading_message: str) -> str:
         with Loader(loading_message=loading_message).managed_loader():
             try:
                 res = self.new_basic_chat_request(messages)                
@@ -39,7 +39,7 @@ class OpenAIClient(LLM):
             except Exception:
                 raise
     
-    async def new_async_chat_request(self, messages: list) -> Optional[str]:
+    async def new_async_chat_request(self, messages: list) -> str:
         try:
             res = await self.new_basic_async_chat_request(messages)
             self.update_token_usage(res)
@@ -50,7 +50,7 @@ class OpenAIClient(LLM):
         except Exception:
             raise
     
-    def new_streaming_chat_request(self, messages: list) -> Iterator[Optional[str]]:
+    def new_streaming_chat_request(self, messages: list) -> Iterator:
         interrupted = None
         try:
             stream = self.new_basic_chat_request(messages, is_streaming=True)

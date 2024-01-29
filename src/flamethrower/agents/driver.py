@@ -38,9 +38,9 @@ class Driver(BaseModel):
         super().__init__(**data)
         self.llm = OpenAIClient(system_message=system_message.format(os.getcwd(), self.base_dir))
     
-    def get_new_solution(self, messages: list) -> Iterator[Optional[str]]:
+    def get_new_solution(self, messages: list) -> Iterator:
         return self.llm.new_streaming_chat_request(messages)
     
-    def get_next_step(self, messages: list) -> Iterator[Optional[str]]:
+    def get_next_step(self, messages: list) -> Iterator:
         # TODO: different from above?
         return self.llm.new_streaming_chat_request(messages)
