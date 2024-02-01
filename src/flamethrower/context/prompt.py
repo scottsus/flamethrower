@@ -32,7 +32,6 @@ class PromptGenerator(BaseModel):
         self._greeting: str = generate_greeting()
         self._description: str = Summarizer().summarize_readme()
         self._dir_structure: str = get_dir_structure()
-
     
     @property
     def greeting(self) -> str:

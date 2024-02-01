@@ -7,7 +7,6 @@ from flamethrower.agents.operator import Operator
 from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.shell.printer import Printer
-from flamethrower.utils.types import tty_settings
 
 class Container(containers.DeclarativeContainer):
     conv_manager = providers.Singleton(ConversationManager)

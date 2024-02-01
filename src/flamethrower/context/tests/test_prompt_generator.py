@@ -10,18 +10,19 @@ from flamethrower.tests.mocks.mock_printer import mock_printer
 
 @pytest.fixture
 def mock_prompt_generator() -> PromptGenerator:
-    return PromptGenerator(
-        conv_manager=mock_conv_manager(),
-        token_counter=mock_token_counter(),
-        printer=mock_printer()
-    )
+    with patch('builtins.open', mock_open(read_data='flamethrower/some/path')):
+        return PromptGenerator(
+            conv_manager=mock_conv_manager(),
+            token_counter=mock_token_counter(),
+            printer=mock_printer()
+        )
 
 def test_prompt_generator_init(mock_prompt_generator: PromptGenerator) -> None:
     pg = mock_prompt_generator
     
     assert pg.greeting.startswith('Good') and pg.greeting.endswith('👋')
     assert pg.description != ''
-    assert pg.dir_structure != ''
+    assert pg.dir_structure == 'flamethrower/some/path'
 
 def test_prompt_generator_construct_greeting(mock_prompt_generator: PromptGenerator) -> None:
     pg = mock_prompt_generator
@@ -34,6 +35,7 @@ def test_prompt_generator_construct_greeting(mock_prompt_generator: PromptGenera
 
 def test_prompt_generator_construct_messages(mock_prompt_generator: PromptGenerator) -> None:
     pg = mock_prompt_generator
+
     query = '🧪 Testing...'
     target_files = ['file_1', 'file_2', 'file_3']
     target_file_contents = """
