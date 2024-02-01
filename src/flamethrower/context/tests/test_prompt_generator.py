@@ -4,9 +4,9 @@ from unittest import mock
 from unittest.mock import patch, mock_open
 import flamethrower.config.constants as config
 from flamethrower.context.prompt import PromptGenerator
-from flamethrower.tests.mocks.mock_conv_manager import mock_conv_manager
-from flamethrower.tests.mocks.mock_token_counter import mock_token_counter
-from flamethrower.tests.mocks.mock_printer import mock_printer
+from flamethrower.test_utils.mocks.mock_conv_manager import mock_conv_manager
+from flamethrower.test_utils.mocks.mock_token_counter import mock_token_counter
+from flamethrower.test_utils.mocks.mock_printer import mock_printer
 
 @pytest.fixture
 def mock_prompt_generator() -> PromptGenerator:

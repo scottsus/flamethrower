@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch, call, mock_open
 import flamethrower.config.constants as config
 from flamethrower.context.dir_walker import DirectoryWalker, SummaryManager
-from flamethrower.tests.mocks.mock_printer import mock_printer
+from flamethrower.test_utils.mocks.mock_printer import mock_printer
 
 @pytest.fixture
 def mock_dir_walker() -> DirectoryWalker:

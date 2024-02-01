@@ -5,7 +5,7 @@ from flamethrower.utils.loader import Loader
 from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.utils.special_keys import CLEAR_FROM_START, CLEAR_TO_END, CURSOR_TO_START
 from flamethrower.utils.colors import STDIN_YELLOW, STDIN_DEFAULT
-from flamethrower.tests.mocks.mock_shell_manager import mock_shell_manager
+from flamethrower.test_utils.mocks.mock_shell_manager import mock_shell_manager
 
 def test_loader_init() -> None:
     pattern_cycle = itertools.cycle(['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'])

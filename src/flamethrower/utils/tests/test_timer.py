@@ -1,5 +1,5 @@
 from flamethrower.utils.timer import Timer
-from flamethrower.tests.mocks.mock_printer import mock_printer
+from flamethrower.test_utils.mocks.mock_printer import mock_printer
 
 def test_timer_context_manager() -> None:
     timer = Timer(printer=mock_printer())

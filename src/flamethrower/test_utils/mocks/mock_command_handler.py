@@ -6,10 +6,10 @@ from flamethrower.context.prompt import PromptGenerator
 from flamethrower.agents.operator import Operator
 from flamethrower.shell.printer import Printer
 
-from flamethrower.tests.mocks.mock_conv_manager import mock_conv_manager
-from flamethrower.tests.mocks.mock_prompt_generator import mock_prompt_generator
-from flamethrower.tests.mocks.mock_operator import mock_operator
-from flamethrower.tests.mocks.mock_printer import mock_printer
+from flamethrower.test_utils.mocks.mock_conv_manager import mock_conv_manager
+from flamethrower.test_utils.mocks.mock_prompt_generator import mock_prompt_generator
+from flamethrower.test_utils.mocks.mock_operator import mock_operator
+from flamethrower.test_utils.mocks.mock_printer import mock_printer
 
 def mock_command_handler() -> CommandHandler:
     return MagicMock(

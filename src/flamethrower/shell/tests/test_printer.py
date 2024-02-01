@@ -8,9 +8,9 @@ from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.utils.colors import *
 
-from flamethrower.tests.mocks.mock_conv_manager import mock_conv_manager
-from flamethrower.tests.mocks.mock_shell_manager import mock_shell_manager
-from flamethrower.tests.mocks.mock_token_counter import mock_token_counter
+from flamethrower.test_utils.mocks.mock_conv_manager import mock_conv_manager
+from flamethrower.test_utils.mocks.mock_shell_manager import mock_shell_manager
+from flamethrower.test_utils.mocks.mock_token_counter import mock_token_counter
 
 @pytest.fixture
 def mock_printer() -> Printer:

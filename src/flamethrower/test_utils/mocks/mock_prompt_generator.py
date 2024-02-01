@@ -5,9 +5,9 @@ from flamethrower.context.conv_manager import ConversationManager
 from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.shell.printer import Printer
 
-from flamethrower.tests.mocks.mock_conv_manager import mock_conv_manager
-from flamethrower.tests.mocks.mock_token_counter import mock_token_counter
-from flamethrower.tests.mocks.mock_printer import mock_printer
+from flamethrower.test_utils.mocks.mock_conv_manager import mock_conv_manager
+from flamethrower.test_utils.mocks.mock_token_counter import mock_token_counter
+from flamethrower.test_utils.mocks.mock_printer import mock_printer
 
 def mock_prompt_generator() -> PromptGenerator:
     return MagicMock(

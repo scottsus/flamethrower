@@ -23,13 +23,14 @@ gitpython = "^3.1.40"
 backoff = "^2.2.1"
 questionary = "^2.0.1"
 dependency-injector = "^4.41.0"
-pytest = "^8.0.0"
 importlib-resources = "^6.1.1"
 types-jsonschema = "^4.21.0.20240118"
 
 
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.8.0"
+pytest = "^8.0.0"
+pyautogui = "^0.9.54"
 
 [build-system]
 requires = ["poetry-core"]
