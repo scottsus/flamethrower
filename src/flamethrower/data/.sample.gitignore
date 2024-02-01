@@ -1,6 +1,7 @@
 # 🔥 flamethrower
 /logs
 /zsh
+env
 
 # 🔐 Common lock files
 package-lock.json

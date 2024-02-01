@@ -3,7 +3,10 @@ import shutil
 from git import Repo
 from importlib import resources
 from flamethrower.config.constants import *
-from typing import Any, Dict
+from flamethrower.utils.key_handler import (
+    get_api_key, set_api_key, try_api_key
+)
+from typing import Dict
 
 original_welcome_screen = """
     ______                     __  __
@@ -51,10 +54,6 @@ def setup_zsh_env() -> Dict[str, str]:
     if not os.path.exists(zsh_history_path):
         with open(zsh_history_path, 'w') as f:
             f.write('')
-    
-    zsh_autosuggestions_path = flamethrower_zsh_dir('zsh-autosuggestions')
-    if not os.path.exists(zsh_autosuggestions_path):
-        Repo.clone_from('https://github.com/zsh-users/zsh-autosuggestions.git', zsh_autosuggestions_path)
 
     zsh_syntax_highlighting_path = flamethrower_zsh_dir('zsh-syntax-highlighting')
     if not os.path.exists(zsh_syntax_highlighting_path):
@@ -63,17 +62,38 @@ def setup_zsh_env() -> Dict[str, str]:
     env = os.environ.copy()
     env['ZDOTDIR'] = FLAMETHROWER_ZSH_DIR
 
-    # Basic check to see that OpenAI API Key exists
-    openai_api_key = os.environ.get('OPENAI_API_KEY')
-    if not openai_api_key:
-        print(
-            f'Error: OpenAI API Key not found. Please run the following command in your shell:\n'
-            '\n  `export OPENAI_API_KEY=sk-xxxx`\n\n'
-            'You can find your OpenAI Api Keys at https://platform.openai.com/api-keys'
-        )
+    if not setup_api_key():
         return {}
 
     if is_first_setup:
         print(colored_welcome_screen)
 
     return env
+
+def setup_api_key() -> bool:
+    # Check for cached/current OpenAI API Key
+    old_openai_api_key = get_api_key()
+    old_key_works = try_api_key(old_openai_api_key)
+    
+    new_openai_api_key = os.getenv('OPENAI_API_KEY')
+    new_key_works = try_api_key(new_openai_api_key)
+    
+    if not old_key_works and not new_key_works:
+        print(
+            f'Error: OpenAI API Key not found or malfunctioning.\n'
+            '\nMaybe this is a new project, so you need to set up your OpenAI API Key again.\n'
+            '\nYou can find your OpenAI Api Keys at https://platform.openai.com/api-keys.\n'
+        )
+        try:
+            new_openai_key = input('OPENAI_API_KEY=')
+            while try_api_key(new_openai_key) == False:
+                print('\nOpenAI API Key still invalid. Please try again.')
+                new_openai_key = input('OPENAI_API_KEY=')
+            set_api_key(new_openai_key)
+        except KeyboardInterrupt:
+            return False
+    
+    if not old_key_works and new_key_works:
+        set_api_key(new_openai_api_key)
+    
+    return True
