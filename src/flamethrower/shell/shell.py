@@ -8,6 +8,7 @@ from subprocess import Popen
 from select import select
 import flamethrower.setup.setup as setup
 from flamethrower.context.dir_walker import setup_dir_summary
+from typing import Optional
 
 class Shell(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
@@ -16,9 +17,9 @@ class Shell(BaseModel):
     base_dir: str = os.getcwd()
     leader_fd: int = 0
     follower_fd: int = 0
-    child_process: Popen = None
+    child_process: Optional[Popen] = None
 
-    def run(self):
+    def run(self) -> None:
         if len(sys.argv) > 2:
             print('Usage: `flamethrower` or `flamethrower ./more/specific/directory`')
             return

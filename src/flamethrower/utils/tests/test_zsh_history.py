@@ -5,7 +5,7 @@ from flamethrower.utils.zsh_history import (
 )
 import flamethrower.config.constants as config
 
-def test_get_last_user_cmd():
+def test_zsh_history_get_last_user_cmd() -> None:
     mock_history = """
     command_1
     command_2
@@ -14,12 +14,9 @@ def test_get_last_user_cmd():
 
     with patch('builtins.open', mock_open(read_data=mock_history)):
         last_user_cmd = get_last_user_cmd()
-        assert (
-            last_user_cmd == 'command_3',
-            f'Expected last_user_cmd to be "command_3", got {last_user_cmd}'
-        )
+        assert last_user_cmd == 'command_3', f'Expected last_user_cmd to be "command_3", got {last_user_cmd}'
 
-def test_update_zsh_history():
+def test_zsh_history_update_zsh_history() -> None:
     mock_history = """
     command_1
     command_2

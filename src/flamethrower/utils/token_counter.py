@@ -4,17 +4,18 @@ from flamethrower.models.models import (
     OPENAI_GPT_4_TURBO,
     OPENAI_GPT_3_TURBO,
 )
+from typing import Any, Dict
 
 class TokenCounter(BaseModel):
-    input_tokens: dict = {
+    input_tokens: Dict[str, int] = {
         OPENAI_GPT_4_TURBO: 0,
         OPENAI_GPT_3_TURBO: 0,
     }
-    output_tokens: dict = {
+    output_tokens: Dict[str, int] = {
         OPENAI_GPT_4_TURBO: 0,
         OPENAI_GPT_3_TURBO: 0,
     }
-    pricing: dict = {
+    pricing: Dict[str, Any] = {
         OPENAI_GPT_4_TURBO: {
             'max_input_tokens': 120_000,
             'input': {
@@ -43,10 +44,10 @@ class TokenCounter(BaseModel):
         }
     }
     
-    def add_input_tokens(self, tokens: int, model) -> None:
+    def add_input_tokens(self, tokens: int, model: str) -> None:
         self.input_tokens[model] += tokens
     
-    def add_output_tokens(self, tokens: int, model) -> None:
+    def add_output_tokens(self, tokens: int, model: str) -> None:
         self.output_tokens[model] += tokens
     
     def add_streaming_input_tokens(self, complete_input_text: str, model: str) -> None:

@@ -3,13 +3,15 @@ import tty
 import termios
 from pydantic import BaseModel
 from contextlib import contextmanager
+from flamethrower.utils.types import tty_settings
+from typing import Generator
 
 class ShellManager(BaseModel):
-    old_settings: list
+    old_settings: tty_settings
     in_cooked_mode: bool = False
 
     @contextmanager    
-    def cooked_mode(self):
+    def cooked_mode(self) -> Generator[None, None, None]:
         if self.in_cooked_mode:
             yield
             return

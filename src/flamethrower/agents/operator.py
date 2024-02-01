@@ -5,6 +5,7 @@ import time
 import questionary
 from pydantic import BaseModel
 from openai import RateLimitError
+
 import flamethrower.config.constants as config
 from flamethrower.agents.driver import Driver
 from flamethrower.agents.interpreter import Interpreter
@@ -15,6 +16,8 @@ from flamethrower.shell.printer import Printer
 from flamethrower.exceptions.exceptions import *
 from flamethrower.exceptions.handlers import *
 
+from typing import Any, Dict, List
+
 class Choice(enum.Enum):
     YES = 1
     NO = 2
@@ -22,20 +25,30 @@ class Choice(enum.Enum):
 class Operator(BaseModel):
     max_retries: int = 8
     base_dir: str
-    driver: Driver = None
-    interpreter: Interpreter = None
-    file_writer: FileWriter = None
     conv_manager: ConversationManager
     prompt_generator: PromptGenerator
     printer: Printer
     
-    def __init__(self, **data):
-        super().__init__(**data)
-        self.driver = Driver(base_dir=self.base_dir)
-        self.interpreter = Interpreter()
-        self.file_writer = FileWriter(base_dir=self.base_dir)
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._driver: Driver = Driver(base_dir=self.base_dir)
+        self._interpreter: Interpreter = Interpreter()
+        self._file_writer: FileWriter = FileWriter(base_dir=self.base_dir)
     
-    def new_implementation_run(self, query: str, conv: list) -> None:
+    @property
+    def driver(self) -> Driver:
+        return self._driver
+    
+    @property
+    def interpreter(self) -> Interpreter:
+        return self._interpreter
+    
+    @property
+    def file_writer(self) -> FileWriter:
+        return self._file_writer
+    
+    
+    def new_implementation_run(self, query: str, conv: List[Dict[str, str]]) -> None:
         """
         To complete a debugging run, we need:
           1. An objective
@@ -46,6 +59,8 @@ class Operator(BaseModel):
         try:
             # Initial understanding of the problem and generation of solution
             stream = self.driver.get_new_solution(conv)
+            if not stream:
+                raise Exception('Driver.get_new_solution: stream is empty')
             self.printer.print_llm_response(stream)
             
             action = ''
@@ -58,7 +73,7 @@ class Operator(BaseModel):
                     self.printer.print_err('Interpreter unable to make decision. Marking as complete.')
                     return
                 
-                actions: list = decision['actions']
+                actions = decision['actions']
                 for i in range (len(actions)):
                     obj = actions[i]
                     action = obj['action']
@@ -109,7 +124,7 @@ class Operator(BaseModel):
                             "We're working hard to setup a 🔥 flamethrower LLM server for your usage\n"
                             'Please try again soon!\n'
                         )
-                        self.printer.print_err(error_message.encode('utf-8'))
+                        self.printer.print_err(error_message)
                     except Exception as e:
                         self.printer.print_err(f'Error: {str(e)}\nPlease try again.')
                         return
@@ -117,10 +132,12 @@ class Operator(BaseModel):
                 # Subsequent iterations of implementation
                 messages = self.prompt_generator.construct_messages(query)
                 stream = self.driver.get_next_step(messages)
+                if not stream:
+                    raise Exception('Driver.get_next_step: stream is empty')
                 self.printer.print_llm_response(stream)
             
             # Max retries exceeded
-            self.printer.print_err(b'Too many iterations, need your help to debug.', reset=True)
+            self.printer.print_err('Too many iterations, need your help to debug.')
         
         except KeyboardInterrupt:
             self.printer.print_orange('^C', reset=True)
@@ -130,7 +147,7 @@ class Operator(BaseModel):
         except Exception:
             raise
     
-    def handle_action_run(self, json: dict) -> None:
+    def handle_action_run(self, json: Dict[str, str]) -> None:
         command = json['command']
         self.printer.print_code(command)
 
@@ -166,7 +183,7 @@ class Operator(BaseModel):
             name='stdout',
         )
 
-    def handle_action_write(self, json: dict, driver_res: str) -> None:
+    def handle_action_write(self, json: Dict[str, str], driver_res: str) -> None:
         try:
             file_paths = json['file_paths']
             self.file_writer.write_code(file_paths, driver_res)
@@ -191,7 +208,7 @@ class Operator(BaseModel):
 
             raise
     
-    def handle_action_debug(self, json: dict, driver_res: str) -> None:
+    def handle_action_debug(self, json: Dict[str, str], driver_res: str) -> None:
         try:
             file_paths = json['file_paths']
             self.file_writer.write_code(file_paths, driver_res)
@@ -215,7 +232,7 @@ class Operator(BaseModel):
 
             raise
     
-    def handle_action_need_context(self, json: dict) -> None:
+    def handle_action_need_context(self, json: Dict[str, str]) -> None:
         try:
             file_paths = json['file_paths']
             complete_target_path = os.path.join(os.getcwd(), file_paths)
@@ -255,9 +272,9 @@ class Operator(BaseModel):
 
     
     def handle_action_stuck(self) -> None:
-        self.printer.print_err(b"I don't know how to solve this, need your help", reset=True)
+        self.printer.print_err("I don't know how to solve this, need your help")
     
-    def handle_action_cleanup(self, json: dict, driver_res: str) -> None:
+    def handle_action_cleanup(self, json: Dict[str, str], driver_res: str) -> None:
         try:
             file_paths = json['file_paths']
             self.file_writer.write_code(file_paths, driver_res)

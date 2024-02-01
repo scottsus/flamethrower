@@ -6,17 +6,16 @@ from flamethrower.context.prompt import PromptGenerator
 from flamethrower.agents.operator import Operator
 from flamethrower.shell.printer import Printer
 
-@pytest.fixture
-def mock_command_handler(
-    conv_manager: ConversationManager,
-    prompt_generator: PromptGenerator,
-    operator: Operator,
-    printer: Printer,
-) -> CommandHandler:
+from flamethrower.tests.mocks.mock_conv_manager import mock_conv_manager
+from flamethrower.tests.mocks.mock_prompt_generator import mock_prompt_generator
+from flamethrower.tests.mocks.mock_operator import mock_operator
+from flamethrower.tests.mocks.mock_printer import mock_printer
+
+def mock_command_handler() -> CommandHandler:
     return MagicMock(
         CommandHandler,
-        conv_manager=conv_manager,
-        prompt_generator=prompt_generator,
-        operator=operator,
-        printer=printer,
+        conv_manager=mock_conv_manager(),
+        prompt_generator=mock_prompt_generator(),
+        operator=mock_operator(),
+        printer=mock_printer(),
     )

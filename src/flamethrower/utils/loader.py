@@ -4,6 +4,7 @@ import threading
 import itertools
 from contextlib import contextmanager
 from pydantic import BaseModel, ConfigDict
+from typing import Any, Generator, Optional
 from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.utils.special_keys import CLEAR_FROM_START, CLEAR_TO_END, CURSOR_TO_START
 from flamethrower.utils.colors import STDIN_YELLOW, STDIN_DEFAULT
@@ -16,22 +17,27 @@ class Loader(BaseModel):
     with_newline: bool = True
     will_report_timing: bool = False
     requires_cooked_mode: bool = True
-    shell_manager: ShellManager = None
-    
+    shell_manager: Optional[ShellManager] = None
     done: bool = False
-    spinner: itertools.cycle = None
-    start_time: float = 0.0
 
-    def __init__(self, **data):
-        super().__init__(**data)
-        self.spinner = itertools.cycle(['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'])
-        self.start_time = time.time()
-        if data.get('loading_message') == '':
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._spinner: itertools.cycle = itertools.cycle(['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'])
+        self._start_time: float = time.time()
+        if kwargs.get('loading_message') == '':
             self.loading_message = '🧠 Thinking...'
         
         if self.requires_cooked_mode:
             from flamethrower.containers.container import container
             self.shell_manager = container.shell_manager()
+    
+    @property
+    def spinner(self) -> itertools.cycle:
+        return self._spinner
+    
+    @property
+    def start_time(self) -> float:
+        return self._start_time
 
     def spin(self) -> None:
         if self.with_newline:
@@ -48,12 +54,15 @@ class Loader(BaseModel):
         sys.stdout.flush()
 
     @contextmanager
-    def managed_loader(self) -> None:
+    def managed_loader(self) -> Generator[None, None, None]:
         loader_thread = threading.Thread(target=self.spin)
         loader_thread.start()
         try:
             record_start_time = time.time()
             if self.requires_cooked_mode:
+                if self.shell_manager is None:
+                    raise Exception('loader.managed_loader: shell_manager not set.')
+                
                 with self.shell_manager.cooked_mode():
                     yield
             else:

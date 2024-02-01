@@ -4,7 +4,7 @@ from unittest.mock import patch, Mock
 from flamethrower.shell.shell import Shell
 from flamethrower.tests.mocks.mock_container import mock_container
 
-def todo_test_shell_run():
+def todo_test_shell_run() -> None:
     base_dir = os.getcwd()          # Cannot be mocked because it is called during Shell() instantiation
     env_dict = os.environ.copy()    # Need a real env?
 

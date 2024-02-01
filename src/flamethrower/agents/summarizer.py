@@ -4,6 +4,7 @@ import flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
 from flamethrower.models.models import OPENAI_GPT_3_TURBO
 from flamethrower.models.openai_client import OpenAIClient
+from typing import Any
 
 system_message = """
 You are an extremely experienced senior engineer and have seen many different codebases.
@@ -19,12 +20,15 @@ Start every file by saying:
 """
 
 class Summarizer(BaseModel):
-    llm: LLM = None
     max_file_len: int = 30_000 # TODO: count actual tokens and cut accordingly
 
-    def __init__(self, **data):
-        super().__init__(**data)
-        self.llm = OpenAIClient(system_message=system_message, model=OPENAI_GPT_3_TURBO)
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._llm: LLM = OpenAIClient(system_message=system_message, model=OPENAI_GPT_3_TURBO)
+    
+    @property
+    def llm(self) -> LLM:
+        return self._llm
     
     async def summarize_file(self, main_project_description: str, file_contents: str) -> str:
         file_contents = file_contents[:self.max_file_len]

@@ -3,6 +3,7 @@ import  flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
 from flamethrower.models.openai_client import OpenAIClient
 from flamethrower.exceptions.exceptions import *
+from typing import Any, Dict, List
 
 json_schema = {
     'type': 'object',
@@ -31,14 +32,17 @@ Important notes:
 """
 
 class FileChooser(BaseModel):
-    llm: LLM = None
     max_files_used: int = 8
 
-    def __init__(self, **data):
-        super().__init__(**data)
-        self.llm = OpenAIClient(system_message=system_message)
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._llm: LLM = OpenAIClient(system_message=system_message)
     
-    def infer_target_file_paths(self, description: str, dir_structure: str, user_query: str) -> list:
+    @property
+    def llm(self) -> LLM:
+        return self._llm
+    
+    def infer_target_file_paths(self, description: str, dir_structure: str, user_query: str) -> List[str]:
         dir_info = ''
         try:
             with open(config.get_dir_dict_path(), 'r') as f:
@@ -67,11 +71,18 @@ class FileChooser(BaseModel):
                 json_schema=json_schema,
                 loading_message='🗃️  Drawing context...', # 2 whitespaces to render properly
             )
+
+            if not res:
+                raise Exception('file_chooser.infer_target_file_paths: res is empty')
             
-            # TODO: allow user to select which files
-            file_paths = res['file_paths'][:self.max_files_used]
+            if not isinstance(res, dict):
+                raise Exception(f'file_chooser.infer_target_file_paths: expected a dict, got {type(res)}')
+            
+            file_paths = res.get('file_paths', [])[:self.max_files_used]
+            if not isinstance(file_paths, list):
+                raise Exception(f'file_chooser.infer_target_file_paths: expected a list, got {type(file_paths)}')
+            
             self.write_to_current_files(file_paths)
-            
             return file_paths
         except KeyboardInterrupt:
             raise
@@ -80,7 +91,7 @@ class FileChooser(BaseModel):
         except Exception:
             return []
 
-    def write_to_current_files(self, file_paths: list) -> None:
+    def write_to_current_files(self, file_paths: List[str]) -> None:
         with open(config.get_current_files_path(), 'w') as f:
             for file_path in file_paths:
                 f.write(file_path + '\n')

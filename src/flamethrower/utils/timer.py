@@ -2,12 +2,13 @@ import time
 from contextlib import contextmanager
 from pydantic import BaseModel
 from flamethrower.shell.printer import Printer
+from typing import Generator
 
 class Timer(BaseModel):
     printer: Printer
 
     @contextmanager
-    def get_execution_time(self):
+    def get_execution_time(self) -> Generator[None, None, None]:
         start_time = time.time()
         try:
             yield

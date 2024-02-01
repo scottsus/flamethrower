@@ -9,15 +9,8 @@ from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.shell.printer import Printer
 
-from flamethrower.tests.mocks.mock_printer import mock_printer
-from flamethrower.tests.mocks.mock_conv_manager import mock_conv_manager
-from flamethrower.tests.mocks.mock_token_counter import mock_token_counter
-from flamethrower.tests.mocks.mock_prompt_generator import mock_prompt_generator
-from flamethrower.tests.mocks.mock_shell_manager import mock_shell_manager
-
-
 @pytest.fixture
-def container():
+def container() -> Container:
     container = Container()
     container.tty_settings.override([])
     container.leader_fd.override(1)
@@ -25,28 +18,28 @@ def container():
     
     return container
 
-def test_conversation_manager(container):
+def test_container_conversation_manager(container: Container) -> None:
     assert isinstance(container.conv_manager(), ConversationManager)
 
-def test_token_counter(container):
+def test_container_token_counter(container: Container) -> None:
     assert isinstance(container.token_counter(), TokenCounter)
 
-def test_shell_manager(container):
+def test_container_shell_manager(container: Container) -> None:
     assert isinstance(container.shell_manager(), ShellManager)
 
-def test_printer(container):
+def test_container_printer(container: Container) -> None:
     assert isinstance(container.printer(), Printer)
 
-def test_prompt_generator(container):
+def test_container_prompt_generator(container: Container) -> None:
     assert isinstance(container.prompt_generator(), PromptGenerator)
 
-def test_operator(container):
+def test_container_operator(container: Container) -> None:
     assert isinstance(container.operator(), Operator)
 
-def test_command_handler(container):
+def test_container_command_handler(container: Container) -> None:
     assert isinstance(container.command_handler(), CommandHandler)
 
-def test_container_wiring(container):
+def test_container_wiring(container: Container) -> None:
     shell_manager = container.shell_manager()
     assert shell_manager.old_settings == container.tty_settings()
 

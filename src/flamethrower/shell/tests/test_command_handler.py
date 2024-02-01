@@ -10,24 +10,17 @@ from flamethrower.tests.mocks.mock_conv_manager import mock_conv_manager
 from flamethrower.tests.mocks.mock_prompt_generator import mock_prompt_generator
 from flamethrower.tests.mocks.mock_operator import mock_operator
 from flamethrower.tests.mocks.mock_printer import mock_printer
-from flamethrower.tests.mocks.mock_shell_manager import mock_shell_manager
-from flamethrower.tests.mocks.mock_token_counter import mock_token_counter
 
 @pytest.fixture
-def mock_command_handler(
-    mock_conv_manager: ConversationManager,
-    mock_prompt_generator: PromptGenerator,
-    mock_operator: Operator,
-    mock_printer: Printer,
-) -> CommandHandler:
+def mock_command_handler() -> CommandHandler:
     return CommandHandler(
-        conv_manager=mock_conv_manager,
-        prompt_generator=mock_prompt_generator,
-        operator=mock_operator,
-        printer=mock_printer,
+        conv_manager=mock_conv_manager(),
+        prompt_generator=mock_prompt_generator(),
+        operator=mock_operator(),
+        printer=mock_printer(),
     )
 
-def test_command_handler_init(mock_command_handler: CommandHandler):
+def test_command_handler_init(mock_command_handler: CommandHandler) -> None:
     command_handler = mock_command_handler
 
     assert command_handler.pos == 0

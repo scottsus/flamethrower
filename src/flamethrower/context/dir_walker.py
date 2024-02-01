@@ -1,32 +1,43 @@
 import os
+import io
 import json
 import asyncio
+from asyncio import Task
 from pathspec import PathSpec
 from importlib import resources
 from pydantic import BaseModel, ConfigDict
-from typing import IO
-from rich.progress import Progress
+from rich.progress import Progress, TaskID
+
 import flamethrower.config.constants as config
 from flamethrower.agents.summarizer import Summarizer
 from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.shell.printer import Printer
 from flamethrower.utils.colors import *
 
+from typing import Any, Dict, List, Coroutine, Union, Optional, TypeVar, Generic
+
+T = TypeVar('T')
+class Task(asyncio.Task, Generic[T]): # type: ignore
+    pass
+
 class SummaryManager(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     max_summarization_tasks: int = 100
-    summarization_tasks: list = []
-    summarization_tasks_copy: list = []
+    summarization_tasks: List[Task[int]] = []
+    summarization_tasks_copy: List[Task[int]] = []
     instant_timeout: float = 0.5
     summarization_timeout: int = 75
-    lock: asyncio.Lock = None
 
-    def __init__(self, **data):
-        super().__init__(**data)
-        self.lock = asyncio.Lock()
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._lock = asyncio.Lock()
+    
+    @property
+    def lock(self) -> asyncio.Lock:
+        return self._lock
 
-    async def get_summarizations_with_timeout(self) -> list:
+    async def get_summarizations_with_timeout(self) -> Optional[List[Any]]:
         if len(self.summarization_tasks) > self.max_summarization_tasks:
             await self.cancel_summarization_tasks(self.summarization_tasks)
             await self.cancel_summarization_tasks(self.summarization_tasks_copy)
@@ -75,56 +86,67 @@ class SummaryManager(BaseModel):
         
             return res_list
     
-    async def perform_async_task(self, task: None, progress: Progress, task_id: int, step: int = 1):
+    async def perform_async_task(
+        self,
+        task: Task[int],
+        progress: Progress,
+        task_id: TaskID,
+        step: int = 1
+    ) -> Optional[int]:
         try:
             return await task
         except asyncio.CancelledError:
-            pass
+            return 0
         finally:
             with await self.lock:
                 progress.update(task_id, advance=step, refresh=True)
-
     
-    async def cancel_summarization_tasks(self, task_list: list) -> None:
+    async def cancel_summarization_tasks(self, task_list: List[Task[int]]) -> None:
         for task in task_list:
-            if isinstance(task, asyncio.Task) and not task.done() and not task.cancelled():
+            if isinstance(task, Task) and not task.done() and not task.cancelled():
                 task.cancel()
         
-        cancelled_tasks = [task for task in task_list if isinstance(task, asyncio.Task)]
+        cancelled_tasks = [task for task in task_list if isinstance(task, Task)]
         if cancelled_tasks:
             await asyncio.gather(*cancelled_tasks, return_exceptions=True)
     
-    def add_summarization_task(self, task: None, task_copy: None) -> None:
+    def add_summarization_task(self, task: Task[int], task_copy: Task[int]) -> None:
         self.summarization_tasks.append(task)
         self.summarization_tasks_copy.append(task_copy)
 
-    async def safe_gather(self, task_list: list) -> list:
+    async def safe_gather(
+        self,
+        task_list: Union[List[Task[int]], List[Coroutine[Any, Any, Any]]]
+    ) -> List[Any]:
+        """
+        This can take any coroutine, be it an update_task or a cancel_task, and safely
+        gathers it without raising an exception.
+        """
+
         try:
             return await asyncio.gather(*task_list, return_exceptions=True)
         except Exception:
-            """
-            especially for _FutureGather exception which took so long to debug 🤬
-            """
-            pass
+            # especially for the _FutureGather exception
+            return []
+    
 
 class DirectoryWalker(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     
     base_dir: str
-    file_paths: dict = {}
+    file_paths: Dict[str, str] = {}
     workspace_summary: str = ''
-    lock: asyncio.Lock = None
-    semaphore: asyncio.Semaphore = None
-    summarizer: Summarizer = None
-    summary_manager: SummaryManager = None
     printer: Printer
 
-    def __init__(self, **data):
-        super().__init__(**data)
-        self.lock = asyncio.Lock()
-        self.semaphore = asyncio.Semaphore(10)
-        self.summarizer = Summarizer()
-        self.summary_manager = SummaryManager()
+    def __init__(self, base_dir: str, printer: Printer) -> None:
+        super().__init__(
+            base_dir=base_dir,
+            printer=printer
+        )
+        self._lock = asyncio.Lock()
+        self._semaphore = asyncio.Semaphore(10)
+        self._summarizer = Summarizer()
+        self._summary_manager = SummaryManager()
 
         try:
             with open(config.get_dir_dict_path(), 'r') as dir_dict_file:
@@ -137,17 +159,39 @@ class DirectoryWalker(BaseModel):
                 self.workspace_summary = workspace_summary_file.read()
         except FileNotFoundError:
             pass
+    
+    @property
+    def lock(self) -> asyncio.Lock:
+        return self._lock
+
+    @property
+    def semaphore(self) -> asyncio.Semaphore:
+        return self._semaphore
+    
+    @property
+    def summarizer(self) -> Summarizer:
+        return self._summarizer
+    
+    @property
+    def summary_manager(self) -> SummaryManager:
+        return self._summary_manager
 
     async def generate_directory_summary(self) -> None:
         try:
             with open(config.get_dir_tree_path(), 'w') as dir_tree_file:
-                self.process_directory(self.base_dir, dir_tree_file, gitignore=self.get_gitignore())
+                self.process_directory(self.base_dir, dir_tree_file, self.get_gitignore())
         except FileNotFoundError:
             raise Exception(f'The given subdirectory {self.base_dir} does not exist.')
         
         try:
             self.printer.print_regular(with_newline=True)
-            num_tasks_completed = sum(await self.summary_manager.get_summarizations_with_timeout())
+            tasks_completed = await self.summary_manager.get_summarizations_with_timeout() or []
+            num_tasks_completed = 0
+            for task in tasks_completed:
+                if isinstance(task, int):
+                    # task can be 0 or 1
+                    num_tasks_completed += task
+
             if num_tasks_completed > 0:
                 self.printer.print_default(f'🏗️  Learned {num_tasks_completed} new files.\n\n')
 
@@ -159,7 +203,13 @@ class DirectoryWalker(BaseModel):
         except Exception:
             raise
 
-    def process_directory(self, dir_path: str, summary_file: str, prefix: IO = '', gitignore: PathSpec = None) -> None:
+    def process_directory(
+        self,
+        dir_path: str,
+        summary_file: io.TextIOWrapper,
+        gitignore: PathSpec,
+        prefix: str = '',
+    ) -> None:
         entries = os.listdir(dir_path)
         
         if gitignore:
@@ -203,18 +253,33 @@ class DirectoryWalker(BaseModel):
                     asyncio.create_task(self.update_file_paths(path))   # copy
                 )
 
-    def process_subdirectory(self, path: str, index: int, total: int, summary_file: IO, prefix: str, gitignore: PathSpec) -> None:
+    def process_subdirectory(
+        self,
+        path: str,
+        index: int,
+        total: int,
+        summary_file: io.TextIOWrapper,
+        prefix: str,
+        gitignore: PathSpec
+    ) -> None:
         connector = '├──' if index < total - 1 else '└──'
         summary_file.write(f'{prefix}{connector} {os.path.basename(path)}\n')
 
         ext_prefix = '│   ' if index < total - 1 else '    '
         self.process_directory(path, summary_file, prefix=(prefix + ext_prefix), gitignore=gitignore)
 
-    def write_file_entry(self, file_name: str, index: int, total: int, summary_file: IO, prefix: str) -> None:
+    def write_file_entry(
+        self,
+        file_name: str,
+        index: int,
+        total: int,
+        summary_file: io.TextIOWrapper,
+        prefix: str
+    ) -> None:
         connector = '├──' if index < total - 1 else '└──'
         summary_file.write(f'{prefix}{connector} {file_name}\n')
     
-    def get_directory_tree(self) -> None:
+    def get_directory_tree(self) -> str:
         with open(config.get_dir_tree_path(), 'r') as dir_tree_file:
             return dir_tree_file.read()
     

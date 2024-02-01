@@ -7,7 +7,7 @@ from flamethrower.utils.special_keys import CLEAR_FROM_START, CLEAR_TO_END, CURS
 from flamethrower.utils.colors import STDIN_YELLOW, STDIN_DEFAULT
 from flamethrower.tests.mocks.mock_shell_manager import mock_shell_manager
 
-def test_loader_init():
+def test_loader_init() -> None:
     pattern_cycle = itertools.cycle(['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'])
 
     with patch('time.time', return_value=0.0), \
@@ -31,7 +31,7 @@ def test_loader_init():
         assert loader.spinner == pattern_cycle
         assert loader.start_time == 0.0
 
-def test_spin():
+def test_loader_spin() -> None:
     loading_message = '🌀 Spinning...'
     spinner = itertools.cycle(['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'])
 
@@ -41,7 +41,7 @@ def test_spin():
         assert loader.done == False
 
         side_effect_idx = 0
-        def get_side_effect(time: float):
+        def get_side_effect(_: float) -> None:
             nonlocal side_effect_idx
             side_effect_idx += 1
             if side_effect_idx < 3:
@@ -64,7 +64,7 @@ def test_spin():
             mock_flush.assert_has_calls([mock.call(), mock.call(), mock.call()])
             mock_sleep.asset_has_calls([mock.call(0.1), mock.call(0.1), mock.call(0.1)])
 
-def test_spin_and_stop():
+def test_loader_spin_and_stop() -> None:
     loading_message = '🌀 Spinning...'
     spinner = itertools.cycle(['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'])
 
@@ -74,7 +74,7 @@ def test_spin_and_stop():
         assert loader.done == False
 
         side_effect_idx = 0
-        def get_side_effect(time: float):
+        def get_side_effect(_: float) -> None:
             nonlocal side_effect_idx
             side_effect_idx += 1
             if side_effect_idx < 3:
@@ -99,17 +99,17 @@ def test_spin_and_stop():
             mock_flush.assert_has_calls([mock.call(), mock.call(), mock.call(), mock.call()])
             mock_sleep.asset_has_calls([mock.call(0.1), mock.call(0.1), mock.call(0.1)])
 
-def test_managed_loader(mock_shell_manager: ShellManager):
+def test_loader_managed_loader() -> None:
     loading_message = '🌀 Spinning...'
     spinner = itertools.cycle(['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'])
 
-    with patch('flamethrower.containers.container.container.shell_manager', return_value=mock_shell_manager):
+    with patch('flamethrower.containers.container.container.shell_manager', return_value=mock_shell_manager()):
         
         loader = Loader(loading_message=loading_message)
         assert loader.done == False
 
         side_effect_idx = 0
-        def get_side_effect(time: float):
+        def get_side_effect(_: float) -> None:
             nonlocal side_effect_idx
             side_effect_idx += 1
             if side_effect_idx < 3:

@@ -1,18 +1,18 @@
 from unittest.mock import patch, mock_open
 from flamethrower.context.conv_manager import ConversationManager
 
-def test_conv_manager_init():
+def test_conv_manager_init() -> None:
     with patch('builtins.open', mock_open(read_data='[]')) as mocked_file:
         conv_manager = ConversationManager()
         mocked_file.assert_called_once_with(conv_manager.conv_path, 'w')
         mocked_file().write.assert_called_once_with('[]')
 
-def test_get_conv_empty():
+def test_conv_manager_get_conv_empty() -> None:
     with patch('builtins.open', mock_open(read_data='[]')):
         conv_manager = ConversationManager()
         assert conv_manager.get_conv() == []
 
-def test_save():
+def test_conv_manager_save() -> None:
     with patch('builtins.open', mock_open(read_data='[]')) as mocked_file:
         conv_manager = ConversationManager()
         save_data = [{'role': 'user', 'content': 'Save 💾', 'name': 'Tester'}]
@@ -24,7 +24,7 @@ def test_save():
             handle.seek.assert_called_once_with(0)
             handle.truncate.assert_called_once_with()
 
-def test_pretty_print():
+def test_conv_manager_pretty_print() -> None:
     pretty_path = 'path/to/pretty_conversation_file'
     prettified = '✨ pretty conversation ✨'
 
@@ -38,7 +38,7 @@ def test_pretty_print():
             mocked_file.assert_called_with(pretty_path, 'w')
             mocked_file().write.assert_called_with(prettified)
 
-def test_append_conv():
+def test_conv_manager_append_conv() -> None:
     with patch('builtins.open', mock_open(read_data='[]')) as mocked_file:
         conv_manager = ConversationManager()
 

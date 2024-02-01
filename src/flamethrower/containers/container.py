@@ -7,19 +7,20 @@ from flamethrower.agents.operator import Operator
 from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.shell.printer import Printer
+from flamethrower.utils.types import tty_settings
 
 class Container(containers.DeclarativeContainer):
     conv_manager = providers.Singleton(ConversationManager)
     
     token_counter = providers.Singleton(TokenCounter)
 
-    tty_settings = providers.Dependency()
+    tty_settings = providers.Dependency(instance_of=list)
     shell_manager = providers.Singleton(
         ShellManager,
         old_settings=tty_settings
     )
     
-    leader_fd = providers.Dependency()
+    leader_fd = providers.Dependency(instance_of=int)
     printer = providers.Singleton(
         Printer,
         leader_fd=leader_fd,
@@ -36,7 +37,7 @@ class Container(containers.DeclarativeContainer):
         printer=printer
     )
 
-    base_dir = providers.Dependency()
+    base_dir = providers.Dependency(instance_of=str)
     operator = providers.Singleton(
         Operator,
         base_dir=base_dir,

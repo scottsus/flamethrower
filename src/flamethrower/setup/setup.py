@@ -3,6 +3,7 @@ import shutil
 from git import Repo
 from importlib import resources
 from flamethrower.config.constants import *
+from typing import Any, Dict
 
 original_welcome_screen = """
     ______                     __  __
@@ -22,7 +23,7 @@ colored_welcome_screen = (
     "\033[34m/_/ /_/\\__,_/_/ /_/ /_/\\___/\\__/_/ /_/_/   \\____/|__/|__/\\___/_/\033[0m"
 )
 
-def setup_zsh_env() -> dict:
+def setup_zsh_env() -> Dict[str, str]:
     is_first_setup = False
 
     if not os.path.exists(FLAMETHROWER_DIR):
@@ -70,7 +71,7 @@ def setup_zsh_env() -> dict:
             '\n  `export OPENAI_API_KEY=sk-xxxx`\n\n'
             'You can find your OpenAI Api Keys at https://platform.openai.com/api-keys'
         )
-        return None
+        return {}
 
     if is_first_setup:
         print(colored_welcome_screen)

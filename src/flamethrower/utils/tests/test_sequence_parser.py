@@ -6,32 +6,32 @@ from flamethrower.utils.sequence_parser import (
     get_cleaned_data,
 )
 
-def test_is_capitalized():
+def test_sequence_parser_is_capitalized() -> None:
     assert is_capitalized('Hello')
     assert not is_capitalized('hello')
     assert not is_capitalized('')
     assert not is_capitalized('123')
     assert not is_capitalized(' hello')
 
-def test_is_single_key():
+def test_sequence_parser_is_single_key() -> None:
     assert is_single_key(b'a')
     assert not is_single_key(b'')
     assert not is_single_key(b'ab')
 
-def test_is_prompt_newline():
+def test_sequence_parser_is_prompt_newline() -> None:
     assert is_prompt_newline(b'\r\x1b')
     assert not is_prompt_newline(b'\n')
     assert not is_prompt_newline(b'\r\n')
     assert not is_prompt_newline(b'')
 
-def test_is_ansi_escape_sequence():
+def test_sequence_parser_is_ansi_escape_sequence() -> None:
     assert is_ansi_escape_sequence(b'\x1b[31m')
     assert not is_ansi_escape_sequence(b'normal text')
     assert is_ansi_escape_sequence(b'\x1b[K')
     assert not is_ansi_escape_sequence(b'')
     assert is_ansi_escape_sequence(b'\x08\x1b[31m')
 
-def test_get_cleaned_data():
+def test_sequence_parser_get_cleaned_data() -> None:
     assert get_cleaned_data(b'\x1b[31m') == b''
     assert get_cleaned_data(b'hello') == b'hello'
     assert get_cleaned_data(b'a') == b''

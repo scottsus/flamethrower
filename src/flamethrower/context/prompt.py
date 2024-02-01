@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 from pydantic import BaseModel
+
 import flamethrower.config.constants as config
 from flamethrower.agents.file_chooser import FileChooser
 from flamethrower.context.conv_manager import ConversationManager
@@ -10,21 +11,40 @@ from flamethrower.shell.printer import Printer
 from flamethrower.utils.pretty import pretty_print
 from flamethrower.utils.colors import *
 
+from typing import Dict, List
+
 class PromptGenerator(BaseModel):
-    greeting: str = ''
-    description: str = ''
-    dir_structure: str = ''
-    summarizer: Summarizer = None
     conv_manager: ConversationManager
     token_counter: TokenCounter
     printer: Printer
 
-    def __init__(self, **data):
-        super().__init__(**data)
-        self.greeting = generate_greeting()
-        self.summarizer = Summarizer()
-        self.description = self.summarizer.summarize_readme()
-        self.dir_structure = get_dir_structure()
+    def __init__(
+        self,
+        conv_manager: ConversationManager,
+        token_counter: TokenCounter,
+        printer: Printer,
+    ) -> None:
+        super().__init__(
+            conv_manager=conv_manager, 
+            token_counter=token_counter, 
+            printer=printer
+        )
+        self._greeting: str = generate_greeting()
+        self._description: str = Summarizer().summarize_readme()
+        self._dir_structure: str = get_dir_structure()
+
+    
+    @property
+    def greeting(self) -> str:
+        return self._greeting
+    
+    @property
+    def description(self) -> str:
+        return self._description
+    
+    @property
+    def dir_structure(self) -> str:
+        return self._dir_structure
     
     def construct_greeting(self) -> str:
         green = STDIN_GREEN.decode('utf-8')
@@ -40,7 +60,7 @@ class PromptGenerator(BaseModel):
             f'- To try it out, type {orange}"Refactor /path/to/file"{default} in the terminal.\n\n'
         )
 
-    def construct_messages(self, query: str = '') -> list:
+    def construct_messages(self, query: str = '') -> List[Dict[str, str]]:
         """
         Think of this as the `headers` for the LLM that will be attached to every new query.
         """

@@ -8,6 +8,7 @@ from flamethrower.utils import (
     zsh_history as zh,
     pretty as pr
 )
+from typing import Any, Dict, List
 
 class ConversationManager(BaseModel):
     """
@@ -15,17 +16,21 @@ class ConversationManager(BaseModel):
     """
     conv_path: str = config.get_conversation_path()
     
-    def __init__(self, **data):
-        super().__init__(**data)
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
         with open(self.conv_path, 'w') as f:
             json.dump([], f)
     
-    def get_conv(self) -> list:
+    def get_conv(self) -> List[Dict[str, str]]:
         try:
             with open(self.conv_path, 'r') as f:
-                return json.load(f)
+                res = json.load(f)
+                if not isinstance(res, list):
+                    raise Exception('ConversationManager.get_conv: conv.json is not a list')
         except Exception:
             return []
+        
+        return []
 
     def append_conv(self, role: str, content: str, name: str = '') -> None:
         new_message = { 'role': role, 'content': content }
@@ -55,7 +60,7 @@ class ConversationManager(BaseModel):
             with open(buffer_file, 'ab') as f:
                 f.write(sp.get_cleaned_data(data))
         
-        def read_buffer():
+        def read_buffer() -> bytes:
             with open(buffer_file, 'rb') as f:
                 return f.read()
         
@@ -86,7 +91,7 @@ class ConversationManager(BaseModel):
         else:
             write_buffer(data)
 
-    def save(self, conv: list, f: TextIOWrapper) -> None:
+    def save(self, conv: List[Dict[str, str]], f: TextIOWrapper) -> None:
         f.seek(0)
         json.dump(conv, f, indent=4)
         f.truncate()

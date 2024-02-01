@@ -5,6 +5,7 @@ import flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
 from flamethrower.models.models import OPENAI_GPT_3_TURBO
 from flamethrower.models.openai_client import OpenAIClient
+from typing import Any
 
 json_schema = {
     'type': 'object',
@@ -45,11 +46,14 @@ It is crucial that you return a JSON object with the following schema:
 
 class FileWriter(BaseModel):
     base_dir: str
-    llm: LLM = None
 
-    def __init__(self, **data):
-        super().__init__(**data)
-        self.llm = OpenAIClient(system_message=system_message, model=OPENAI_GPT_3_TURBO)
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self._llm: LLM = OpenAIClient(system_message=system_message, model=OPENAI_GPT_3_TURBO)
+    
+    @property
+    def llm(self) -> LLM:
+        return self._llm
     
     def write_code(self, target_path: str, assistant_implementation: str) -> None:
         old_contents = ''
@@ -79,14 +83,19 @@ class FileWriter(BaseModel):
                 json_schema=json_schema,
                 loading_message=f'✍️  Writing the changes to {strict_target_path}...'
             )
-            if decision is None:
-                raise Exception('FileWriter unable to write code. You may need to implement suggestions yourself.')
+            
+            if not decision:
+                raise Exception('file_writer.write_code: decision is empty')
+            
+            if not isinstance(decision, dict):
+                raise Exception(f'file_writer.write_code: expected a dict, got {type(decision)}')
             
             new_contents = ''
-            if not decision['needs_editing']:
+            if not decision.get('needs_editing'):
                 new_contents = self.clean_backticks(assistant_implementation)
             else:
-                new_contents = self.clean_backticks(decision['edited_code'])
+                edited_code: str = decision.get('edited_code') or ''
+                new_contents = self.clean_backticks(edited_code)
             
             with open(complete_target_path, 'w') as f:
                 f.write(new_contents)
@@ -106,6 +115,9 @@ class FileWriter(BaseModel):
     def clean_backticks(self, text: str) -> str:
         try:
             pattern = r"```(?:\w+\n)?(.*?)```"
-            return re.search(pattern, text, re.DOTALL).group(1)
-        except AttributeError:
+            match = re.search(pattern, text, re.DOTALL)
+            if match:
+                return match.group(1)
+            return text
+        except Exception:
             return text

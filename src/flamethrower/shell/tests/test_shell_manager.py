@@ -1,7 +1,7 @@
 import sys
 import termios
 import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from flamethrower.shell.shell_manager import ShellManager
 
 @pytest.fixture
@@ -11,13 +11,13 @@ def mock_shell_manager() -> ShellManager:
         in_cooked_mode=False,
     )
 
-def test_shell_manager_init(mock_shell_manager: ShellManager):
+def test_shell_manager_init(mock_shell_manager: ShellManager) -> None:
     sm = mock_shell_manager
 
     assert sm.old_settings == []
     assert sm.in_cooked_mode == False
 
-def test_shell_manager_cooked_mode(mock_shell_manager: ShellManager):
+def test_shell_manager_cooked_mode(mock_shell_manager: ShellManager) -> None:
     sm = mock_shell_manager
     sm.in_cooked_mode = False
 

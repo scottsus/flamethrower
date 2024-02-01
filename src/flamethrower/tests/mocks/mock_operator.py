@@ -1,19 +1,14 @@
-import pytest
 from unittest.mock import MagicMock
 from flamethrower.agents.operator import Operator
-from flamethrower.context.conv_manager import ConversationManager
-from flamethrower.context.prompt import PromptGenerator
-from flamethrower.shell.printer import Printer
 
-@pytest.fixture
-def mock_operator(
-    mock_conv_manager: ConversationManager,
-    mock_prompt_generator: PromptGenerator,
-    mock_printer: Printer
-) -> Operator:
+from flamethrower.tests.mocks.mock_conv_manager import mock_conv_manager
+from flamethrower.tests.mocks.mock_prompt_generator import mock_prompt_generator
+from flamethrower.tests.mocks.mock_printer import mock_printer
+
+def mock_operator() -> Operator:
     return MagicMock(
         Operator,
-        conv_manager=mock_conv_manager,
-        prompt_generator=mock_prompt_generator,
-        printer=mock_printer
+        conv_manager=mock_conv_manager(),
+        prompt_generator=mock_prompt_generator(),
+        printer=mock_printer()
     )

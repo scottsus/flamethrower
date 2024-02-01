@@ -5,7 +5,7 @@ from flamethrower.models.models import (
     OPENAI_GPT_3_TURBO,
 )
 
-def test_token_counter_init():
+def test_token_counter_init() -> None:
     token_counter = TokenCounter()
 
     assert token_counter.input_tokens is not None
@@ -18,26 +18,26 @@ def test_token_counter_init():
     for model in token_counter.output_tokens:
         assert token_counter.output_tokens[model] == 0
 
-def test_add_input_tokens():
+def test_token_counter_add_input_tokens() -> None:
     token_counter = TokenCounter()
 
     token_counter.add_input_tokens(42_069, OPENAI_GPT_4_TURBO)
     assert token_counter.input_tokens[OPENAI_GPT_4_TURBO] == 42_069
 
-def test_add_output_tokens():
+def test_token_counter_add_output_tokens() -> None:
     token_counter = TokenCounter()
 
     token_counter.add_output_tokens(42_069, OPENAI_GPT_4_TURBO)
     assert token_counter.output_tokens[OPENAI_GPT_4_TURBO] == 42_069
 
-def test_add_streaming_input_tokens():
+def test_token_counter_add_streaming_input_tokens() -> None:
     token_counter = TokenCounter()
 
     with mock.patch('flamethrower.utils.token_counter.TokenCounter.calc_token_usage', return_value=42_069):
         token_counter.add_streaming_input_tokens('Hello World', OPENAI_GPT_4_TURBO)
         assert token_counter.input_tokens[OPENAI_GPT_4_TURBO] == 42_069
 
-def test_add_streaming_output_tokens():
+def test_token_counter_add_streaming_output_tokens() -> None:
     token_counter = TokenCounter()
 
     with mock.patch('flamethrower.utils.token_counter.TokenCounter.calc_token_usage', return_value=42_069):
@@ -45,7 +45,7 @@ def test_add_streaming_output_tokens():
         assert token_counter.output_tokens[OPENAI_GPT_4_TURBO] == 42_069
 
 # TODO: per model
-def test_return_cost_analysis():
+def test_token_counter_return_cost_analysis() -> None:
     token_counter = TokenCounter()
 
     token_counter.add_input_tokens(10, OPENAI_GPT_4_TURBO)

@@ -2,37 +2,28 @@ import os
 import pytest
 from unittest import mock
 from unittest.mock import patch, mock_open
-
 import flamethrower.config.constants as config
 from flamethrower.context.prompt import PromptGenerator
-from flamethrower.agents.summarizer import Summarizer
-
 from flamethrower.tests.mocks.mock_conv_manager import mock_conv_manager
-from flamethrower.tests.mocks.mock_shell_manager import mock_shell_manager
 from flamethrower.tests.mocks.mock_token_counter import mock_token_counter
 from flamethrower.tests.mocks.mock_printer import mock_printer
 
 @pytest.fixture
-def mock_prompt_generator(
-    mock_conv_manager: mock_conv_manager,
-    mock_token_counter: mock_token_counter,
-    mock_printer: mock_printer
-) -> PromptGenerator:
+def mock_prompt_generator() -> PromptGenerator:
     return PromptGenerator(
-        conv_manager=mock_conv_manager,
-        token_counter=mock_token_counter,
-        printer=mock_printer
+        conv_manager=mock_conv_manager(),
+        token_counter=mock_token_counter(),
+        printer=mock_printer()
     )
 
-def test_prompt_generator_init(mock_prompt_generator: PromptGenerator):
+def test_prompt_generator_init(mock_prompt_generator: PromptGenerator) -> None:
     pg = mock_prompt_generator
     
     assert pg.greeting.startswith('Good') and pg.greeting.endswith('👋')
-    assert isinstance(pg.summarizer, Summarizer)
     assert pg.description != ''
     assert pg.dir_structure != ''
 
-def test_construct_greeting(mock_prompt_generator: PromptGenerator):
+def test_prompt_generator_construct_greeting(mock_prompt_generator: PromptGenerator) -> None:
     pg = mock_prompt_generator
     
     greeting = pg.construct_greeting()
@@ -41,7 +32,7 @@ def test_construct_greeting(mock_prompt_generator: PromptGenerator):
     assert 'Good' in greeting and '👋' in greeting
     assert pg.description in greeting
 
-def test_construct_messages(mock_prompt_generator: PromptGenerator):
+def test_prompt_generator_construct_messages(mock_prompt_generator: PromptGenerator) -> None:
     pg = mock_prompt_generator
     query = '🧪 Testing...'
     target_files = ['file_1', 'file_2', 'file_3']
@@ -70,7 +61,7 @@ def test_construct_messages(mock_prompt_generator: PromptGenerator):
     ]
     
     with patch('flamethrower.agents.file_chooser.FileChooser.infer_target_file_paths', return_value=target_files) as mock_infer_target_files, \
-        patch('builtins.open', mock_open(read_data=target_file_contents)) as mock_open_file, \
+        patch('builtins.open', mock_open(read_data=target_file_contents)) as mock_file, \
         patch('json.loads', return_value=conversation_history) as mock_loads:
         
         messages = pg.construct_messages(query)
@@ -89,7 +80,7 @@ def test_construct_messages(mock_prompt_generator: PromptGenerator):
         mock_infer_target_files.assert_called_once_with(pg.description, pg.dir_structure, query)
         pg.printer.print_regular.assert_called_once_with(f'🔭 Focusing on the following files: {target_files}\n')
 
-        mock_open_file.assert_has_calls([
+        mock_file.assert_has_calls([
             mock.call(os.path.join(os.getcwd(), target_files[0]), 'r'),
             mock.call().__enter__(),
             mock.call().read(),

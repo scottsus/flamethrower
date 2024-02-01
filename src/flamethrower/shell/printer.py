@@ -10,6 +10,7 @@ from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.models.models import OPENAI_GPT_4_TURBO
 from flamethrower.utils.special_keys import *
 from flamethrower.utils.colors import *
+from typing import Any, Dict, List, Union, Iterator
 
 class Printer(BaseModel):
     leader_fd: int
@@ -22,12 +23,7 @@ class Printer(BaseModel):
         if self.leader_fd:
             os.write(self.leader_fd, data)
 
-    """
-    The following data can be of type bytes or str
-    But I don't want to use the | operator to be Python 3.08 compatible
-    """
-
-    def print_stdout(self, data: bytes) -> None:
+    def print_stdout(self, data: Union[bytes, str]) -> None:
         if self.stdout_fd:
             if isinstance(data, str):
                 with self.shell_manager.cooked_mode():
@@ -38,7 +34,7 @@ class Printer(BaseModel):
     def print_err(self, err: str) -> None:
         self.print_red(f'\n{err}\n', reset=True)
 
-    def print_color(self, data: bytes, color: bytes, reset: bool = False) -> None:
+    def print_color(self, data: Union[bytes, str], color: bytes, reset: bool = False) -> None:
         os.write(self.stdout_fd, color)
         self.print_stdout(data)
         
@@ -46,47 +42,47 @@ class Printer(BaseModel):
             os.write(self.stdout_fd, STDIN_DEFAULT)
             self.set_cursor_to_start(with_newline=True)
 
-    def print_default(self, data: bytes) -> None:
+    def print_default(self, data: Union[bytes, str]) -> None:
         self.print_color(data, STDIN_DEFAULT)
     
-    def print_red(self, data: bytes, reset: bool = False) -> None:
+    def print_red(self, data: Union[bytes, str], reset: bool = False) -> None:
         self.print_color(data, STDIN_RED, reset=reset)
     
-    def print_yellow(self, data: bytes, reset: bool = False) -> None:
+    def print_yellow(self, data: Union[bytes, str], reset: bool = False) -> None:
         self.print_color(data, STDIN_YELLOW, reset=reset)
     
-    def print_green(self, data: bytes, reset: bool = False) -> None:
+    def print_green(self, data: Union[bytes, str], reset: bool = False) -> None:
         self.print_color(data, STDIN_GREEN, reset=reset)
     
-    def print_blue(self, data: bytes, reset: bool = False) -> None:
+    def print_blue(self, data: Union[bytes, str], reset: bool = False) -> None:
         self.print_color(data, STDIN_BLUE, reset=reset)
     
-    def print_cyan(self, data: bytes, reset: bool = False) -> None:
+    def print_cyan(self, data: Union[bytes, str], reset: bool = False) -> None:
         self.print_color(data, STDIN_CYAN, reset=reset)
     
-    def print_gray(self, data: bytes, reset: bool = False) -> None:
+    def print_gray(self, data: Union[bytes, str], reset: bool = False) -> None:
         self.print_color(data, STDIN_GRAY, reset=reset)
 
-    def print_white(self, data: bytes, reset: bool = False) -> None:
+    def print_white(self, data: Union[bytes, str], reset: bool = False) -> None:
         self.print_color(data, STDIN_WHITE, reset=reset)
 
-    def print_light_green(self, data: bytes, reset: bool = False) -> None:
+    def print_light_green(self, data: Union[bytes, str], reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_GREEN, reset=reset)
     
-    def print_light_blue(self, data: bytes, reset: bool = False) -> None:
+    def print_light_blue(self, data: Union[bytes, str], reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_BLUE, reset=reset)
 
-    def print_light_cyan(self, data: bytes, reset: bool = False) -> None:
+    def print_light_cyan(self, data: Union[bytes, str], reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_CYAN, reset=reset)
     
-    def print_light_magenta(self, data: bytes, reset: bool = False) -> None:
+    def print_light_magenta(self, data: Union[bytes, str], reset: bool = False) -> None:
         self.print_color(data, STDIN_LIGHT_MAGENTA, reset=reset)
     
-    def print_orange(self, data: bytes, reset: bool = False) -> None:
+    def print_orange(self, data: Union[bytes, str], reset: bool = False) -> None:
         self.print_color(data, STDIN_ORANGE, reset=reset)
     
 
-    def print_llm_response(self, stream) -> None:
+    def print_llm_response(self, stream: Iterator[str]) -> None:
         """
         1. Swap out of pty back into main shell
         2. Print the code using Python Rich
@@ -191,7 +187,7 @@ class Printer(BaseModel):
             console = Console()
             console.print(syntax)
     
-    def print_actions(self, actions: list) -> None:
+    def print_actions(self, actions: List[Dict[Any, Any]]) -> None:
         with self.shell_manager.cooked_mode():
             self.set_cursor_to_start()
             self.print_cyan('Next actions:\n')
@@ -213,7 +209,7 @@ class Printer(BaseModel):
                 else:
                     self.print_err('Unknown action')
     
-    def print_diffs(self, diffs: list) -> None:
+    def print_diffs(self, diffs: List[str]) -> None:
         with self.shell_manager.cooked_mode():
             self.set_cursor_to_start(with_newline=True)
             for line in diffs:
