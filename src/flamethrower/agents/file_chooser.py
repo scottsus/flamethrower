@@ -1,9 +1,8 @@
 from pydantic import BaseModel
 import  flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
-from flamethrower.models.openai_client import OpenAIClient
 from flamethrower.exceptions.exceptions import *
-from typing import Any, Dict, List
+from typing import Any, List
 
 json_schema = {
     'type': 'object',
@@ -36,7 +35,7 @@ class FileChooser(BaseModel):
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self._llm: LLM = OpenAIClient(system_message=system_message)
+        self._llm: LLM = LLM(system_message=system_message)
     
     @property
     def llm(self) -> LLM:

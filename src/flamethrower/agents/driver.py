@@ -2,7 +2,6 @@ import os
 from pydantic import BaseModel
 from typing import Any, Dict, List, Optional, Iterator
 from flamethrower.models.llm import LLM
-from flamethrower.models.openai_client import OpenAIClient
 
 system_message = """
 Your name is Hans ze Flammenwerfer.
@@ -34,7 +33,7 @@ class Driver(BaseModel):
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self._llm: LLM = OpenAIClient(system_message=system_message.format(os.getcwd(), self.base_dir))
+        self._llm: LLM = LLM(system_message=system_message.format(os.getcwd(), self.base_dir))
     
     @property
     def llm(self) -> LLM:

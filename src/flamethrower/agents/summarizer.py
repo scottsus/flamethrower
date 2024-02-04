@@ -3,7 +3,6 @@ from pydantic import BaseModel
 import flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
 from flamethrower.models.models import OPENAI_GPT_3_TURBO
-from flamethrower.models.openai_client import OpenAIClient
 from typing import Any
 
 system_message = """
@@ -24,7 +23,7 @@ class Summarizer(BaseModel):
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self._llm: LLM = OpenAIClient(system_message=system_message, model=OPENAI_GPT_3_TURBO)
+        self._llm: LLM = LLM(system_message=system_message, model=OPENAI_GPT_3_TURBO)
     
     @property
     def llm(self) -> LLM:

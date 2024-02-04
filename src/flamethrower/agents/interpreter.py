@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 import flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
-from flamethrower.models.openai_client import OpenAIClient
 from typing import Any, Dict, List
 
 json_schema = {
@@ -76,7 +75,7 @@ class Interpreter(BaseModel):
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self._llm: LLM = OpenAIClient(system_message=system_message)
+        self._llm: LLM = LLM(system_message=system_message)
     
     @property
     def llm(self) -> LLM:

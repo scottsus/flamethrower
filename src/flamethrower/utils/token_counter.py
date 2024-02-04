@@ -50,12 +50,12 @@ class TokenCounter(BaseModel):
     def add_output_tokens(self, tokens: int, model: str) -> None:
         self.output_tokens[model] += tokens
     
-    def add_streaming_input_tokens(self, complete_input_text: str, model: str) -> None:
+    def add_streaming_input_tokens(self, complete_input_text: str, model: str = OPENAI_GPT_4_TURBO) -> None:
         num_input_tokens = self.calc_token_usage(complete_input_text, model)
 
         self.add_input_tokens(num_input_tokens, model)
     
-    def add_streaming_output_tokens(self, complete_output_text: str, model: str) -> None:
+    def add_streaming_output_tokens(self, complete_output_text: str, model: str = OPENAI_GPT_4_TURBO) -> None:
         num_output_tokens = self.calc_token_usage(complete_output_text, model)
 
         self.add_output_tokens(num_output_tokens, model)

@@ -164,7 +164,6 @@ class Printer(BaseModel):
                         complete_content += f'\n```{code_content}\n```\n'
                         code_content = ''
             except AttributeError:
-                # that means EOF was reached
                 pass
             except KeyboardInterrupt:
                 raise
