@@ -2,7 +2,6 @@ import itertools
 from unittest import mock
 from unittest.mock import patch
 from flamethrower.utils.loader import Loader
-from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.utils.special_keys import CLEAR_FROM_START, CLEAR_TO_END, CURSOR_TO_START
 from flamethrower.utils.colors import STDIN_YELLOW, STDIN_DEFAULT
 from flamethrower.test_utils.mocks.mock_shell_manager import mock_shell_manager
@@ -26,7 +25,6 @@ def test_loader_init() -> None:
         assert loader.with_newline == False
         assert loader.will_report_timing == True
         assert loader.requires_cooked_mode == True
-        assert loader.shell_manager == None
         assert loader.done == False
         assert loader.spinner == pattern_cycle
         assert loader.start_time == 0.0

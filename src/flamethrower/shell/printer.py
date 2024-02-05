@@ -187,6 +187,8 @@ class Printer(BaseModel):
             console.print(syntax)
     
     def print_actions(self, actions: List[Dict[Any, Any]]) -> None:
+        # actions is confirmed to have at least one action
+        
         with self.shell_manager.cooked_mode():
             self.set_cursor_to_start()
             self.print_cyan('Next actions:\n')
@@ -206,7 +208,19 @@ class Printer(BaseModel):
                 elif action == 'completed':
                     self.print_cyan('  - Done')
                 else:
-                    self.print_err('Unknown action')
+                    self.print_err('Printer.print_actions: Unknown action')
+            self.print_default('')
+    
+    def print_files(self, files: List[str]) -> None:
+        if not files:
+            return
+        
+        with self.shell_manager.cooked_mode():
+            self.set_cursor_to_start()
+            self.print_cyan('Focusing on the following files 🔭:\n')
+            for file in files:
+                self.print_cyan(f'  - {file}\n')
+            self.print_default('')
     
     def print_diffs(self, diffs: List[str]) -> None:
         with self.shell_manager.cooked_mode():

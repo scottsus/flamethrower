@@ -4,21 +4,27 @@ from flamethrower.shell.command_handler import CommandHandler
 from flamethrower.context.conv_manager import ConversationManager
 from flamethrower.context.prompt import PromptGenerator
 from flamethrower.agents.operator import Operator
-from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.utils.token_counter import TokenCounter
+from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.shell.printer import Printer
+from flamethrower.test_utils.mocks.mock_token_counter import mock_token_counter as mock_tc
 
 """
 Don't use pytest.fixtures as mock_open only works for 1 level of abstraction?
 Need to look more into this.
 """
 def mock_container() -> Container:
-    container = Container()
-    container.tty_settings.override([])
-    container.leader_fd.override(1)
-    container.base_dir.override('/user/tester')
-    
-    return container
+    with patch('flamethrower.containers.container.lm_container') as mock_lm_container:
+        mock_token_counter = mock_tc()
+        mock_lm_container.token_counter.return_value = mock_token_counter
+
+        container = Container()
+        container.token_counter.override(mock_token_counter)
+        container.tty_settings.override([])
+        container.leader_fd.override(1)
+        container.base_dir.override('/user/tester')
+        
+        return container
 
 def test_container_init() -> None:
     with patch('builtins.open', mock_open()):
@@ -42,11 +48,10 @@ def test_container_wiring() -> None:
         printer = container.printer()
         assert printer.conv_manager is container.conv_manager()
         assert printer.shell_manager is container.shell_manager()
-        assert printer.token_counter is container.token_counter()
+        assert isinstance(printer.token_counter, TokenCounter) # best effort
 
         prompt_generator = container.prompt_generator()
         assert prompt_generator.conv_manager is container.conv_manager()
-        assert prompt_generator.token_counter is container.token_counter()
         assert prompt_generator.printer is container.printer()
 
         operator = container.operator()
@@ -57,6 +62,5 @@ def test_container_wiring() -> None:
 
         command_handler = container.command_handler()
         assert command_handler.conv_manager is container.conv_manager()
-        assert command_handler.prompt_generator is container.prompt_generator()
         assert command_handler.operator is container.operator()
         assert command_handler.printer is container.printer()

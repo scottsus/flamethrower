@@ -1,6 +1,4 @@
-import os
 from pydantic import BaseModel
-import flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
 from flamethrower.models.models import OPENAI_GPT_3_TURBO
 from typing import Any
@@ -49,36 +47,20 @@ class Summarizer(BaseModel):
         except Exception as e:
             return f'Error: {str(e)}'
     
-    def summarize_readme(self) -> str:
-        summary_path = config.get_workspace_summary_path()
-        if os.path.exists(summary_path):
-            with open(summary_path, 'r') as summary_file:
-                return summary_file.read()
-        
-        summary = ''
+    def summarize_readme(self, readme_file_contents: str) -> str:
         try:
-            with open(os.path.join(os.getcwd(), 'README.md'), 'r') as readme_file:
-                file_contents = readme_file.read()
-                query = (
-                    'This is the repository main readme file.\n'
-                    f'\n```\n{file_contents}\n```\n'
-                    'Read it carefully and summarize what the project is about, and what technology stack is being used.\n'
-                    'Start the summary by saying "This project is about..."\n'
-                )
+            query = (
+                'This is the repository main readme file.\n'
+                f'\n```\n{readme_file_contents}\n```\n'
+                'Read it carefully and summarize what the project is about, and what technology stack is being used.\n'
+                'Start the summary by saying "This project is about..."\n'
+            )
 
-                summary = self.llm.new_chat_request(
-                    messages=[{
-                        'role': 'user',
-                        'content': query,
-                    }],
-                    loading_message=f'📚 Learning project...',
-                )
-        except FileNotFoundError:
-            summary = 'This project does not have a README. Infer from other files the purpose of this project.'
+            return self.llm.new_chat_request(
+                messages=[{
+                    'role': 'user',
+                    'content': query,
+                }]
+            )
         except Exception:
-            summary = 'Unable to summarize README.'
-        finally:
-            with open(summary_path, 'w') as summary_file:
-                    summary_file.write(summary)
-                
-            return summary
+            raise

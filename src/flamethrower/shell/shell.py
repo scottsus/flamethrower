@@ -6,8 +6,9 @@ import termios
 from pydantic import BaseModel, ConfigDict
 from subprocess import Popen
 from select import select
+
 import flamethrower.setup.setup as setup
-from flamethrower.context.dir_walker import setup_dir_summary
+from flamethrower.setup.dir_walker import setup_dir_summary
 from typing import Optional
 
 class Shell(BaseModel):
@@ -31,6 +32,11 @@ class Shell(BaseModel):
         if not env:
             return
         
+        err = setup_dir_summary(target_dir=self.base_dir)
+        if err is not None:
+            print(f'Error while setting up directory summary: {str(err)}')
+            return
+                
         self.leader_fd, self.follower_fd = pty.openpty()
         self.child_process = Popen(
             ['zsh'],
@@ -44,9 +50,15 @@ class Shell(BaseModel):
         old_settings = termios.tcgetattr(sys.stdin)
         tty.setraw(sys.stdin)
 
-        # Container dependencies
+        # LM Container
+        from flamethrower.containers.lm_container import lm_container
+        
+        token_counter = lm_container.token_counter()
+
+        # Container
         from flamethrower.containers.container import container
 
+        container.token_counter.override(token_counter)
         container.tty_settings.override(old_settings)
         container.leader_fd.override(self.leader_fd)
         container.base_dir.override(self.base_dir)
@@ -56,17 +68,11 @@ class Shell(BaseModel):
         command_handler = container.command_handler()
         conv_manager = container.conv_manager()
         prompt_generator = container.prompt_generator()
-        token_counter = container.token_counter()
-        shell_manager = container.shell_manager()
+        
         printer = container.printer()
 
         error = None
         try:
-            setup_dir_summary(
-                base_dir=self.base_dir,
-                printer=printer,
-                shell_manager=shell_manager
-            )
             printer.print_regular(prompt_generator.construct_greeting())
 
             while True:

@@ -1,22 +1,29 @@
 import os
-import subprocess
 import enum
 import time
+import json
+import subprocess
 import questionary
 from pydantic import BaseModel
 from openai import RateLimitError
 
 import flamethrower.config.constants as config
-from flamethrower.agents.driver import Driver
+from flamethrower.agents.drivers.driver_interface import Driver
+from flamethrower.agents.drivers.general_driver import GeneralDriver
+from flamethrower.agents.drivers.feature_driver import FeatureDriver
+from flamethrower.agents.drivers.debugging_driver import DebuggingDriver
+from flamethrower.agents.router import Router
+
 from flamethrower.agents.interpreter import Interpreter
 from flamethrower.context.conv_manager import ConversationManager
 from flamethrower.context.prompt import PromptGenerator
-from flamethrower.agents.file_writer import FileWriter
+from flamethrower.agents.util_agents.file_writer import FileWriter
+from flamethrower.utils.loader import Loader
 from flamethrower.shell.printer import Printer
 from flamethrower.exceptions.exceptions import *
 from flamethrower.exceptions.handlers import *
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 class Choice(enum.Enum):
     YES = 1
@@ -31,13 +38,34 @@ class Operator(BaseModel):
     
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self._driver: Driver = Driver(base_dir=self.base_dir)
+        self._general_driver: GeneralDriver = GeneralDriver()
+        self._feature_driver: FeatureDriver = FeatureDriver(
+            target_dir=self.base_dir,
+            prompt_generator=self.prompt_generator
+        )
+        self._debugging_driver: DebuggingDriver = DebuggingDriver(
+            target_dir=self.base_dir,
+            prompt_generator=self.prompt_generator
+        )
+        self._router: Router = Router()
         self._interpreter: Interpreter = Interpreter()
         self._file_writer: FileWriter = FileWriter(base_dir=self.base_dir)
     
     @property
-    def driver(self) -> Driver:
-        return self._driver
+    def general_driver(self) -> GeneralDriver:
+        return self._general_driver
+    
+    @property
+    def feature_driver(self) -> FeatureDriver:
+        return self._feature_driver
+    
+    @property
+    def debugging_driver(self) -> DebuggingDriver:
+        return self._debugging_driver
+    
+    @property
+    def router(self) -> Router:
+        return self._router
     
     @property
     def interpreter(self) -> Interpreter:
@@ -48,30 +76,41 @@ class Operator(BaseModel):
         return self._file_writer
     
     
-    def new_implementation_run(self, query: str, conv: List[Dict[str, str]]) -> None:
-        """
-        To complete a debugging run, we need:
-          1. An objective
-          2. A starting point
-          3. A series of steps to complete the objective
-        """
+    def new_implementation_run(self) -> None:
+        conv = self.get_latest_conv()
+        query = conv[-1]['content']
 
         try:
-            # Initial understanding of the problem and generation of solution
-            stream = self.driver.get_new_solution(conv)
-            if not stream:
-                raise Exception('Driver.get_new_solution: stream is empty')
-            self.printer.print_llm_response(stream)
-            
-            action = ''
-            is_first_time_asking_for_permission = True
-            
             for _ in range(self.max_retries):
-                last_driver_res = self.get_last_assistant_response()
-                decision = self.interpreter.make_decision_from(query, last_driver_res)
-                if decision is None:
-                    self.printer.print_err('Interpreter unable to make decision. Marking as complete.')
-                    return
+                """
+                Driver can be a:
+                  - feature builder
+                  - debugger
+                  - general assistant
+                  - done
+                """
+                with Loader(loading_message='🤖 Routing to best agent...').managed_loader():
+                    driver = self.get_driver(conv)
+                    if not driver: # Done
+                        self.printer.print_light_green('Glad to have been of service 🐕.', reset=True)
+                        return
+                
+                self.printer.print_cyan(f'Driver: {driver.__class__.__name__}', reset=True)
+
+                stream = driver.respond_to(conv)
+                if not stream:
+                    raise Exception('Driver.respond_to: stream is empty')
+                self.printer.print_llm_response(stream)
+                
+                action = ''
+                is_first_time_asking_for_permission = True
+
+                with Loader(loading_message='🤖 Determining next step...').managed_loader():
+                    last_driver_res = self.get_last_assistant_response()
+                    decision = self.interpreter.make_decision_from(query, last_driver_res)
+                    if decision is None:
+                        self.printer.print_err('Interpreter unable to make decision. Marking as complete.')
+                        return
                 
                 actions = decision['actions']
                 for i in range (len(actions)):
@@ -100,10 +139,6 @@ class Operator(BaseModel):
                         
                         elif action == 'need_context':
                             self.handle_action_need_context(obj)
-                        
-                        elif action == 'stuck':
-                            self.handle_action_stuck()
-                            return
 
                         elif action == 'cleanup':
                             self.handle_action_cleanup(obj, last_driver_res)
@@ -128,13 +163,6 @@ class Operator(BaseModel):
                     except Exception as e:
                         self.printer.print_err(f'Error: {str(e)}\nPlease try again.')
                         return
-
-                # Subsequent iterations of implementation
-                messages = self.prompt_generator.construct_messages(query)
-                stream = self.driver.get_next_step(messages)
-                if not stream:
-                    raise Exception('Driver.get_next_step: stream is empty')
-                self.printer.print_llm_response(stream)
             
             # Max retries exceeded
             self.printer.print_err('Too many iterations, need your help to debug.')
@@ -269,10 +297,6 @@ class Operator(BaseModel):
             self.printer.print_err(failed_message)
 
             raise
-
-    
-    def handle_action_stuck(self) -> None:
-        self.printer.print_err("I don't know how to solve this, need your help")
     
     def handle_action_cleanup(self, json: Dict[str, str], driver_res: str) -> None:
         try:
@@ -311,6 +335,32 @@ class Operator(BaseModel):
             return Choice.NO
         
         return Choice.YES
+
+    def get_driver(self, messages: List[Dict[str, str]]) -> Optional[Driver]:
+        driver_type = self.router.get_driver(messages)
+        
+        if driver_type == 'done':
+            return None
+        if driver_type == 'general':
+            return self.general_driver
+        if driver_type == 'debugging':
+            return self.debugging_driver
+        
+        # Default to feature driver
+        return self.feature_driver
+    
+    def get_latest_conv(self) -> List[Dict[str, str]]:
+        try:
+            with open(config.get_conversation_path(), 'r') as f:
+                json_list = json.loads(f.read())
+                if not isinstance(json_list, list):
+                    return []
+                
+                return json_list
+        except FileNotFoundError:
+            return []
+        except json.JSONDecodeError:
+            return []
 
     def get_last_assistant_response(self) -> str:
         with open(config.get_last_response_path(), 'r') as f:

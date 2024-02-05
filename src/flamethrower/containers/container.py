@@ -4,15 +4,16 @@ from flamethrower.shell.command_handler import CommandHandler
 from flamethrower.context.conv_manager import ConversationManager
 from flamethrower.context.prompt import PromptGenerator
 from flamethrower.agents.operator import Operator
-from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.utils.token_counter import TokenCounter
+from flamethrower.shell.shell_manager import ShellManager
 from flamethrower.shell.printer import Printer
+from flamethrower.containers.lm_container import lm_container
 
 class Container(containers.DeclarativeContainer):
+    token_counter = providers.Dependency(instance_of=TokenCounter)
+
     conv_manager = providers.Singleton(ConversationManager)
     
-    token_counter = providers.Singleton(TokenCounter)
-
     tty_settings = providers.Dependency(instance_of=list)
     shell_manager = providers.Singleton(
         ShellManager,
@@ -48,7 +49,6 @@ class Container(containers.DeclarativeContainer):
     command_handler = providers.Singleton(
         CommandHandler,
         conv_manager=conv_manager,
-        prompt_generator=prompt_generator,
         operator=operator,
         printer=printer,
     )

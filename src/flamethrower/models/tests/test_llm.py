@@ -16,7 +16,6 @@ def test_llm_init() -> None:
 
 def test_llm_new_chat_request() -> None:
     test_system_message = '🤖 You are OpenAI'
-    test_loading_message = '🧠 Loading...'
     test_messages = [
         { 'role': 'system', 'content': test_system_message },
         { 'role': 'user', 'content': 'Say "This is a 🔥 flamethrower test."' }
@@ -24,22 +23,15 @@ def test_llm_new_chat_request() -> None:
     (test_content, test_prompt_tokens, test_completion_tokens, test_model) = ('This is a 🔥 flamethrower test.', 42, 69, 'Test model')
     test_result = (test_content, test_prompt_tokens, test_completion_tokens, test_model)
 
-    with patch('flamethrower.models.llm.Loader') as mock_loader, \
-        patch('flamethrower.models.llm.OpenAIClient.new_basic_chat_request',
+    with patch('flamethrower.models.llm.OpenAIClient.new_basic_chat_request',
               return_value=test_result
         ) as mock_new_basic_chat_request, \
         patch('flamethrower.models.llm.TokenCounter.add_input_tokens') as mock_add_input_tokens, \
         patch('flamethrower.models.llm.TokenCounter.add_output_tokens') as mock_add_output_tokens:
             llm = LLM(system_message=test_system_message)
 
-            loader = mock_loader.return_value
-            loader.managed_loader.return_value.__enter__.return_value = None
-
-            result = llm.new_chat_request(test_messages, test_loading_message)
+            result = llm.new_chat_request(test_messages)
             assert result == test_content
-
-            mock_loader.assert_called_once_with(loading_message=test_loading_message)
-            loader.managed_loader.assert_called_once()
 
             mock_new_basic_chat_request.assert_called_once_with(test_messages)
 
@@ -102,7 +94,6 @@ def test_llm_new_async_chat_request() -> None:
 
 def test_llm_new_json_request() -> None:
     test_system_message = '🤖 You are OpenAI'
-    test_loading_message = '🧠 Loading...'
     test_messages = [
         { 'role': 'system', 'content': test_system_message },
         { 'role': 'user', 'content': 'Return a json of a random Person with a name and age.' }
@@ -110,22 +101,15 @@ def test_llm_new_json_request() -> None:
     (test_content, test_prompt_tokens, test_completion_tokens, test_model) = ('{ person: { name: "Ragnaros the Firelord", age: 9000 } }', 42, 69, 'Test model')
     test_result = (test_content, test_prompt_tokens, test_completion_tokens, test_model)
 
-    with patch('flamethrower.models.llm.Loader') as mock_loader, \
-        patch('flamethrower.models.llm.OpenAIClient.new_basic_chat_request',
+    with patch('flamethrower.models.llm.OpenAIClient.new_basic_chat_request',
               return_value=test_result
         ) as mock_new_basic_chat_request, \
         patch('flamethrower.models.llm.TokenCounter.add_input_tokens') as mock_add_input_tokens, \
         patch('flamethrower.models.llm.TokenCounter.add_output_tokens') as mock_add_output_tokens:
             llm = LLM(system_message=test_system_message)
 
-            loader = mock_loader.return_value
-            loader.managed_loader.return_value.__enter__.return_value = None
-
-            result = llm.new_chat_request(test_messages, test_loading_message)
+            result = llm.new_chat_request(test_messages)
             assert result == test_content
-
-            mock_loader.assert_called_once_with(loading_message=test_loading_message)
-            loader.managed_loader.assert_called_once()
 
             mock_new_basic_chat_request.assert_called_once_with(test_messages)
 

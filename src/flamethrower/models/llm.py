@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from flamethrower.models.client_interface import LLMClient
 from flamethrower.models.openai_client import OpenAIClient
 from flamethrower.models.models import OPENAI_GPT_4_TURBO
-from flamethrower.utils.loader import Loader
+from flamethrower.containers.lm_container import lm_container
 from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.exceptions.exceptions import *
 from flamethrower.utils.colors import *
@@ -17,9 +17,7 @@ class LLM(BaseModel):
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self._llm_client: LLMClient = OpenAIClient(system_message=self.system_message)
-
-        from flamethrower.containers.container import container
-        self._token_counter = container.token_counter()
+        self._token_counter = lm_container.token_counter()
 
     @property
     def llm_client(self) -> LLMClient:
@@ -29,19 +27,18 @@ class LLM(BaseModel):
     def token_counter(self) -> TokenCounter:
         return self._token_counter
     
-    def new_chat_request(self, messages: List[Dict[str, str]], loading_message: str) -> str:
-        with Loader(loading_message=loading_message).managed_loader():
-            try:
-                (content, prompt_tokens, completion_tokens, model) = self.llm_client.new_basic_chat_request(messages)
+    def new_chat_request(self, messages: List[Dict[str, str]]) -> str:
+        try:
+            (content, prompt_tokens, completion_tokens, model) = self.llm_client.new_basic_chat_request(messages)
 
-                self.token_counter.add_input_tokens(prompt_tokens, model)
-                self.token_counter.add_output_tokens(completion_tokens, model)
+            self.token_counter.add_input_tokens(prompt_tokens, model)
+            self.token_counter.add_output_tokens(completion_tokens, model)
 
-                return content
-            except KeyboardInterrupt:
-                raise
-            except Exception:
-                raise
+            return content
+        except KeyboardInterrupt:
+            raise
+        except Exception:
+            raise
 
     def new_streaming_chat_request(self, messages: List[Dict[str, str]]) -> Optional[Iterator[str]]:
         interrupted = None
@@ -82,44 +79,34 @@ class LLM(BaseModel):
         except Exception:
             raise
 
-    def new_json_request(
-        self,
-        query: str,
-        json_schema: Dict[str, Any],
-        loading_message: str,
-        completion_message: str = ''
-    ) -> Union[Dict[Any, Any], List[Dict[Any, Any]]]:
+    def new_json_request(self, query: str, json_schema: Dict[str, Any]) -> Union[Dict[Any, Any], List[Dict[Any, Any]]]:
         messages = [{
             'role': 'user',
             'content': query
-        }]
-        
-        with Loader(
-            loading_message=loading_message,
-            completion_message=completion_message
-        ).managed_loader():
-            max_retries = 3
-            for _ in range(max_retries):
-                try:
-                    (content, prompt_tokens, completion_tokens, model) = self.llm_client.new_json_request(messages)
-                    
-                    self.token_counter.add_input_tokens(prompt_tokens, model)
-                    self.token_counter.add_output_tokens(completion_tokens, model)
+        }] #TODO: make this list
 
-                    loaded_json_obj = json.loads(content)
-                    if not isinstance(loaded_json_obj, (dict, list)):
-                        raise Exception(f'llm.new_json_request: loaded_json_obj not type dict or list, got {type(loaded_json_obj)}')
-                    
-                    jsonschema.validate(loaded_json_obj, json_schema)
-                    
-                    return loaded_json_obj
-                except jsonschema.exceptions.ValidationError:
-                    # Just retry and hope for the best
-                    pass
-                except KeyboardInterrupt:
-                    raise
-                except Exception:
-                    raise
+        max_retries = 3
+        for _ in range(max_retries):
+            try:
+                (content, prompt_tokens, completion_tokens, model) = self.llm_client.new_json_request(messages)
+                
+                self.token_counter.add_input_tokens(prompt_tokens, model)
+                self.token_counter.add_output_tokens(completion_tokens, model)
+
+                loaded_json_obj = json.loads(content)
+                if not isinstance(loaded_json_obj, (dict, list)):
+                    raise Exception(f'LLM.new_json_request: loaded_json_obj not type dict or list, got {type(loaded_json_obj)}')
+                
+                jsonschema.validate(loaded_json_obj, json_schema)
+                
+                return loaded_json_obj
+            except jsonschema.exceptions.ValidationError:
+                # Just retry and hope for the best
+                pass
+            except KeyboardInterrupt:
+                raise
+            except Exception:
+                raise
         
         return []
     

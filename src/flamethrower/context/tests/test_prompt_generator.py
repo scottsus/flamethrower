@@ -1,7 +1,7 @@
 import os
 import pytest
 from unittest import mock
-from unittest.mock import patch, mock_open
+from unittest.mock import patch, mock_open, MagicMock
 import flamethrower.config.constants as config
 from flamethrower.context.prompt import PromptGenerator
 from flamethrower.test_utils.mocks.mock_conv_manager import mock_conv_manager
@@ -36,14 +36,13 @@ def test_prompt_generator_construct_greeting(mock_prompt_generator: PromptGenera
 def test_prompt_generator_construct_messages(mock_prompt_generator: PromptGenerator) -> None:
     pg = mock_prompt_generator
 
-    query = '🧪 Testing...'
     target_files = ['file_1', 'file_2', 'file_3']
     target_file_contents = """
     Content_1
     Content_2
     Content_3
     """
-    conversation_history = [
+    messages = [
         {
             'role': 'user',
             'content': 'User message 1'
@@ -61,15 +60,19 @@ def test_prompt_generator_construct_messages(mock_prompt_generator: PromptGenera
             'content': 'Assistant message 2'
         }
     ]
+    pretty = '✨ Pretty printed conversation'
     
-    with patch('flamethrower.agents.file_chooser.FileChooser.infer_target_file_paths', return_value=target_files) as mock_infer_target_files, \
-        patch('builtins.open', mock_open(read_data=target_file_contents)) as mock_file, \
-        patch('json.loads', return_value=conversation_history) as mock_loads:
+    with patch('flamethrower.context.prompt.FileChooser') as mock_file_chooser, \
+        patch('flamethrower.context.prompt.pretty_print', return_value=pretty) as mock_pretty_print, \
+        patch('builtins.open', mock_open(read_data=target_file_contents)) as mock_file:
+
+        file_chooser = mock_file_chooser.return_value
+        file_chooser.infer_target_file_paths = MagicMock(return_value=target_files)
         
-        messages = pg.construct_messages(query)
+        messages = pg.construct_messages(messages)
 
         assert isinstance(messages, list)
-        assert len(messages) == 5
+        assert len(messages) == 4
         
         about_message = messages[0]
         assert about_message['role'] == 'user'
@@ -79,8 +82,8 @@ def test_prompt_generator_construct_messages(mock_prompt_generator: PromptGenera
         assert dir_structure_message['role'] == 'user'
         assert dir_structure_message['content'].startswith('Here is the directory structure')
 
-        mock_infer_target_files.assert_called_once_with(pg.description, pg.dir_structure, query)
-        pg.printer.print_regular.assert_called_once_with(f'🔭 Focusing on the following files: {target_files}\n')
+        file_chooser.infer_target_file_paths.assert_called_once_with(pg.description, pg.dir_structure, mock_pretty_print.return_value)
+        pg.printer.print_files.assert_called_once_with(target_files)
 
         mock_file.assert_has_calls([
             mock.call(os.path.join(os.getcwd(), target_files[0]), 'r'),
@@ -98,11 +101,6 @@ def test_prompt_generator_construct_messages(mock_prompt_generator: PromptGenera
             mock.call().read(),
             mock.call().__exit__(None, None, None),
 
-            mock.call(config.get_conversation_path(), 'r'),
-            mock.call().__enter__(),
-            mock.call().read(),
-            mock.call().__exit__(None, None, None),
-
             mock.call(config.get_last_prompt_path(), 'w'),
             mock.call().__enter__(),
             mock.call().write(mock.ANY),
@@ -112,13 +110,7 @@ def test_prompt_generator_construct_messages(mock_prompt_generator: PromptGenera
         target_files_message = messages[2]
         assert target_files_message['role'] == 'user'
         assert target_files_message['content'].startswith(f'Currently you are working with these files:')
-
-        mock_loads.assert_called_once()
         
         conv_message = messages[3]
         assert conv_message['role'] == 'user'
         assert conv_message['content'].startswith('Here are the most recent conversations between the human, stdout logs, and assistant')
-
-        task_message = messages[4]
-        assert task_message['role'] == 'user'
-        assert task_message['content'].startswith('Given the context, here is your **crucial task')

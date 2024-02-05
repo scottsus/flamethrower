@@ -3,9 +3,8 @@ from datetime import datetime
 from pydantic import BaseModel
 
 import flamethrower.config.constants as config
-from flamethrower.agents.file_chooser import FileChooser
 from flamethrower.context.conv_manager import ConversationManager
-from flamethrower.agents.summarizer import Summarizer
+from flamethrower.agents.util_agents.file_chooser import FileChooser
 from flamethrower.utils.token_counter import TokenCounter
 from flamethrower.shell.printer import Printer
 from flamethrower.utils.pretty import pretty_print
@@ -30,7 +29,7 @@ class PromptGenerator(BaseModel):
             printer=printer
         )
         self._greeting: str = generate_greeting()
-        self._description: str = Summarizer().summarize_readme()
+        self._description: str = get_project_description()
         self._dir_structure: str = get_dir_structure()
     
     @property
@@ -51,7 +50,7 @@ class PromptGenerator(BaseModel):
         default = STDIN_DEFAULT.decode('utf-8')
 
         return (
-            f'{self.greeting}\n\n'
+            f'\n{self.greeting}\n\n'
             f'{self.description}\n\n'
             f'- For now, feel free to use me as a regular shell for commands like {green}ls{default} or {green}cd{default}.\n'
             '- When you need my help, write your query in the terminal starting with a capital letter.\n'
@@ -59,7 +58,7 @@ class PromptGenerator(BaseModel):
             f'- To try it out, type {orange}"Refactor /path/to/file"{default} in the terminal.\n\n'
         )
 
-    def construct_messages(self, query: str = '') -> List[Dict[str, str]]:
+    def construct_messages(self, messages: List[Dict[str, str]]) -> List[Dict[str, str]]:
         """
         Think of this as the `headers` for the LLM that will be attached to every new query.
         """
@@ -80,14 +79,16 @@ class PromptGenerator(BaseModel):
             content=f'Here is the directory structure:\n{self.dir_structure}\n' if self.dir_structure else ''
         )
 
+        conv = pretty_print(messages)
+
         try:
             target_file_names = FileChooser().infer_target_file_paths(
                 self.description,
                 self.dir_structure,
-                query
+                conv,
             )
             if target_file_names:
-                self.printer.print_regular(f'🔭 Focusing on the following files: {target_file_names}\n')
+                self.printer.print_files(target_file_names)
         except KeyboardInterrupt:
             raise
         except Exception:
@@ -111,33 +112,16 @@ class PromptGenerator(BaseModel):
             role='user',
             content=f'Currently you are working with these files:\n{target_file_contents}\n' if target_file_contents else ''
         )
-
-        conv = self.load_pretty_conv()
+        
         append_meta_information(
             role='user',
             content=f'Here are the most recent conversations between the human, stdout logs, and assistant:\n{conv}\n' if conv else ''
-        )
-
-        append_meta_information(
-            role='user',
-            content=(
-                f'Given the context, here is your **crucial task: {query}**\n'
-                'If it is a coding problem, write code to achieve the crucial task above.\n'
-                'Otherwise, just reply in a straightforward fashion.'
-            )
         )
 
         with open(config.get_last_prompt_path(), 'w') as f:
             f.write(pretty_print(meta_information))
 
         return meta_information
-    
-    def load_pretty_conv(self) -> str:
-        with open(config.get_conversation_path(), 'r') as f:
-            conv = f.read()
-            pretty = pretty_print(conv)
-            
-            return pretty
 
 """
 Helper functions
@@ -160,4 +144,10 @@ def get_dir_structure() -> str:
             return f.read()
     except FileNotFoundError:
         return ''
-    
+
+def get_project_description() -> str:
+    try:
+        with open(config.get_workspace_summary_path(), 'r') as f:
+            return f.read()
+    except FileNotFoundError:
+        return 'Workspace summary not found.'

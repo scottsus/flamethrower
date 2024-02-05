@@ -48,6 +48,8 @@ def test_setup_zsh_env_first_time() -> None:
             call(FLAMETHROWER_ZSH_DIR, exist_ok=True)
         ])
 
+        mock_print.assert_called_once()
+
         mock_resources_path.assert_has_calls([
             call(f'{FLAMETHROWER_PACKAGE_NAME}.data', 'README.md'),
             call().__enter__(),
@@ -69,8 +71,6 @@ def test_setup_zsh_env_first_time() -> None:
         mock_clone_from.assert_called_once()
         mock_environ_copy.assert_called_once()
         mock_setup_api_key.assert_called_once()
-
-        mock_print.assert_called_once()
 
 def test_setup_zsh_env_nth_time() -> None:
     with patch('flamethrower.setup.setup.os.path.exists', return_value=True), \

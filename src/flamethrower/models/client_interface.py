@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pydantic import BaseModel
-from typing import Any, Dict, List, Iterator, Tuple
+from typing import Dict, List, Iterator, Tuple
 
 class LLMClient(ABC, BaseModel):
     system_message: str

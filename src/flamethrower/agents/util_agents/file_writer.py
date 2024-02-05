@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
 from flamethrower.models.models import OPENAI_GPT_3_TURBO
+from flamethrower.utils.loader import Loader
 from typing import Any
 
 json_schema = {
@@ -77,11 +78,11 @@ class FileWriter(BaseModel):
         )
 
         try:
-            decision = self.llm.new_json_request(
-                query=query,
-                json_schema=json_schema,
-                loading_message=f'✍️  Writing the changes to {strict_target_path}...'
-            )
+            with Loader(loading_message=f'✍️  Writing the changes to {strict_target_path}...').managed_loader():
+                decision = self.llm.new_json_request(
+                    query=query,
+                    json_schema=json_schema
+                )
             
             if not decision:
                 raise Exception('file_writer.write_code: decision is empty')

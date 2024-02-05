@@ -27,13 +27,11 @@ colored_welcome_screen = (
 )
 
 def setup_zsh_env() -> Dict[str, str]:
-    is_first_setup = False
-
     if not os.path.exists(FLAMETHROWER_DIR):
         os.makedirs(FLAMETHROWER_DIR, exist_ok=True)
         os.makedirs(FLAMETHROWER_LOG_DIR, exist_ok=True)
         os.makedirs(FLAMETHROWER_ZSH_DIR, exist_ok=True)
-        is_first_setup = True
+        print(colored_welcome_screen)
 
     flamethrower_readme_path = get_flamethrower_readme_path()
     if not os.path.exists(flamethrower_readme_path):
@@ -64,9 +62,6 @@ def setup_zsh_env() -> Dict[str, str]:
 
     if not setup_api_key():
         return {}
-
-    if is_first_setup:
-        print(colored_welcome_screen)
 
     return env
 

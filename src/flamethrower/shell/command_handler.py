@@ -1,6 +1,5 @@
 from pydantic import BaseModel
 from .printer import Printer
-from flamethrower.context.prompt import PromptGenerator
 from flamethrower.context.conv_manager import ConversationManager
 from flamethrower.agents.operator import Operator
 from flamethrower.utils.special_keys import *
@@ -13,7 +12,6 @@ class CommandHandler(BaseModel):
     buffer: str = ''
     is_nl_query: bool = False # is natural language query
     conv_manager: ConversationManager
-    prompt_generator: PromptGenerator
     operator: Operator
     printer: Printer
 
@@ -97,8 +95,7 @@ class CommandHandler(BaseModel):
         )
 
         try:
-            messages = self.prompt_generator.construct_messages(query)
-            self.operator.new_implementation_run(query, messages)
+            self.operator.new_implementation_run()
         except KeyboardInterrupt:
             pass
         except QuotaExceededException:

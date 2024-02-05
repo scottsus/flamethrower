@@ -4,8 +4,7 @@ import threading
 import itertools
 from contextlib import contextmanager
 from pydantic import BaseModel, ConfigDict
-from typing import Any, Generator, Optional
-from flamethrower.shell.shell_manager import ShellManager
+from typing import Any, Generator
 from flamethrower.utils.special_keys import CLEAR_FROM_START, CLEAR_TO_END, CURSOR_TO_START
 from flamethrower.utils.colors import STDIN_YELLOW, STDIN_DEFAULT
 
@@ -17,7 +16,6 @@ class Loader(BaseModel):
     with_newline: bool = True
     will_report_timing: bool = False
     requires_cooked_mode: bool = True
-    shell_manager: Optional[ShellManager] = None
     done: bool = False
 
     def __init__(self, **kwargs: Any) -> None:
@@ -26,10 +24,6 @@ class Loader(BaseModel):
         self._start_time: float = time.time()
         if kwargs.get('loading_message') == '':
             self.loading_message = '🧠 Thinking...'
-        
-        if self.requires_cooked_mode:
-            from flamethrower.containers.container import container
-            self.shell_manager = container.shell_manager()
     
     @property
     def spinner(self) -> itertools.cycle:
@@ -57,16 +51,18 @@ class Loader(BaseModel):
     def managed_loader(self) -> Generator[None, None, None]:
         loader_thread = threading.Thread(target=self.spin)
         loader_thread.start()
+
         try:
             record_start_time = time.time()
             if self.requires_cooked_mode:
-                if self.shell_manager is None:
-                    raise Exception('loader.managed_loader: shell_manager not set.')
+                from flamethrower.containers.container import container
                 
-                with self.shell_manager.cooked_mode():
+                shell_manager = container.shell_manager()
+                with shell_manager.cooked_mode():
                     yield
             else:
                 yield
+
         except (KeyboardInterrupt, Exception):
             raise
         finally:
