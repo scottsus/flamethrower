@@ -94,6 +94,7 @@ class Printer(BaseModel):
                 'bash',
                 'c',
                 'c++',
+                'chat',
                 'java',
                 'javascript',
                 'typescript',
@@ -104,6 +105,7 @@ class Printer(BaseModel):
                 'php',
                 'swift',
                 'sh',
+                'shell',
             ]
             return name in programming_languages
 
@@ -206,7 +208,7 @@ class Printer(BaseModel):
                 elif action == 'cleanup':
                     self.print_cyan(f'  - Cleanup: {file_paths}\n')
                 elif action == 'completed':
-                    self.print_cyan('  - Done')
+                    self.print_cyan('  - Completed')
                 else:
                     self.print_err('Printer.print_actions: Unknown action')
             self.print_default('')

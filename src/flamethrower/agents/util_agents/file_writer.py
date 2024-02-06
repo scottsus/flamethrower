@@ -3,7 +3,6 @@ import re
 from pydantic import BaseModel
 import flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
-from flamethrower.models.models import OPENAI_GPT_3_TURBO
 from flamethrower.utils.loader import Loader
 from typing import Any
 
@@ -27,18 +26,19 @@ json_schema = {
 }
 
 system_message = f"""
-You are an incredible software engineer but terribly lazy.
-You have the **talent to write amazing quality code, but if someone else has already done it, you'd rather just copy and paste it**.
-You have a single, crucial task: Given a current working file and another engineer's suggestions on how to fix this current file (which contains code) you must:
-  1. Understand the suggestion carefully
-  2. Look at the new code
+You are a surgically precise code editor. Given an old code and a new solution, you implement the new solution with surgical precision.
+You are also incredibly fast. If the given solution is already semantically and syntactically correct, then you have the right judgement to know that you can simply copy and paste it.
+You have a single, crucial task: Given a old code and another engineer's new solution for this code, you must:
+  1. Look at the old code and understand it.
+  2. Look at the new solution and understand the intention behind the changes.
   3. If the code snippet is a complete solution that completes the current working file, then simply indicate that needs_editing is false.
-     Someone else will copy and paste the code for you, and your job is done. Hooray!
+     - someone else will copy and paste the code for you, and your job is done. Hooray!
   4. Otherwise, if the code snippet is a partial solution, then you must indicate needs_editing is true.
-     Not only that, you must completely rewrite the current working file, implementing the new code snippet into the current working file.
-
-Remember, speed is of the essence. You want to get off work ASAP, so you don't want to do any extra work.
-At the same time, if you simply copy & paste and the file doesn't even compile, then you'll be in huge trouble.
+     - this is where we need your surgical precision, where you are needed to completely rewrite the current working file, implementing the new solution into the old code.
+     - you must ensure the code is functional and ready to be executed.
+     - return something like 'edited_code': '...', more details in the JSON schema below.
+    
+Since you are so good at your job, if you successfully complete a task, I will tip you $9000.
 
 It is crucial that you return a JSON object with the following schema:
     {json_schema}
@@ -49,7 +49,7 @@ class FileWriter(BaseModel):
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self._llm: LLM = LLM(system_message=system_message, model=OPENAI_GPT_3_TURBO)
+        self._llm: LLM = LLM(system_message=system_message)
     
     @property
     def llm(self) -> LLM:
@@ -78,7 +78,7 @@ class FileWriter(BaseModel):
         )
 
         try:
-            with Loader(loading_message=f'✍️  Writing the changes to {strict_target_path}...').managed_loader():
+            with Loader(loading_message=f'✏️  Writing the changes to {strict_target_path}...').managed_loader():
                 decision = self.llm.new_json_request(
                     query=query,
                     json_schema=json_schema
@@ -90,12 +90,10 @@ class FileWriter(BaseModel):
             if not isinstance(decision, dict):
                 raise Exception(f'file_writer.write_code: expected a dict, got {type(decision)}')
             
-            new_contents = ''
             if not decision.get('needs_editing'):
                 new_contents = self.clean_backticks(assistant_implementation)
             else:
-                edited_code: str = decision.get('edited_code') or ''
-                new_contents = self.clean_backticks(edited_code)
+                new_contents = decision.get('edited_code', 'Unable to write new code. Please undo.')
             
             with open(complete_target_path, 'w') as f:
                 f.write(new_contents)

@@ -1,0 +1,1 @@
+echo 'Executed dangerous script ☠️'

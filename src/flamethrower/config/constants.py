@@ -71,6 +71,7 @@ PRETTY_CONVERSATION_FILE_NAME = 'conv.log'
 CURRENT_FILES_FILE_NAME = 'current_files.log'
 LAST_PROMPT_FILE_NAME = 'last_prompt.log'
 LAST_RESPONSE_FILE_NAME  = 'last_response.log'
+PATCH_FILE_NAME = 'update.patch'
 
 def get_workspace_summary_path() -> str:
     return flamethrower_log_dir(SUMMARY_FILE_NAME)
@@ -95,3 +96,6 @@ def get_last_prompt_path() -> str:
 
 def get_last_response_path() -> str:
     return flamethrower_log_dir(LAST_RESPONSE_FILE_NAME)
+
+def get_patch_path() -> str:
+    return flamethrower_log_dir(PATCH_FILE_NAME)

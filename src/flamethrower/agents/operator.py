@@ -9,6 +9,7 @@ from openai import RateLimitError
 
 import flamethrower.config.constants as config
 from flamethrower.agents.drivers.driver_interface import Driver
+from flamethrower.agents.drivers.done_driver import DoneDriver
 from flamethrower.agents.drivers.feature_driver import FeatureDriver
 from flamethrower.agents.drivers.debugging_driver import DebuggingDriver
 from flamethrower.agents.router import Router
@@ -37,6 +38,7 @@ class Operator(BaseModel):
     
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
+        self._done_driver: DoneDriver = DoneDriver()
         self._feature_driver: FeatureDriver = FeatureDriver(
             target_dir=self.base_dir,
             prompt_generator=self.prompt_generator
@@ -48,6 +50,10 @@ class Operator(BaseModel):
         self._router: Router = Router()
         self._interpreter: Interpreter = Interpreter()
         self._file_writer: FileWriter = FileWriter(base_dir=self.base_dir)
+    
+    @property
+    def done_driver(self) -> DoneDriver:
+        return self._done_driver
     
     @property
     def feature_driver(self) -> FeatureDriver:
@@ -71,13 +77,13 @@ class Operator(BaseModel):
     
     
     def new_implementation_run(self) -> None:
-        conv = self.get_latest_conv()
-        query = conv[-1]['content']
-
         try:
             is_first_time_asking_for_permission = True
 
             for _ in range(self.max_retries):
+                conv = self.get_latest_conv()
+                query = conv[-1]['content']
+
                 """
                 Driver can be a:
                   - feature builder
@@ -86,14 +92,18 @@ class Operator(BaseModel):
                 """
                 with Loader(loading_message='🧠 Thinking...').managed_loader():
                     driver = self.get_driver(conv)
-                    if not driver: # Done
-                        self.printer.print_light_green('Glad to have been of service 🐕.', reset=True)
-                        return
+                    if not driver:
+                        raise Exception('Operator.new_implementation_run: driver is None')
                 
-                self.printer.print_cyan(
-                    f'Mode: {"Regular" if driver.__class__.__name__ == "FeatureDriver" else "Debug"}',
-                    reset=True
-                )
+                if driver.__class__.__name__ == 'FeatureDriver':
+                    mode = 'REGULAR'
+                elif driver.__class__.__name__ == 'DebuggingDriver':
+                    mode = 'DEBUG'
+                elif driver.__class__.__name__ == 'DoneDriver':
+                    mode = 'DONE'
+                else:
+                    mode = 'UNKNOWN'
+                self.printer.print_cyan(f'Mode: {mode}', reset=True)
                 
                 stream = driver.respond_to(conv)
                 if not stream:
@@ -103,12 +113,8 @@ class Operator(BaseModel):
                 action = ''
                 with Loader(loading_message='🤖 Determining next step...').managed_loader():
                     last_driver_res = self.get_last_assistant_response()
-                    decision = self.interpreter.make_decision_from(query, last_driver_res)
-                    if decision is None:
-                        self.printer.print_err('Interpreter unable to make decision. Marking as complete.')
-                        return
+                    actions = self.interpreter.make_decision_from(query, last_driver_res)
                 
-                actions = decision['actions']
                 for i in range (len(actions)):
                     obj = actions[i]
                     action = obj['action']
@@ -130,14 +136,8 @@ class Operator(BaseModel):
                         elif action == 'write':
                             self.handle_action_write(obj, last_driver_res)
                         
-                        elif action == 'debug':
-                            self.handle_action_debug(obj, last_driver_res)
-                        
                         elif action == 'need_context':
                             self.handle_action_need_context(obj)
-
-                        elif action == 'cleanup':
-                            self.handle_action_cleanup(obj, last_driver_res)
 
                         elif action == 'completed':
                             # diffs = Diff(printer=self.printer).get_diffs()
@@ -198,7 +198,7 @@ class Operator(BaseModel):
 
         self.conv_manager.append_conv(
             role='user',
-            content=f'{os.getcwd()} $ {command}',
+            content=f'# {os.getcwd()}\n$ {command}',
             name='human',
         )
         self.conv_manager.append_conv(
@@ -220,30 +220,6 @@ class Operator(BaseModel):
             )
             self.printer.print_green(success_message, reset=True)
             time.sleep(1) # Give user time to read
-        
-        except Exception:
-            failed_message = f'Failed to update {file_paths}'
-            self.conv_manager.append_conv(
-                role='user',
-                content=failed_message,
-                name='human'
-            )
-            self.printer.print_err(failed_message)
-
-            raise
-    
-    def handle_action_debug(self, json: Dict[str, str], driver_res: str) -> None:
-        try:
-            file_paths = json['file_paths']
-            self.file_writer.write_code(file_paths, driver_res)
-
-            debug_message = f'Wrote debugging statements for future testing in file: {file_paths}\n'
-            self.conv_manager.append_conv(
-                role='user',
-                content=debug_message,
-                name='human'
-            )
-            self.printer.print_yellow(debug_message, reset=True)
         
         except Exception:
             failed_message = f'Failed to update {file_paths}'
@@ -294,30 +270,6 @@ class Operator(BaseModel):
 
             raise
     
-    def handle_action_cleanup(self, json: Dict[str, str], driver_res: str) -> None:
-        try:
-            file_paths = json['file_paths']
-            self.file_writer.write_code(file_paths, driver_res)
-
-            cleanup_message = f'✨ Cleaned up files: {file_paths}\n'
-            self.conv_manager.append_conv(
-                role='user',
-                content=cleanup_message,
-                name='human'
-            )
-            self.printer.print_green(cleanup_message, reset=True)
-        
-        except Exception:
-            failed_message = f'Failed to cleanup {file_paths}'
-            self.conv_manager.append_conv(
-                role='user',
-                content=failed_message,
-                name='human'
-            )
-            self.printer.print_err(failed_message)
-
-            raise
-    
     def get_user_choice(self) -> Choice:
         user_choice = questionary.select(
             "Do you want me to implement the solution and test it for you?",
@@ -336,7 +288,7 @@ class Operator(BaseModel):
         driver_type = self.router.get_driver(messages)
         
         if driver_type == 'done':
-            return None
+            return self.done_driver
         if driver_type == 'debugging':
             return self.debugging_driver
         

@@ -26,8 +26,9 @@ Here are 3 types of agents, and their expected characteristics:
 Additionally, you need to understand that you are being called as part of a cycle, meaning that sometimes you will be called 
 when evaluating a near-done state, for which you should indicate that the job is completed with a third `done` agent.
   3. Done agent: Indicates that the job is completed.
-    - STDOUT: # Some success message
+    - STDOUT: # Some success message **that solves the user's problem**
     - "Thank you sir", "That worked", etc.
+    - If the code still has excessive debugging print statements, then it is NOT done yet.
 
 Importantly:
   - You are part of a while-loop in a program used as an effective multi-agent build & debug system.

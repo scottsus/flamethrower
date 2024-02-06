@@ -1,0 +1,1 @@
+echo 'Executed safe script ✨'

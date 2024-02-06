@@ -13,7 +13,7 @@ json_schema = {
                 'properties': {
                     'action': {
                         'type': 'string',
-                        'enum': ['run', 'write', 'debug', 'cleanup', 'completed'] # exclude need_context for now
+                        'enum': ['run', 'write', 'completed'] # exclude need_context for now
                     },
                     'command': { 'type': 'string' },
                     # TODO: file_paths should be a list of strings
@@ -29,14 +29,6 @@ json_schema = {
                         'if': { 'properties': { 'action': { 'const': 'write' } } },
                         'then': { 'required': ['file_paths'] }
                     },
-                    {
-                        'if': { 'properties': { 'action': { 'const': 'debug' } } },
-                        'then': { 'required': ['file_paths'] }
-                    },
-                    {
-                        'if': { 'properties': { 'action': { 'const': 'cleanup' } } },
-                        'then': { 'required': ['file_paths'] }
-                    },
                 ]
             }
         },
@@ -46,16 +38,13 @@ json_schema = {
 
 system_message = f"""
 You are an extremely powerful programming assistant that lives inside the unix terminal.
-You have a single, crucial task: to categorize LM responses into a list of 5 possible actions:
+You have a single, crucial task: to categorize LM responses into a list of 3 possible actions:
   1. Run a command on the terminal and observe its output
   2. Rewrite code in a given target file
-  3. If you encounter an error, write print statements to the target file to debug for the next iteration.
-  4. As best as possible, be extremely concise in code, and clean the file of print statements
-  5. Indicate that the job is completed.
+  3. Indicate that the job is completed.
 
 You **should choose multiple actions to perform**. For example:
   - If you are writing to a file, you **must also return a `run` action to test what you wrote.**
-  - If you are debugging, you **must also follow it up with a `run` action and further `write` actions to identify the issue.**
   - If you obtained a code snippet, it is likely code you would need to implement and write to a file.
 
 Other notes:
@@ -78,7 +67,7 @@ class Interpreter(BaseModel):
     def llm(self) -> LLM:
         return self._llm
     
-    def make_decision_from(self, objective: str, last_response: str) -> Dict[str, List[Dict[Any, Any]]]:
+    def make_decision_from(self, objective: str, last_response: str) -> List[Dict[Any, Any]]:
         target_files = self.get_target_files()
         target_files_line = f'Currently you are working with the following files: {target_files}\n' if target_files else ''
 
@@ -101,7 +90,16 @@ class Interpreter(BaseModel):
             if not isinstance(res, dict):
                 raise Exception(f'interpreter.make_decision_from: res not type dict, got {type(res)}')
             
-            return res
+            actions = res.get('actions', [{}])
+            if not isinstance(actions, list):
+                raise Exception(f'interpreter.make_decision_from: actions not type list, got {type(actions)}')
+            
+            if len(actions) > 1:
+                last_action = actions[-1].get('action', '')
+                if last_action == 'completed':
+                    return actions[:-1]
+            
+            return actions
 
         except KeyboardInterrupt:
             raise
@@ -114,4 +112,4 @@ class Interpreter(BaseModel):
                 return f.read().split('\n')
         except FileNotFoundError:
             return []
-        
+    

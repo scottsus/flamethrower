@@ -40,6 +40,7 @@ class SummaryManager(BaseModel):
             raise Exception(error_message)
 
         try:
+            res_list = []
             res_list = await asyncio.wait_for(
                 self.safe_gather(self.summarization_tasks_copy),
                 timeout=self.instant_timeout
