@@ -9,6 +9,7 @@ from select import select
 
 import flamethrower.setup.setup as setup
 from flamethrower.setup.dir_walker import setup_dir_summary
+from flamethrower.utils.colors import *
 from typing import Optional
 
 class Shell(BaseModel):
@@ -67,13 +68,11 @@ class Shell(BaseModel):
         # Container singletons
         command_handler = container.command_handler()
         conv_manager = container.conv_manager()
-        prompt_generator = container.prompt_generator()
-        
         printer = container.printer()
 
         error = None
         try:
-            printer.print_regular(prompt_generator.construct_greeting())
+            printer.print_regular(self.construct_greeting())
 
             while True:
                 timeout = 0.5 # seconds
@@ -121,3 +120,15 @@ class Shell(BaseModel):
             else:
                 print(token_counter.return_cost_analysis())
                 print('\n👋 Goodbye!')
+
+    def construct_greeting(self) -> str:
+        return f"""
+  🔥 flamethrower: the ultimate debugging experience
+
+  Instructions:
+    - ⌨️  Regular shell        Use commands like `{GREEN}ls{DEFAULT}`, `{GREEN}cd{DEFAULT}`, `{GREEN}python{DEFAULT} hello.py`
+    - 🤖 LLM assistance       Start command with a {ORANGE}Capital letter{DEFAULT}
+    - 📚 Context              Intelligent context-awareness from command, files, and stdout logs
+    - 🪵 Terminal logs        All conversation inside `{GREEN}flamethrower{DEFAULT}` is logged
+
+        """

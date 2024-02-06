@@ -24,15 +24,6 @@ def test_prompt_generator_init(mock_prompt_generator: PromptGenerator) -> None:
     assert pg.description != ''
     assert pg.dir_structure == 'flamethrower/some/path'
 
-def test_prompt_generator_construct_greeting(mock_prompt_generator: PromptGenerator) -> None:
-    pg = mock_prompt_generator
-    
-    greeting = pg.construct_greeting()
-
-    # TODO: this will change
-    assert 'Good' in greeting and '👋' in greeting
-    assert pg.description in greeting
-
 def test_prompt_generator_construct_messages(mock_prompt_generator: PromptGenerator) -> None:
     pg = mock_prompt_generator
 
