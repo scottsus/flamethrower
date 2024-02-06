@@ -212,14 +212,15 @@ class Printer(BaseModel):
             self.print_default('')
     
     def print_files(self, files: List[str]) -> None:
-        if not files:
-            return
-        
         with self.shell_manager.cooked_mode():
             self.set_cursor_to_start()
-            self.print_cyan('Focusing on the following files 🔭:\n')
-            for file in files:
-                self.print_cyan(f'  - {file}\n')
+            if files:
+                self.print_cyan('Focusing on the following files 🔭:\n')
+                for file in files:
+                    self.print_cyan(f'  - {file}\n')
+            else:
+                self.print_cyan('No files used as context.\n')
+            
             self.print_default('')
     
     def print_diffs(self, diffs: List[str]) -> None:

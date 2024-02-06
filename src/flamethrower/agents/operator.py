@@ -9,7 +9,6 @@ from openai import RateLimitError
 
 import flamethrower.config.constants as config
 from flamethrower.agents.drivers.driver_interface import Driver
-from flamethrower.agents.drivers.general_driver import GeneralDriver
 from flamethrower.agents.drivers.feature_driver import FeatureDriver
 from flamethrower.agents.drivers.debugging_driver import DebuggingDriver
 from flamethrower.agents.router import Router
@@ -38,7 +37,6 @@ class Operator(BaseModel):
     
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self._general_driver: GeneralDriver = GeneralDriver()
         self._feature_driver: FeatureDriver = FeatureDriver(
             target_dir=self.base_dir,
             prompt_generator=self.prompt_generator
@@ -50,10 +48,6 @@ class Operator(BaseModel):
         self._router: Router = Router()
         self._interpreter: Interpreter = Interpreter()
         self._file_writer: FileWriter = FileWriter(base_dir=self.base_dir)
-    
-    @property
-    def general_driver(self) -> GeneralDriver:
-        return self._general_driver
     
     @property
     def feature_driver(self) -> FeatureDriver:
@@ -81,30 +75,32 @@ class Operator(BaseModel):
         query = conv[-1]['content']
 
         try:
+            is_first_time_asking_for_permission = True
+
             for _ in range(self.max_retries):
                 """
                 Driver can be a:
                   - feature builder
                   - debugger
-                  - general assistant
                   - done
                 """
-                with Loader(loading_message='🤖 Routing to best agent...').managed_loader():
+                with Loader(loading_message='🧠 Thinking...').managed_loader():
                     driver = self.get_driver(conv)
                     if not driver: # Done
                         self.printer.print_light_green('Glad to have been of service 🐕.', reset=True)
                         return
                 
-                self.printer.print_cyan(f'Driver: {driver.__class__.__name__}', reset=True)
-
+                self.printer.print_cyan(
+                    f'Mode: {"Regular" if driver.__class__.__name__ == "FeatureDriver" else "Debug"}',
+                    reset=True
+                )
+                
                 stream = driver.respond_to(conv)
                 if not stream:
                     raise Exception('Driver.respond_to: stream is empty')
                 self.printer.print_llm_response(stream)
                 
                 action = ''
-                is_first_time_asking_for_permission = True
-
                 with Loader(loading_message='🤖 Determining next step...').managed_loader():
                     last_driver_res = self.get_last_assistant_response()
                     decision = self.interpreter.make_decision_from(query, last_driver_res)
@@ -341,8 +337,6 @@ class Operator(BaseModel):
         
         if driver_type == 'done':
             return None
-        if driver_type == 'general':
-            return self.general_driver
         if driver_type == 'debugging':
             return self.debugging_driver
         

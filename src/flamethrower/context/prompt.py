@@ -87,8 +87,7 @@ class PromptGenerator(BaseModel):
                 self.dir_structure,
                 conv,
             )
-            if target_file_names:
-                self.printer.print_files(target_file_names)
+            self.printer.print_files(target_file_names)
         except KeyboardInterrupt:
             raise
         except Exception:

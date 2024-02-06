@@ -8,7 +8,7 @@ json_schema = {
     'properties': {
         'agent': {
             'type': 'string',
-            'enum': ['feature', 'debugging', 'general', 'done']
+            'enum': ['feature', 'debugging', 'done']
         }
     },
     'required': ['agent']
@@ -18,16 +18,14 @@ system_message = f"""
 You are a router that routes natural language queries to the appropriate agent.
 Here are 3 types of agents, and their expected characteristics:
   1. Feature agent: Explains current code, creates new features, refactors existing ones, usually more creative.
-    - "Make a new ...", "Refactor ...", "Explain this ...", etc.
+    - "Make a new ...", "Refactor ...", "Explain this ...", "What is X about ..." etc.
   2. Debugging agent: Debugs code, writes print statements, runs commands, finding out more information about the underlying problem.
     - "Why is this happening?", "What is ...", "Wtf?", etc.
     - STDOUT logs: Error: ...
-  3. General agent: Handles general queries that are not programming-related.
-    - "What is the weather today?", "What is the capital of ...", "Who are you?", etc.
 
 Additionally, you need to understand that you are being called as part of a cycle, meaning that sometimes you will be called 
-when evaluating a near-done state, for which you should indicate that the job is completed with a fourth `done` agent.
-  4. Done agent: Indicates that the job is completed.
+when evaluating a near-done state, for which you should indicate that the job is completed with a third `done` agent.
+  3. Done agent: Indicates that the job is completed.
     - STDOUT: # Some success message
     - "Thank you sir", "That worked", etc.
 
