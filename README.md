@@ -56,7 +56,7 @@ cd {UNBELIEVABLY_COMPLICATED_WORKSPACE}
 flamethrower
 ```
 
-![init](https://github.com/scottsus/flamethrower/assets/88414565/b70ccc5d-5482-4e14-91f5-c4854b24a312)
+<img src='https://github.com/scottsus/flamethrower/assets/88414565/b70ccc5d-5482-4e14-91f5-c4854b24a312' width='500px'/>
 
 
 ### Example Usage
