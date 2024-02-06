@@ -17,34 +17,20 @@ No bugs can survive the test of <span style='color: orange'>fire</span>; not eve
 
 https://github.com/scottsus/flamethrower/assets/88414565/2b8a71e6-a36c-4d1c-9bfc-3c487d1540f2
 
-## Usecases
-
-### Understanding error logs
-
-TODO
-
-### Debugging the previous error
-
-TODO
-
 ## Quick Start
+
+<img src='https://github.com/scottsus/flamethrower/assets/88414565/9bdbc838-9c31-4b7f-99f4-c5a92e156800' alt='Quick Start' width='500px'/>
+
+### Install 🔥 flamethrower
 
 ```
 pip install flamethrower
 ```
 
-Or, if you're looking to upgrade to the latest version
+Or, if you have an existing version and are looking to upgrade to the latest version
 
 ```
 pip install --upgrade flamethrower
-```
-
-### API Keys
-
-There's no getting around the friction of configuring API keys
-
-```
-export OPENAI_API_KEY=sk-xxxx
 ```
 
 ### Terminal
@@ -52,12 +38,9 @@ export OPENAI_API_KEY=sk-xxxx
 Navigate to your current workspace, and simply run `flamethrower`, or `ft` for the pros.
 
 ```
-cd {UNBELIEVABLY_COMPLICATED_WORKSPACE}
+cd ./unbelievably/complicated/workspace
 flamethrower
 ```
-
-<img src='https://github.com/scottsus/flamethrower/assets/88414565/b70ccc5d-5482-4e14-91f5-c4854b24a312' width='500px'/>
-
 
 ### Example Usage
 
