@@ -19,7 +19,7 @@ https://github.com/scottsus/flamethrower/assets/88414565/e3c979c0-40ff-4976-aa30
 
 ## Quick Start
 
-<img src='https://github.com/scottsus/flamethrower/assets/88414565/e1e76c0e-eecd-4cf4-897b-1a01ca73ff03' alt='Quick Start' width='500px'/>
+<img src='https://github.com/scottsus/flamethrower/assets/88414565/4be238a7-642a-4149-a1ed-98ff7c61f9b8' alt='Quick Start' width='500px'/>
 
 ### Install 🔥 flamethrower
 
