@@ -74,6 +74,8 @@ As long as any shell command or natural language query happens within the contex
 
 Prompts sent to LLM are transparent and easy to observe. All 🔥 flamethrower metadata are neatly kept in a `.flamethrower` subdirectory, including prompts, conversations, logs, directory info, summaries, and other metadata.
 
+<img src='https://github.com/scottsus/flamethrower/assets/88414565/8905018d-41f5-48e8-92f5-da2b0512af3d' alt='Transparency' width='500px'/>
+
 ### 🏄‍♀️ Real Time File Tracking
 
 Everytime you send a query, the latest version of your files are sent over, meaning 🔥 flamethrower understands that you changed your files, and are ready to process those changes.
