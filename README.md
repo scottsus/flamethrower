@@ -80,6 +80,8 @@ Prompts sent to LLM are transparent and easy to observe. All 🔥 flamethrower m
 
 Everytime you send a query, the latest version of your files are sent over, meaning 🔥 flamethrower understands that you changed your files, and are ready to process those changes.
 
+<img src='https://github.com/scottsus/flamethrower/assets/88414565/f3f49b91-1cc8-452c-8625-54d88dcb2a42' alt='Context' width='500px'/>
+
 ## Motivation for 🔥 flamethrower
 
 ### 👩‍✈️ GitHub Copilot
