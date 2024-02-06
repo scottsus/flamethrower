@@ -61,6 +61,8 @@ If you say 'Yes', 🔥 flamethrower will debug in the background while you focus
 
 If it looks like 🔥 flamethrower is obviously headed in the direction of doom, simply press `CTRL+C` and give it more suggestions or context.
 
+<img src='https://github.com/scottsus/flamethrower/assets/88414565/11886370-1da4-478e-8fac-853fd305621a' alt='AFK' width='500px'/>
+
 ### 🎙️ Conversation History
 
 As long as any shell command or natural language query happens within the context of 🔥 flamethrower, then it is by default captured in the conversation history. That means you can:
