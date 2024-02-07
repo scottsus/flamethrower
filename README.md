@@ -61,6 +61,16 @@ python main.py -> SOME_ERROR
 Wtf???? 🤬 # Literally type this in the terminal
 ```
 
+```
+🔥 flamethrower: Debugging on Autopilot
+
+Instructions:
+- ⌨️  Regular shell        Use commands like ls, cd, python hello.py
+- 🤖 LLM assistance       Start command with a Capital letter, try Who are you?
+- 📚 Context              Intelligent context-awareness from command, files, and stdout logs
+- 🪵 Terminal logs        All conversation & code output inside flamethrower is logged
+```
+
 An implementation run is initiated with a natural language query that begins with an `uppercase letter`.
 
 ## Features
