@@ -7,7 +7,7 @@ def test_summary_manager_init() -> None:
     assert sm.summarization_tasks == []
     assert sm.summarization_tasks_copy == []
     assert sm.instant_timeout == 0.5
-    assert sm.summarization_timeout == 75
+    assert sm.summarization_timeout == 120
     assert sm._lock is not None
 
 def test_summary_manager_get_summarizations_with_timeout() -> None:

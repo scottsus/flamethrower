@@ -3,11 +3,13 @@ import sys
 import pty
 import tty
 import termios
+import shutil
 from pydantic import BaseModel, ConfigDict
 from subprocess import Popen
 from select import select
 
 import flamethrower.setup.setup as setup
+from flamethrower.config.constants import FLAMETHROWER_DIR_NAME
 from flamethrower.setup.dir_walker import setup_dir_summary
 from flamethrower.utils.colors import *
 from typing import Optional
@@ -29,13 +31,24 @@ class Shell(BaseModel):
         if (len(sys.argv) == 2):
             self.base_dir = os.path.abspath(sys.argv[1])
         
-        env = setup.setup_zsh_env()
-        if not env:
-            return
-        
-        err = setup_dir_summary(target_dir=self.base_dir)
-        if err is not None:
-            print(f'Error while setting up directory summary: {str(err)}')
+        try:
+            env = setup.setup_zsh_env()
+            if not env:
+                return
+            
+            err = setup_dir_summary(target_dir=self.base_dir)
+            if err is not None:
+                print(f'shell.run: {str(err)}')
+                return
+        except KeyboardInterrupt:
+            print('🔥 flamethrower initialization cancelled. Performing cleanup...')
+            
+            try:
+                shutil.rmtree(os.path.join(os.getcwd(), FLAMETHROWER_DIR_NAME))
+                print('🧹 Cleanup complete.')
+            except Exception as e:
+                print(f'Cleanup error: {str(e)}')
+            
             return
                 
         self.leader_fd, self.follower_fd = pty.openpty()
@@ -76,7 +89,7 @@ class Shell(BaseModel):
 
             while True:
                 timeout = 0.5 # seconds
-                r, w, e = select([self.leader_fd, sys.stdin], [], [], timeout)
+                r, _, _ = select([self.leader_fd, sys.stdin], [], [], timeout)
 
                 # From leader process
                 if self.leader_fd in r:
@@ -123,12 +136,12 @@ class Shell(BaseModel):
 
     def construct_greeting(self) -> str:
         return f"""
-  🔥 flamethrower: the ultimate debugging experience
+  🔥 flamethrower: Debugging on Autopilot
 
   Instructions:
-    - ⌨️  Regular shell        Use commands like `{GREEN}ls{DEFAULT}`, `{GREEN}cd{DEFAULT}`, `{GREEN}python{DEFAULT} hello.py`
-    - 🤖 LLM assistance       Start command with a {ORANGE}Capital letter{DEFAULT}
+    - ⌨️  Regular shell        Use commands like {GREEN}ls{DEFAULT}, {GREEN}cd{DEFAULT}, {GREEN}python{DEFAULT} {UNDERLINE}hello.py{DEFAULT}
+    - 🤖 LLM assistance       Start command with a {ORANGE}Capital letter{DEFAULT}, try {ORANGE}Who are you?{DEFAULT}
     - 📚 Context              Intelligent context-awareness from command, files, and stdout logs
-    - 🪵 Terminal logs        All conversation inside `{GREEN}flamethrower{DEFAULT}` is logged
+    - 🪵 Terminal logs        All conversation & code output inside {GREEN}flamethrower{DEFAULT} is logged
 
         """

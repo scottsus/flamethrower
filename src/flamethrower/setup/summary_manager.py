@@ -16,7 +16,7 @@ class SummaryManager(BaseModel):
     summarization_tasks: List[Task[int]] = []
     summarization_tasks_copy: List[Task[int]] = []
     instant_timeout: float = 0.5
-    summarization_timeout: int = 75
+    summarization_timeout: int = 120
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -47,8 +47,8 @@ class SummaryManager(BaseModel):
             )
         
         except asyncio.TimeoutError:
-            try:
-                with Progress() as progress:
+            with Progress() as progress:
+                try:
                     task_id = progress.add_task(
                         f'[cyan]🏗️  Learning workspace structure (max {self.summarization_timeout}s)...',
                         total=len(self.summarization_tasks)
@@ -61,8 +61,12 @@ class SummaryManager(BaseModel):
                         self.safe_gather(summarization_tasks_with_progress),
                         timeout=self.summarization_timeout
                     )
-            except asyncio.TimeoutError:
-                pass
+                except asyncio.TimeoutError:
+                    pass
+                except KeyboardInterrupt:
+                    pass
+                finally:
+                    progress.stop()
         
         except Exception:
             raise

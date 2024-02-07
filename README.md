@@ -11,7 +11,17 @@ No bugs can survive the test of <span style='color: orange'>fire</span>; not eve
 
 ## What is this?
 
-🔥 flamethrower is an open source, high level, debugger that utilizes <span style='color: orange'>AI superpowers</span> to <span style='color: orange'>draw context</span>, offer suggestions, and <span style='color: orange'>iterate on those suggestions</span> to accomplish a given task. Think a combination of GitHub Copilot's context-awareness in [KillianLucas' Open Source Open Interpreter](https://github.com/KillianLucas/open-interpreter) shell.
+🔥 flamethrower is an open source, multi-agent, context-intelligent, debugger that utilizes AI superpowers to automate the painful task of debugging. Think a combination of GitHub Copilot's context-awareness in [KillianLucas' Open Interpreter](https://github.com/KillianLucas/open-interpreter) packed into a beautiful shell that works out of the box with any existing repo.
+
+    Automate: [ Write Code → Run Action → Check Logs → Repeat ] 🚀🚀
+
+**Main Differentiators**
+
+- 🔥 Automate the most painful part of writing code: print statements & error logs
+- ☘️ Specialized context agent for operating within existing repo
+- 🤖 Debugging agent optimized to iteratively brute-force locate and fix bugs
+- 📦 Out of the box support for any unix machine (no VS Code or VS Code alternatives)
+- 🎨 Seamless integration into any existing repo; just type `flamethrower`
 
 ## Demo
 
@@ -102,6 +112,7 @@ The Open Interpreter, an open-source gem, specializes in crafting new code from 
 
 ## 🛫 Project Roadmap
 
+- [x] 🧪 Better testing
 - [ ] 🔭 Telemetry and the ability to opt in/out
 - [ ] 🥽 LLM Vision to debug visual elements
 - [ ] 🦙 Running CodeLlama locally
@@ -109,4 +120,3 @@ The Open Interpreter, an open-source gem, specializes in crafting new code from 
 - [ ] 🦾 Default model finetuned on telemetry data
 - [ ] 🎗️ VS Code integration
 - [ ] 💻 Browser interface
-- [ ] 🧪 Better testing

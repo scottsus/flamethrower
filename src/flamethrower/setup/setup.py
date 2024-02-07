@@ -3,6 +3,7 @@ import shutil
 from git import Repo
 from importlib import resources
 from flamethrower.config.constants import *
+from flamethrower.utils.colors import *
 from flamethrower.utils.key_handler import (
     get_api_key, set_api_key, try_api_key
 )
@@ -75,15 +76,15 @@ def setup_api_key() -> bool:
     
     if not old_key_works and not new_key_works:
         print(
-            f'Error: OpenAI API Key not found or malfunctioning.\n'
+            f'\nError: OpenAI API Key not found or malfunctioning.\n'
             '\nMaybe this is a new project, so you need to set up your OpenAI API Key again.\n'
-            '\nYou can find your OpenAI Api Keys at https://platform.openai.com/api-keys.\n'
+            f'\nYou can find your OpenAI Api Keys at {UNDERLINE}https://platform.openai.com/api-keys{DEFAULT}.\n'
         )
         try:
             new_openai_key = input('OPENAI_API_KEY=')
             while try_api_key(new_openai_key) == False:
                 print('\nOpenAI API Key still invalid. Please try again.')
-                new_openai_key = input('OPENAI_API_KEY=')
+                new_openai_key = input('\nOPENAI_API_KEY=')
             set_api_key(new_openai_key)
         except KeyboardInterrupt:
             return False

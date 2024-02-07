@@ -231,6 +231,7 @@ def setup_workspace_summary() -> str:
             return summary_file.read()
     
     try:
+        summary = 'Unknown error generating workspace summary.\n'
         with open(os.path.join(os.getcwd(), 'README.md'), 'r') as readme_file:
             readme_file_contents = readme_file.read()
 
@@ -251,15 +252,13 @@ def setup_workspace_summary() -> str:
         return summary
 
 def setup_dir_summary(target_dir: str) -> Union[None, Exception]:
-    dir_walker = DirectoryWalker(
-        workspace_summary=setup_workspace_summary(),
-        target_dir=os.path.join(os.getcwd(), target_dir)
-    )
     try:
+        dir_walker = DirectoryWalker(
+            workspace_summary=setup_workspace_summary(),
+            target_dir=os.path.join(os.getcwd(), target_dir)
+        )
         # Python 3.8 prefers this over asyncio.run()
         asyncio.get_event_loop().run_until_complete(dir_walker.generate_directory_summary())
-    except KeyboardInterrupt:
-        print('\nLearning process interrupted. Workspace knowledge may be incomplete.')
     except Exception as e:
         return e
     
