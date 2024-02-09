@@ -103,6 +103,7 @@ class Printer(BaseModel):
                 'rust',
                 'ruby',
                 'php',
+                'plaintext',
                 'swift',
                 'sh',
                 'shell',
