@@ -1,3 +1,7 @@
+"""
+Byte Version
+"""
+
 STDIN_DEFAULT = b'\033[0m'
 STDIN_RED = b'\033[31m'
 STDIN_YELLOW = b'\033[33m'
@@ -15,6 +19,11 @@ STDIN_LIGHT_MAGENTA = b'\033[95m'
 STDIN_ORANGE = b'\033[38;5;214m'
 
 STDIN_UNDERLINE = b'\033[4m'
+
+
+"""
+String Version
+"""
 
 DEFAULT = '\033[0m'
 RED = '\033[31m'

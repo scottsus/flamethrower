@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 from pydantic import BaseModel
 import flamethrower.config.constants as config
 from flamethrower.models.llm import LLM
@@ -56,15 +57,16 @@ class FileWriter(BaseModel):
         return self._llm
     
     def write_code(self, target_path: str, assistant_implementation: str) -> None:
-        old_contents = ''
         strict_target_path = self.choose_file_path(target_path)
         complete_target_path = os.path.join(self.base_dir, strict_target_path)
         dir_path = os.path.dirname(complete_target_path)
-        
+
         try:
+            old_contents = ''
             os.makedirs(dir_path, exist_ok=True)
             with open(complete_target_path, 'r') as f:
                 old_contents = f.read()
+                self.make_original_file_copy(complete_target_path)
         except FileNotFoundError:
             pass
 
@@ -109,6 +111,18 @@ class FileWriter(BaseModel):
                     return strict_file_path
         
         return given_file_path
+    
+    def make_original_file_copy(self, complete_target_path: str) -> None:
+        file_name = os.path.basename(complete_target_path)
+        file_name_parts = file_name.split('.')
+        file_name_parts.insert(len(file_name_parts) - 1, config.get_original_file_marker())
+        new_file_name = '.'.join(file_name_parts)
+
+        dir_name = os.path.dirname(complete_target_path)
+        original_file_copy = os.path.join(dir_name, new_file_name)
+
+        if not os.path.exists(original_file_copy):
+            shutil.copy(complete_target_path, original_file_copy)
 
     def clean_backticks(self, text: str) -> str:
         try:

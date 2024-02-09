@@ -99,3 +99,12 @@ def get_last_response_path() -> str:
 
 def get_patch_path() -> str:
     return flamethrower_log_dir(PATCH_FILE_NAME)
+
+"""
+📒 Original copies
+"""
+
+ORIGINAL_FILE_MARKER = '🔥_original'
+
+def get_original_file_marker() -> str:
+    return ORIGINAL_FILE_MARKER

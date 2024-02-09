@@ -2,6 +2,7 @@
 /logs
 /zsh
 env
+*.🔥_original.*
 
 # 🔐 Common lock files
 package-lock.json
